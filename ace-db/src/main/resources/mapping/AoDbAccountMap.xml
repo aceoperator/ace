@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.quikj.ace.db.webtalk.dao.AccountDao">
+
+	<resultMap type="com.quikj.ace.db.core.webtalk.vo.Account" id="accountInfoResult" />
+
+	<parameterMap type="com.quikj.ace.db.core.webtalk.vo.Account"
+		id="accountInfoParam" />
+
+	<select id="findByUserName" resultMap="accountInfoResult">
+		SELECT userid AS userName, addnl_info AS additionalInfo 
+		FROM account_tbl where userid = #{userName}
+	</select>
+
+	<select id="authenticate" statementType="PREPARED" resultMap="accountInfoResult">
+		SELECT userid AS userName, addnl_info AS additionalInfo
+		FROM account_tbl
+		WHERE userid = #{userName} 
+			AND password = PASSWORD(#{password})
+	</select>
+
+	<update id="changePassword" statementType="PREPARED">
+		UPDATE account_tbl a SET password = PASSWORD(#{newPassword})
+			WHERE userid = #{userName}
+			AND password = PASSWORD(#{oldPassword})
+	</update>
+
+	<insert id="create" statementType="PREPARED" parameterMap="accountInfoParam">
+		INSERT INTO account_tbl (userid, password, addnl_info) 
+			VALUES (#{userName}, PASSWORD(#{password}), #{additionalInfo})
+	</insert>
+
+	<update id="modify" statementType="PREPARED" parameterMap="accountInfoParam">
+		UPDATE account_tbl SET addnl_info = #{additionalInfo}
+			<if test="password != null &amp;&amp; password.length() > 0">
+			    , password = PASSWORD(#{password})
+			</if>			
+			WHERE userid = #{userName}
+	</update>
+
+	<delete id="delete" statementType="PREPARED">
+		DELETE FROM account_tbl
+		WHERE userid = #{userName}
+	</delete>
+</mapper>

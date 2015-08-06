@@ -1,0 +1,18 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://www.quikj.com/ace/db/core/webtalk/vo" targetNamespace="http://www.quikj.com/ace/db/core/webtalk/vo"
+	elementFormDefault="qualified">
+
+	<xs:element name="Blacklist" type="Blacklist" />
+
+	<xs:complexType name="Blacklist">
+		<xs:sequence>
+			<xs:element name="Id" type="xs:long" minOccurs="0" />
+			<xs:element name="UserId" type="xs:long" minOccurs="0" />
+			<xs:element name="Identifier" type="xs:string" />
+			<xs:element name="Type" type="xs:int" /> 
+			<xs:element name="Level" type="xs:int" />
+			<xs:element name="LastModified" type="xs:long" minOccurs="0" />			
+		</xs:sequence>
+	</xs:complexType>
+	
+</xs:schema>

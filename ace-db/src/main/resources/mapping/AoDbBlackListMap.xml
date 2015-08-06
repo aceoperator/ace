@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.quikj.ace.db.webtalk.dao.BlackListDao">
+
+	<resultMap type="com.quikj.ace.db.core.webtalk.vo.Blacklist" id="blackListResult">
+		<result property="lastModified" column="lastModified" javaType="long"
+			typeHandler="UnixTimeTypeHandler" />
+	</resultMap>
+
+	<resultMap type="long" id="userIdResult" />
+
+	<select id="getBlacklist" statementType="PREPARED" resultMap="blackListResult">
+		SELECT b.id AS id, u.id as userId, b.identifier AS identifier, b.type,
+			b.level AS level, b.mod_time AS lastModified 
+		FROM blacklist_tbl b, user_tbl u
+		WHERE u.id = b.user_id 
+			AND u.userid = #{userName}
+		ORDER BY b.mod_time DESC
+	</select>
+
+	<select id="getById" statementType="PREPARED" resultMap="blackListResult">
+		SELECT identifier AS identifier, type,
+			user_id AS userId,
+			level as level, mod_time as lastModified 
+		FROM blacklist_tbl
+		WHERE id = #{id}
+	</select>
+
+	<insert id="createBlacklist">
+		INSERT INTO blacklist_tbl (user_id, identifier, type, level, mod_time)
+		VALUES (#{userId}, #{identifier}, #{type}, #{level}, #{lastModified,typeHandler=UnixTimeTypeHandler})
+	</insert>
+
+	<delete id="deleteBlacklist">
+		DELETE FROM blacklist_tbl WHERE id = #{id}
+	</delete>
+
+	<update id="updateBlacklist">
+		UPDATE blacklist_tbl SET level = #{level}, 
+			mod_time = #{lastModified,typeHandler=UnixTimeTypeHandler}
+		WHERE id = #{id}
+	</update>
+
+</mapper>

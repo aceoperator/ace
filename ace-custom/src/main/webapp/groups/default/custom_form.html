@@ -1,0 +1,71 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!-- Setup for mobile -->
+<meta name="HandheldFriendly" content="true" />
+<meta name="MobileOptimized" content="width" />
+<meta name="viewport" content="width=device-width; user-scalable=no; initial-scale=1.0; maximum-scale=1.0;" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+
+<title>Ace Custom Form</title>
+<script type="text/javascript">
+String.prototype.trim = function() {
+    return this.replace(/^\s+|\s+$/g,"");
+}
+function validateForm() {
+	var userName = document.forms["visitorForm"]["userName"].value;
+	if (userName == null || userName.trim().length == 0) {
+		alert("The user name must be entered");
+		return false;
+	}
+	
+	var userEmail = document.forms["visitorForm"]["userEmail"].value;
+	if (userEmail == null || userEmail.trim().length == 0) {
+		alert("An email address must be entered");
+		return false;
+	}
+	
+	return true;
+}
+</script>
+</head>
+<body style="margin: 20px 20px 20px 20px;">
+	<div id=header
+		style="width: 100%; font-size: medium; padding: 2px 2px 2px 2px; background-color: white;">
+		<img src="logo.gif" align="middle">&nbsp;&nbsp;<big><b>Ace
+				Operator Contact Center</b>
+		</big>
+	</div>
+
+	<p>
+	Please enter the following information.
+	<form name="visitorForm" action="/ace-custom/groups/default/chat.html" method="get"
+		onsubmit="return validateForm()">
+		<input type="hidden" name="profile" value="default-visitor">
+		<input type="hidden" name="locale" value="en_US">
+		Your Name <sup>required</sup><br> 
+		<input type="text" name="userName" size="30">
+		<p>
+			Your Email <sup>required</sup><br> 
+			<input type="text" name="userEmail" size="50">
+		<p>
+			Additional Information <sup>optional</sup><br>
+			<textarea rows="4" cols="50" name="userAdditionalInfo"></textarea>
+		<p>
+
+			<blockquote>
+				<input type="submit" name="userSubmit" value="Submit">&nbsp;&nbsp;&nbsp;&nbsp;
+				<input type="reset" name="userReset">
+			</blockquote>
+	</form>
+	<div id="footer"
+		style="width: 100%; background-color: white; border-top: 1px solid black; padding: 2px 2px 2px 2px;">
+		Powered by <a href="http://www.quik-j.com" target="_blank"> <img
+			src="/ace-contactcenter/images/poweredbyquiksmall.jpg" align="middle"
+			border="0">
+		</a>
+	</div>
+
+</body>
+</html>

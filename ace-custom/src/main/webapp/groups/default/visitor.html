@@ -1,0 +1,49 @@
+<html>
+<header>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+<!-- Setup for mobile -->
+<meta name="HandheldFriendly" content="true" />
+<meta name="MobileOptimized" content="width" />
+<meta name="viewport" content="width=device-width; user-scalable=no; initial-scale=1.0; maximum-scale=1.0;" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+
+<title>Ace Operator Visitor Page</title>
+
+<script type="text/javascript">
+	setInterval("refreshChatButton()", 30000);
+
+	function refreshChatButton() {
+		dt = new Date();
+		spice = dt.getTime();
+		img = document.getElementById("aceChatButton");
+		img.src = "/ace-contactcenter/icon?profile=default-visitor&spice="
+				+ spice;
+	}
+</script> </header>
+
+<body>
+	<h3>Ace Operator Visitor Page</h3>
+
+	The button shown below is a sample visitor button. You can embed an Ace
+	Operator button to your web site by adding the following code to your
+	HTML pages. If you are using a group other than default-visitor, you
+	will have to change the profile name. You will also need to create a
+	profile for the group. Consult the Ace Operator Administration manual
+	for detail.
+	<p>
+	<xmp> 
+		<iframe id="aceChatButton"
+			src="/ace-contactcenter/icon?profile=default-visitor" width="135"
+			height="135" frameborder="0" scrolling="no">
+		</iframe> 
+	</xmp>
+	<p>
+	<center>
+		<iframe id="aceChatButton" 
+			style="border:5px ridge #DDDDDD; cursor: hand;padding: 2px 2px 2px 2px;"
+			src="/ace-contactcenter/icon?profile=default-visitor" width="135"
+			height="135" frameborder="0" scrolling="no"> </iframe>
+	</center>
+</body>
+</html>

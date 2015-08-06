@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app 
+  xmlns="http://java.sun.com/xml/ns/javaee" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+  http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" version="3.0">
+
+	<listener>
+		<listener-class>com.quikj.ace.custom.server.AceContextListener</listener-class>
+	</listener>
+	
+	<servlet>
+        <servlet-name>captcha</servlet-name>
+        <servlet-class>com.quikj.ace.custom.server.CaptchaServlet</servlet-class>
+    </servlet>
+    
+    <servlet>
+    	<servlet-name>formMailer</servlet-name>
+    	<servlet-class>com.quikj.ace.custom.server.FormMailerServlet</servlet-class>
+    </servlet>	
+    
+    <context-param>
+  		<param-name>javax.servlet.jsp.jstl.fmt.LocalizationContext</param-name>
+  		<param-value>CustomResources</param-value>
+	</context-param>
+
+	<servlet-mapping>
+        <servlet-name>captcha</servlet-name>
+        <url-pattern>/captcha</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+    	<servlet-name>formMailer</servlet-name>
+    	<url-pattern>/formMailer</url-pattern>
+    </servlet-mapping>
+
+	<!-- Default page to serve -->
+	<welcome-file-list>
+		<welcome-file>index.jsp</welcome-file>
+	</welcome-file-list>
+
+	<!-- Only allow SSL communication -->
+	<security-constraint>
+		<web-resource-collection>
+			<web-resource-name>Ace Operator Custom</web-resource-name>
+			<url-pattern>/*</url-pattern>
+		</web-resource-collection>
+
+		<user-data-constraint>
+			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
+		</user-data-constraint>
+	</security-constraint>
+	
+</web-app>

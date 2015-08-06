@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+    <context:annotation-config />
+    
+	<bean id="properties"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="ignoreResourceNotFound" value="true" />
+		<property name="ignoreUnresolvablePlaceholders" value="false" />
+		<property name="locations">
+			<list>
+				<value>classpath:META-INF/ace-app.properties</value>
+				<value>file:${user.home}/.ace/config/properties/*.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="aceOperator" class="com.quikj.server.app.ApplicationServer"
+		init-method="startup" destroy-method="shutdown" />
+	
+	<bean id="contentFilter" class="com.quikj.application.web.talk.plugin.impl.ContentFilterImpl">
+	    <property name="enabled" value="${com.quikj.ace.app.contentFilterEnabled}" />
+	</bean>
+	
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="${com.quikj.ace.db.core.jdbcDriverClassName}" />
+		<property name="url" value="${com.quikj.ace.db.core.jdbcUrl}" />
+		<property name="username" value="${com.quikj.ace.db.core.jdbcUsername}" />
+		<property name="password" value="${com.quikj.ace.db.core.jdbcPassword}" />
+		<property name="initialSize" value="${com.quikj.ace.app.core.jdbcPoolInitialSize}" />
+		<property name="maxActive" value="${com.quikj.ace.app.core.jdbcPoolMaxActive}" />
+		<property name="maxWait" value="90000" />
+		<property name="testOnBorrow" value="true" />
+		<property name="validationQuery" value="select 1" />
+	</bean>
+	
+	<bean id="applicationConfiguration" class="com.quikj.server.app.ApplicationConfiguration">
+	    <property name="processName" value="APPLSERV" />
+	    <property name="processInstance" value="0" />
+	    <property name="logGroup" value="1" />
+	    <property name="registry" value="true" />
+	    <property name="registryPort" value="10999" />
+	    <property name="registryURL" value="rmi://localhost:10999" />
+	    <property name="registryServiceName" value="AceHTTPSRemoteAccess" />
+	    
+	    <property name="mailHost"  value="${com.quikj.ace.mailHost}" />
+		<property name="mailPort"  value="${com.quikj.ace.mailPort}" />
+		<property name="mailEncrypt"  value="${com.quikj.ace.mailEncrypt}" />
+		<property name="mailDebug"  value="${com.quikj.ace.mailDebug}" />
+		<property name="mailUserName"  value="${com.quikj.ace.mailUserName}" />
+		<property name="mailPassword"  value="${com.quikj.ace.mailPassword}" />
+		<property name="mailPendingDir"  value="${com.quikj.ace.mailPendingDir}" />
+		<property name="mailPendingFile"  value="${com.quikj.ace.mailPendingFile}" />	
+		<property name="mailOverrideFrom"  value="${com.quikj.ace.mailOverrideFrom}" />
+	
+	    <property name="plugins">
+	        <list>
+	            <bean class="com.quikj.server.app.PluginApplicationInfo">
+	                <property name="id" value="2" />
+	                <property name="clazz" value="com.quikj.application.web.talk.plugin.TalkPluginApp" />
+	                <property name="properties">
+	                    <props>
+	                        <prop key="cdr-required">yes</prop>
+	                        <prop key="backup-cdr-dir">cdr</prop>
+	                        <prop key="backup-cdr-file">backup_cdr</prop>
+	                    </props>
+	                </property>
+	            </bean>
+	        </list>
+	    </property>
+	</bean>
+	
+</beans>

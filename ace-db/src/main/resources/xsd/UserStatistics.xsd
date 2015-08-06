@@ -1,0 +1,18 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://www.quikj.com/ace/db/core/webtalk/vo" targetNamespace="http://www.quikj.com/ace/db/core/webtalk/vo"
+	elementFormDefault="qualified">
+
+	<xs:element name="UserStatistics" type="UserStatistics" />
+
+	<xs:complexType name="UserStatistics">
+		<xs:sequence>
+			<xs:element name="UserName" type="xs:string" />
+			<xs:element name="LoginTime" type="xs:dateTime" />
+			<xs:element name="LogoutTime" type="xs:dateTime" minOccurs="0"/>
+			<xs:element name="ChatsInitiated" type="xs:int" />
+			<xs:element name="ChatsAnswered" type="xs:int" />
+			<xs:element name="ChatsNotAnswered" type="xs:int" />
+			<xs:element name="ChatsBusy" type="xs:int" />
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

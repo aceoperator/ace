@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.quikj.ace.db.webtalk.dao.FeatureDao">
+
+	<resultMap type="com.quikj.ace.db.core.webtalk.vo.Feature" id="featureInfoResult" />
+	
+	<resultMap type="com.quikj.ace.db.core.webtalk.vo.FeatureParam" id="featureParamInfoResult" />
+
+	<parameterMap type="com.quikj.ace.db.core.webtalk.vo.Feature"
+		id="featureInfoParam" />
+
+	<update id="setActive">
+		UPDATE feature_tbl SET active = #{active}
+		WHERE fname = #{name}
+	</update>
+	
+	<insert id="createFeature" parameterMap="featureInfoParam">
+		INSERT INTO feature_tbl (fname, domain, class, active)
+		VALUES (#{name}, #{domain}, #{className}, #{active})
+	</insert>
+	
+	<insert id="createFeatureParam">
+		INSERT INTO feature_params_tbl (feature_id, pname, pvalue)
+		VALUES (#{featureId}, #{param}, #{value})
+	</insert>
+	
+	<delete id="deleteFeature">
+		DELETE FROM feature_tbl
+		WHERE fname = #{name}
+	</delete>
+	
+	<select id="isFeatureActive" resultType="boolean">
+		SELECT active FROM feature_tbl
+		WHERE fname = #{name}
+	</select>
+	
+	<select id="getFeatureId" resultType="long">
+		SELECT id FROM feature_tbl
+		WHERE fname = #{name}
+	</select>
+	
+	<select id="listFeatures" resultMap="featureInfoResult">
+		SELECT id, fname AS name, domain, active, class AS className  
+		FROM feature_tbl
+		<if test="domain != null">
+			WHERE domain = #{domain}
+		</if>
+		ORDER BY fname
+	</select>
+	
+	<update id="modifyFeature" parameterMap="featureInfoParam">
+		UPDATE feature_tbl SET fname = #{name}, class = #{className}, domain = #{domain}
+		WHERE fname = #{name}
+	</update>
+	
+	<select id="findByName"  resultMap="featureInfoResult">
+		SELECT id, fname AS name, domain, active, class AS className  
+		FROM feature_tbl
+		WHERE fname = #{name}
+	</select>
+	
+	<select id="listParams"  resultMap="featureParamInfoResult">
+		SELECT pname AS name, pvalue AS value
+		FROM feature_params_tbl
+		WHERE feature_id = #{id}
+		ORDER BY pname
+	</select>
+	
+	<delete id="removeFeatureParam">
+		DELETE FROM feature_params_tbl
+		WHERE feature_id = #{featureId} AND pname = #{param}
+	</delete>
+	
+</mapper>

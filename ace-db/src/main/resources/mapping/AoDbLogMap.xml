@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.quikj.ace.db.webtalk.dao.LogDao">
+
+	<resultMap type="com.quikj.ace.db.core.webtalk.vo.Log" id="logResult">
+		<result property="timestamp" column="timestamp" typeHandler="CalendarTypeHandler" />
+	</resultMap>
+	
+	<resultMap type="String" id="processResult" />
+
+	<select id="getUniqueProcessNames" resultMap="processResult">
+	    SELECT distinct(process) FROM log_tbl
+	</select>
+	
+	<select id="search" resultMap="logResult">
+	    SELECT dated AS timestamp, process, level AS severity, message
+	    FROM log_tbl
+	    WHERE DATE(dated) &gt;= #{startDate,typeHandler=CalendarTypeHandler}
+			AND DATE(dated) &lt; #{endDate,typeHandler=CalendarTypeHandler}
+			<if test="severityLevels.size() != 0">
+				AND level IN
+				<foreach collection="severityLevels" open="(" close=")"
+					index="index" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="processNames.size() != 0">
+				AND process IN
+				<foreach collection="processNames" open="(" close=")"
+					index="index" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="message != null &amp;&amp; message.length() != 0">
+			    AND message like #{message}
+			</if>					
+	</select>
+	
+	<delete id="delete">
+	    DELETE FROM log_tbl
+	    WHERE DATE(dated) &lt; #{before,typeHandler=CalendarTypeHandler}
+	</delete>
+</mapper>

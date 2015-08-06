@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<bean id="adminConfig"
+		class="com.quikj.application.communicator.admin.controller.AdminConfig">
+		<property name="menuProperties">
+			<bean class="com.quikj.application.communicator.admin.controller.MenuLinks">
+				<property name="image" value="/aceapp/icons/logo.gif" />
+				<property name="company" value="QUIK Computing, Inc." />
+				<property name="url" value="http://www.quik-computing.com" />
+				<property name="links">
+					<list>
+						<bean class="com.quikj.application.communicator.admin.controller.Link">
+							<property name="source"
+								value="http://aceoperator.sourceforge.net/site/?page_id=245" />
+							<property name="caption" value="Documentation" />
+						</bean>
+
+						<bean class="com.quikj.application.communicator.admin.controller.Link">
+							<property name="source"
+								value="http://aceoperator.sourceforge.net/site/?p=215" />
+							<property name="caption" value="License" />
+						</bean>
+					</list>
+				</property>
+			</bean>
+		</property>
+		
+		<property name="logGroup" value="1" />
+		<property name="processName" value="ACECOMM" />
+		<property name="processInstance" value="0" />
+		
+		<property name="remoteUrl" value="rmi://localhost:10999" />
+		<property name="remoteService" value="AceHTTPSRemoteAccess" />
+		<property name="remoteHost" value="#{T(java.net.InetAddress).getLocalHost().getHostName()}" />
+		
+		<property name="applications">
+		    <list>
+		        <bean class="com.quikj.application.communicator.admin.controller.ApplicationElement">
+		            <property name="name" value="webtalk" />
+		            <property name="displayName" value="Talk Application" />
+		            <property name="forwardName" value="webtalk_main_menu" />
+		        </bean>
+		    </list>
+		</property>
+	</bean>		
+</beans>
+            

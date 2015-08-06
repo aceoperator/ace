@@ -1,0 +1,53 @@
+<html>
+<header>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+<!-- Setup for mobile -->
+<meta name="HandheldFriendly" content="true" />
+<meta name="MobileOptimized" content="width" />
+<meta name="viewport" content="width=device-width; user-scalable=no; initial-scale=1.0; maximum-scale=1.0;" />	
+<meta name="apple-mobile-web-app-capable" content="yes" />
+
+<title>Ace Operator Visitor Page</title>
+
+<script src="/ace-contactcenter/ao-browser-detect.js"></script>
+<script type="text/javascript">
+	setInterval("refreshChatButton()", 30000);
+
+	function refreshChatButton() {
+		var browserType = detectBrowser();		
+		dt = new Date();
+		spice = dt.getTime();
+		img = document.getElementById("aceChatButton");
+		img.src = "/ace-contactcenter/icon?profile=default-visitor&browser=" + browserType + "&spice="
+				+ spice;
+	}
+</script> 
+
+<style>
+	body {
+		font-family: Arial Unicode MS, Arial, sans-serif;
+  		font-size: 17px;
+	}
+</style>
+
+</header>
+
+<body>
+	<table width='100%' height='100%'>
+		<tr>
+			<td align='center' valign='middle'>
+				Click on the icon to chat with an operator
+				<p>
+				<iframe id="aceChatButton" style="border:5px ridge #DDDDDD; cursor: hand;padding: 2px 2px 2px 2px;"
+					src="icon.png"
+					width="135" height="135" frameborder="0" scrolling="no"> 
+				</iframe>
+				<p>
+				<b>Note that your mobile service provider may charge you a fee for the use of this service</b>
+			</td>
+		</tr>
+	</table>
+	<script>refreshChatButton()</script>
+</body>
+</html>

@@ -1,0 +1,633 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<!DOCTYPE struts-config PUBLIC 
+"-//Apache Software Foundation//DTD Struts Configuration 1.1//EN" 
+"http://jakarta.apache.org/struts/dtds/struts-config_1_1.dtd">
+
+<struts-config>
+
+	<!-- ========== Form Bean Definitions =================================== -->
+	<form-beans>
+
+		<!-- Change password form bean -->
+		<form-bean name="changePasswordForm"
+			type="com.quikj.application.communicator.admin.controller.ChangePasswordForm" />
+
+		<!-- Accounts management form bean -->
+		<form-bean name="accountManagementForm"
+			type="com.quikj.application.communicator.admin.controller.AccountManagementForm" />
+
+		<!-- Log management form beans -->
+		<form-bean name="logSearchForm"
+			type="com.quikj.application.communicator.admin.controller.LogSearchForm" />
+		<form-bean name="logDeleteForm"
+			type="com.quikj.application.communicator.admin.controller.LogDeleteForm" />
+
+		<!-- application data -->
+		<form-bean name="RegUserReportForm"
+			type="com.quikj.application.communicator.applications.webtalk.controller.UserReportForm" />
+			
+		<form-bean name="VisitorReportForm"
+			type="com.quikj.application.communicator.applications.webtalk.controller.UserReportForm" />
+			
+		<form-bean name="TrafficReportForm"
+			type="com.quikj.application.communicator.applications.webtalk.controller.TrafficReportForm" />
+			
+		<form-bean name="groupManagementForm"
+			type="com.quikj.application.communicator.applications.webtalk.controller.GroupManagementForm" />
+			
+		<form-bean name="featureManagementForm"
+			type="com.quikj.application.communicator.applications.webtalk.controller.FeatureManagementForm" />
+			
+		<form-bean name="featureOperatorManagementForm"
+			type="com.quikj.application.communicator.applications.webtalk.controller.FeatureOperatorManagementForm" />
+			
+		<form-bean name="userManagementForm"
+			type="com.quikj.application.communicator.applications.webtalk.controller.UserManagementForm" />
+			
+		<form-bean name="userSearchForm"
+			type="com.quikj.application.communicator.applications.webtalk.controller.UserSearchForm" />
+			
+		<form-bean name="cannedMessageManagementForm"
+			type="com.quikj.application.communicator.applications.webtalk.controller.CannedMessageManagementForm" />
+			
+		<form-bean name="cannedMessageSearchForm"
+			type="com.quikj.application.communicator.applications.webtalk.controller.CannedMessageSearchForm" />
+			
+		<form-bean name="groupWizardIntro" type="org.apache.struts.action.DynaActionForm">
+			<form-property name="submit" type="java.lang.String" />
+		</form-bean>
+		
+		<form-bean name="groupWizardCancel" type="org.apache.struts.action.DynaActionForm">
+			<form-property name="submit" type="java.lang.String" />
+		</form-bean>
+		
+		<form-bean name="groupWizardFinished" type="org.apache.struts.action.DynaActionForm">
+			<form-property name="submit" type="java.lang.String" />
+		</form-bean>
+		
+		<form-bean name="groupWizardViewLog" type="org.apache.struts.action.DynaActionForm">
+			<form-property name="submit" type="java.lang.String" />
+		</form-bean>
+		
+		<form-bean name="groupWizardCustomerInfo"
+			type="org.apache.struts.validator.DynaValidatorForm">
+			<form-property name="companyName" type="java.lang.String" />
+			<form-property name="companyNickname" type="java.lang.String" />
+			<form-property name="companyUrl" type="java.lang.String"
+				initial="http://" />
+			<form-property name="submit" type="java.lang.String" />
+		</form-bean>
+		
+		<form-bean name="groupWizardGroupInfo"
+			type="org.apache.struts.validator.DynaValidatorForm">
+			<form-property name="groupName" type="java.lang.String" />
+			<form-property name="maxOperators" type="java.lang.Integer"
+				initial="5" />
+			<form-property name="maxSessions" type="java.lang.Integer"
+				initial="1" />
+			<form-property name="messageboxEmail" type="java.lang.String" />
+			<form-property name="submit" type="java.lang.String" />
+		</form-bean>
+		
+		<form-bean name="groupWizardCannedMessageInfo"
+			type="com.quikj.application.communicator.applications.webtalk.controller.GroupWizardCannedMessageForm" />
+
+		<form-bean name="dropCustomerIntro" type="org.apache.struts.action.DynaActionForm">
+			<form-property name="submit" type="java.lang.String" />
+		</form-bean>
+		
+		<form-bean name="dropCustomerSelect"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DropCustomerSelectForm" />
+			
+		<form-bean name="dropCustomerConfirm" type="org.apache.struts.action.DynaActionForm">
+			<form-property name="submit" type="java.lang.String" />
+			<form-property name="domain" type="java.lang.String" />
+		</form-bean>
+		
+		<form-bean name="dropCustomerFinished" type="org.apache.struts.action.DynaActionForm">
+			<form-property name="submit" type="java.lang.String" />
+		</form-bean>
+		
+		<form-bean name="blacklistManagementForm"
+			 type="com.quikj.application.communicator.applications.webtalk.controller.BlacklistManagementForm" />
+	</form-beans>
+
+
+	<!-- ========== Global Forward Definitions ============================== -->
+	<global-forwards>
+		<forward name="logoff" path="/logoff.do" />
+		<forward name="main_menu" path="/main_menu.do" />
+
+		<forward name="display_change_password" path="/display_change_password.do" />
+		<forward name="change_password" path="/change_password.do" />
+
+		<forward name="display_account_management" path="/display_account_management.do" />
+		<forward name="account_management" path="/account_management.do" />
+
+		<forward name="display_log_search" path="/display_log_search.do" />
+		<forward name="log_search" path="/log_search.do" />
+
+		<forward name="display_log_delete" path="/display_log_delete.do" />
+		<forward name="log_delete" path="/log_delete.do" />
+
+		<forward name="webtalk_main_menu" path="/display_webtalk_menu.do" />
+
+		<forward name="visitor_report_input" path="/visitor_report_input.do" />
+		<forward name="visitor_report" path="/visitor_report.do" />
+
+		<forward name="reg_report_input" path="/reg_report_input.do" />
+		<forward name="reg_user_report" path="/reg_user_report.do" />
+
+		<forward name="traffic_report_input" path="/traffic_report_input.do" />
+
+		<forward name="display_group_management" path="/display_group_management.do" />
+		<forward name="group_management" path="/group_management.do" />
+
+		<forward name="list_groups" path="/list_groups.do" />
+
+		<forward name="display_feature_management" path="/display_feature_management.do" />
+		<forward name="feature_management" path="/feature_management.do" />
+
+		<forward name="list_features" path="/list_features.do" />
+
+		<forward name="display_feature_operator_management" path="/display_feature_operator_management.do" />
+		<forward name="feature_operator_management" path="/feature_operator_management.do" />
+
+		<forward name="display_user_management" path="/display_user_management.do" />
+		<forward name="user_management" path="/user_management.do" />
+
+		<forward name="display_user_search" path="/display_user_search.do" />
+		<forward name="user_search" path="/user_search.do" />
+
+		<forward name="display_canned_message_management" path="/display_canned_message_management.do" />
+		<forward name="canned_message_management" path="/canned_message_management.do" />
+
+		<forward name="display_canned_message_search" path="/display_canned_message_search.do" />
+		<forward name="canned_message_search" path="/canned_message_search.do" />
+
+		<forward name="display_group_wizard_intro" path="/display_group_wizard_intro.do" />
+		<forward name="view_group_wizard_log" path="/view_group_wizard_log.do" />
+
+		<forward name="display_drop_customer_intro" path="/display_drop_customer_intro.do" />
+		
+		<forward name="list_blacklist" path="/list_blacklist.do" />
+		
+		<forward name="blacklist_management" path="/blacklist_management.do" />
+
+	</global-forwards>
+
+
+	<!-- ========== Action Mapping Definitions ============================== -->
+	<action-mappings>
+		<!-- Show main menu -->
+		<action path="/main_menu"
+			type="com.quikj.application.communicator.admin.controller.DisplayMainMenuAction"
+			input="/aceapp/jsp/main_menu.jsp">
+		</action>
+
+		<!-- Logoff -->
+		<action path="/logoff"
+			type="com.quikj.application.communicator.admin.controller.LogoffAction">
+		</action>
+
+		<!-- change password -->
+		<action path="/display_change_password"
+			type="com.quikj.application.communicator.admin.controller.DisplayChangePasswordAction"
+			name="changePasswordForm" scope="request" input="/aceapp/jsp/change_password.jsp"
+			validate="false">
+		</action>
+
+		<action path="/change_password"
+			type="com.quikj.application.communicator.admin.controller.ChangePasswordAction"
+			name="changePasswordForm" scope="request" input="/aceapp/jsp/change_password.jsp">
+		</action>
+
+		<!-- account management -->
+		<action path="/display_account_management"
+			type="com.quikj.application.communicator.admin.controller.DisplayAccountManagementAction"
+			name="accountManagementForm" scope="request"
+			input="/aceapp/jsp/account_management.jsp" validate="false">
+		</action>
+
+		<action path="/account_management"
+			type="com.quikj.application.communicator.admin.controller.AccountManagementAction"
+			name="accountManagementForm" scope="request"
+			input="/aceapp/jsp/account_management.jsp">
+		</action>
+
+		<!-- log management -->
+		<action path="/display_log_search"
+			type="com.quikj.application.communicator.admin.controller.DisplayLogSearchAction"
+			name="logSearchForm" scope="request" input="/aceapp/jsp/log_search.jsp"
+			validate="false">
+		</action>
+
+		<action path="/log_search"
+			type="com.quikj.application.communicator.admin.controller.LogSearchAction"
+			name="logSearchForm" scope="request" input="/aceapp/jsp/log_search.jsp">
+			<forward name="log_search_result" path="/aceapp/jsp/log_search_result.jsp" />
+		</action>
+
+		<action path="/display_log_delete"
+			type="com.quikj.application.communicator.admin.controller.DisplayLogDeleteAction"
+			name="logDeleteForm" scope="request" input="/aceapp/jsp/log_delete.jsp"
+			validate="false">
+		</action>
+
+		<action path="/log_delete"
+			type="com.quikj.application.communicator.admin.controller.LogDeleteAction"
+			name="logDeleteForm" scope="request" input="/aceapp/jsp/log_delete.jsp">
+		</action>
+
+		<!-- application menu -->
+		<action path="/display_webtalk_menu"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DisplayWebTalkMenuAction"
+			input="/aceapp/jsp/applications/webtalk/webtalk_main_menu.jsp">
+		</action>
+
+		<!-- Regitsered User Report Action -->
+
+
+		<action path="/reg_report_input"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DisplayRegReportInputAction"
+			name="RegUserReportForm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/reg_user_report.jsp"
+			validate="false">
+		</action>
+
+		<action path="/reg_user_report"
+			type="com.quikj.application.communicator.applications.webtalk.controller.RegUserReportAction"
+			name="RegUserReportForm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/reg_user_report.jsp">
+			<forward name="show_report"
+				path="/aceapp/jsp/applications/webtalk/reg_user_report_display.jsp" />
+		</action>
+
+		<!-- Visitor Report Action -->
+
+
+		<action path="/visitor_report_input"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DisplayVisitorReportInputAction"
+			name="VisitorReportForm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/visitor_report.jsp" validate="false">
+		</action>
+
+		<action path="/visitor_report"
+			type="com.quikj.application.communicator.applications.webtalk.controller.VisitorReportAction"
+			name="VisitorReportForm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/visitor_report.jsp">
+			<forward name="show_visitor_report"
+				path="/aceapp/jsp/applications/webtalk/visitor_report_display.jsp" />
+		</action>
+
+		<!-- Traffic Report Action -->
+		<action path="/traffic_report_input"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DisplayTrafficReportInputAction"
+			name="TrafficReportForm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/traffic_report.jsp" validate="false">
+		</action>
+
+		<action path="/traffic_report"
+			type="com.quikj.application.communicator.applications.webtalk.controller.TrafficReportAction"
+			name="TrafficReportForm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/traffic_report.jsp">
+			<forward name="show_traffic_report" path="/aceapp/jsp/applications/webtalk/traffic_report_display.jsp" />
+		</action>
+		
+		<!-- webtalk application group management -->
+		<action path="/display_group_management"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DisplayGroupManagementAction"
+			name="groupManagementForm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/group_management.jsp"
+			validate="false">
+		</action>
+
+		<action path="/group_management"
+			type="com.quikj.application.communicator.applications.webtalk.controller.GroupManagementAction"
+			name="groupManagementForm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/group_management.jsp">
+		</action>
+
+		<!-- webtalk application list groups -->
+		<action path="/list_groups"
+			type="com.quikj.application.communicator.applications.webtalk.controller.ListGroupsAction"
+			scope="request" input="/aceapp/jsp/applications/webtalk/list_groups.jsp">
+		</action>
+
+		<!-- webtalk application generic feature management -->
+		<action path="/display_feature_management"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DisplayFeatureManagementAction"
+			name="featureManagementForm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/feature_management.jsp"
+			validate="false">
+		</action>
+
+		<action path="/feature_management"
+			type="com.quikj.application.communicator.applications.webtalk.controller.FeatureManagementAction"
+			name="featureManagementForm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/feature_management.jsp">
+		</action>
+
+		<!-- webtalk application list features -->
+		<action path="/list_features"
+			type="com.quikj.application.communicator.applications.webtalk.controller.ListFeaturesAction"
+			scope="request" input="/aceapp/jsp/applications/webtalk/list_features.jsp">
+		</action>
+
+		<!-- webtalk application operator feature management -->
+		<action path="/display_feature_operator_management"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DisplayFeatureOperatorManagementAction"
+			name="featureOperatorManagementForm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/feature_operator_management.jsp"
+			validate="false">
+		</action>
+
+		<action path="/feature_operator_management"
+			type="com.quikj.application.communicator.applications.webtalk.controller.FeatureOperatorManagementAction"
+			name="featureOperatorManagementForm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/feature_operator_management.jsp">
+		</action>
+
+		<!-- webtalk application user management -->
+		<action path="/display_user_management"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DisplayUserManagementAction"
+			name="userManagementForm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/user_management.jsp"
+			validate="false">
+		</action>
+
+		<action path="/user_management"
+			type="com.quikj.application.communicator.applications.webtalk.controller.UserManagementAction"
+			name="userManagementForm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/user_management.jsp">
+		</action>
+
+		<!-- webtalk application user search -->
+		<action path="/display_user_search"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DisplayUserSearchAction"
+			name="userSearchForm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/user_search.jsp" validate="false">
+		</action>
+
+		<action path="/user_search"
+			type="com.quikj.application.communicator.applications.webtalk.controller.UserSearchAction"
+			name="userSearchForm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/user_search.jsp">
+			<forward name="user_search_result"
+				path="/aceapp/jsp/applications/webtalk/user_search_result.jsp" />
+		</action>
+
+		<!-- webtalk application canned message management -->
+		<action path="/display_canned_message_management"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DisplayCannedMessageManagementAction"
+			name="cannedMessageManagementForm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/canned_message_management.jsp"
+			validate="false">
+		</action>
+
+		<action path="/canned_message_management"
+			type="com.quikj.application.communicator.applications.webtalk.controller.CannedMessageManagementAction"
+			name="cannedMessageManagementForm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/canned_message_management.jsp">
+		</action>
+
+		<!-- webtalk application canned message search -->
+		<action path="/display_canned_message_search"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DisplayCannedMessageSearchAction"
+			name="cannedMessageSearchForm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/canned_message_search.jsp"
+			validate="false">
+		</action>
+
+		<action path="/canned_message_search"
+			type="com.quikj.application.communicator.applications.webtalk.controller.CannedMessageSearchAction"
+			name="cannedMessageSearchForm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/canned_message_search.jsp">
+			<forward name="canned_message_search_result"
+				path="/aceapp/jsp/applications/webtalk/canned_message_search_result.jsp" />
+		</action>
+
+		<action path="/list_blacklist"
+			type="com.quikj.application.communicator.applications.webtalk.controller.ListBlackListAction"
+			scope="request" input="/aceapp/jsp/applications/webtalk/list_blacklist.jsp">
+		</action>
+		
+		<action path="/blacklist_management"
+			type="com.quikj.application.communicator.applications.webtalk.controller.BlacklistManagementAction"
+			name="blacklistManagementForm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/blacklist_management.jsp">
+		</action>
+
+		<!-- webtalk application group wizard -->
+		<action path="/display_group_wizard_intro"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DisplayGroupWizardIntroAction"
+			name="groupWizardIntro" scope="request" validate="false"
+			input="/aceapp/jsp/applications/webtalk/group_wizard/group_wizard_intro.jsp">
+		</action>
+
+		<action path="/group_wizard_intro"
+			type="com.quikj.application.communicator.applications.webtalk.controller.GroupWizardIntroAction"
+			name="groupWizardIntro" scope="request"
+			input="/aceapp/jsp/applications/webtalk/group_wizard/group_wizard_intro.jsp">
+			<forward name="Next" path="/display_group_wizard_customer_info.do" />
+			<forward name="Cancel" path="/display_group_wizard_cancel.do" />
+		</action>
+
+		<action path="/display_group_wizard_cancel"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DisplayGroupWizardCancelAction"
+			name="groupWizardCancel" scope="request" validate="false"
+			input="/aceapp/jsp/applications/webtalk/group_wizard/group_wizard_cancel.jsp">
+			<forward name="Exit" path="/display_webtalk_menu.do" />
+		</action>
+
+		<action path="/group_wizard_cancel"
+			type="com.quikj.application.communicator.applications.webtalk.controller.GroupWizardCancelAction"
+			name="groupWizardCancel" scope="request"
+			input="/aceapp/jsp/applications/webtalk/group_wizard/group_wizard_cancel.jsp">
+			<forward name="Exit" path="/display_webtalk_menu.do" />
+		</action>
+
+		<action path="/display_group_wizard_customer_info"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DisplayGroupWizardCustomerInfoAction"
+			name="groupWizardCustomerInfo" scope="request" validate="false"
+			input="/aceapp/jsp/applications/webtalk/group_wizard/group_wizard_customer_info.jsp">
+		</action>
+
+		<action path="/group_wizard_customer_info"
+			type="com.quikj.application.communicator.applications.webtalk.controller.GroupWizardCustomerInfoAction"
+			name="groupWizardCustomerInfo" scope="request"
+			input="/aceapp/jsp/applications/webtalk/group_wizard/group_wizard_customer_info.jsp">
+			<forward name="Next" path="/display_group_wizard_group_add.do" />
+			<forward name="Cancel Wizard" path="/display_group_wizard_cancel.do" />
+		</action>
+
+		<action path="/view_group_wizard_log"
+			type="com.quikj.application.communicator.applications.webtalk.controller.GroupWizardViewLogAction"
+			name="groupWizardViewLog" scope="request"
+			input="/aceapp/jsp/applications/webtalk/group_wizard/group_wizard_view_log.jsp">
+		</action>
+
+		<action path="/display_group_wizard_group_add"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DisplayGroupWizardGroupAddAction"
+			name="groupWizardGroupInfo" scope="request" validate="false"
+			input="/aceapp/jsp/applications/webtalk/group_wizard/group_wizard_group_add.jsp">
+		</action>
+
+		<action path="/group_wizard_group_add"
+			type="com.quikj.application.communicator.applications.webtalk.controller.GroupWizardGroupAddAction"
+			name="groupWizardGroupInfo" scope="request"
+			input="/aceapp/jsp/applications/webtalk/group_wizard/group_wizard_group_add.jsp">
+			<forward name="Add Group" path="/display_group_wizard_group_add.do" />
+			<forward name="Finished, move on" path="/display_group_wizard_user_add.do" />
+			<forward name="Cancel Wizard" path="/display_group_wizard_cancel.do" />
+		</action>
+
+		<action path="/display_group_wizard_user_add"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DisplayGroupWizardUserAddAction"
+			name="userManagementForm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/group_wizard/group_wizard_user_add.jsp"
+			validate="false">
+		</action>
+
+		<action path="/group_wizard_user_add"
+			type="com.quikj.application.communicator.applications.webtalk.controller.GroupWizardUserAddAction"
+			name="userManagementForm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/group_wizard/group_wizard_user_add.jsp">
+			<forward name="Create Operator" path="/display_group_wizard_user_add.do" />
+			<forward name="Finished, move on" path="/display_group_wizard_cannedmessage_add.do" />
+			<forward name="Cancel Wizard" path="/display_group_wizard_cancel.do" />
+		</action>
+
+		<action path="/display_group_wizard_cannedmessage_add"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DisplayGroupWizardCannedMessageAddAction"
+			name="groupWizardCannedMessageInfo" scope="request" validate="false"
+			input="/aceapp/jsp/applications/webtalk/group_wizard/group_wizard_cannedmessage_add.jsp">
+		</action>
+
+		<action path="/group_wizard_cannedmessage_add"
+			type="com.quikj.application.communicator.applications.webtalk.controller.GroupWizardCannedMessageAddAction"
+			name="groupWizardCannedMessageInfo" scope="request"
+			input="/aceapp/jsp/applications/webtalk/group_wizard/group_wizard_cannedmessage_add.jsp">
+			<forward name="Add Canned Message" path="/display_group_wizard_cannedmessage_add.do" />
+			<forward name="Finished, move on" path="/display_group_wizard_finished.do" />
+			<forward name="Cancel Wizard" path="/display_group_wizard_cancel.do" />
+		</action>
+
+		<action path="/display_group_wizard_finished"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DisplayGroupWizardFinishedAction"
+			name="groupWizardFinished" scope="request" validate="false"
+			input="/aceapp/jsp/applications/webtalk/group_wizard/group_wizard_finished.jsp">
+			<forward name="Exit" path="/display_webtalk_menu.do" />
+		</action>
+
+		<action path="/group_wizard_finished"
+			type="com.quikj.application.communicator.applications.webtalk.controller.GroupWizardFinishedAction"
+			name="groupWizardFinished" scope="request"
+			input="/aceapp/jsp/applications/webtalk/group_wizard/group_wizard_finished.jsp">
+			<forward name="Exit" path="/display_webtalk_menu.do" />
+		</action>
+
+
+		<!-- webtalk application drop customer wizard -->
+
+		<action path="/display_drop_customer_intro"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DisplayDropCustomerIntroAction"
+			name="dropCustomerIntro" scope="request" validate="false"
+			input="/aceapp/jsp/applications/webtalk/drop_customer/drop_customer_intro.jsp">
+		</action>
+
+		<action path="/drop_customer_intro"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DropCustomerIntroAction"
+			name="dropCustomerIntro" scope="request"
+			input="/aceapp/jsp/applications/webtalk/drop_customer/drop_customer_intro.jsp">
+			<forward name="Next" path="/display_drop_customer_select.do" />
+			<forward name="Cancel" path="/display_webtalk_menu.do" />
+		</action>
+
+		<action path="/display_drop_customer_select"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DisplayDropCustomerSelectAction"
+			name="dropCustomerSelect" scope="request" validate="false"
+			input="/aceapp/jsp/applications/webtalk/drop_customer/drop_customer_select.jsp">
+		</action>
+
+		<action path="/drop_customer_select"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DropCustomerSelectAction"
+			name="dropCustomerSelect" scope="request"
+			input="/aceapp/jsp/applications/webtalk/drop_customer/drop_customer_select.jsp">
+			<forward name="Next" path="/display_drop_customer_confirm.do" />
+			<forward name="Cancel Wizard" path="/display_webtalk_menu.do" />
+		</action>
+
+		<action path="/display_drop_customer_confirm"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DisplayDropCustomerAction"
+			name="dropCustomerConfirm" scope="request" validate="false"
+			input="/aceapp/jsp/applications/webtalk/drop_customer/drop_customer_confirm.jsp">
+		</action>
+
+		<action path="/drop_customer_confirm"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DropCustomerAction"
+			name="dropCustomerConfirm" scope="request"
+			input="/aceapp/jsp/applications/webtalk/drop_customer/drop_customer_confirm.jsp">
+			<forward name="Remove Customer Data" path="/display_drop_customer_finished.do" />
+			<forward name="Cancel Wizard" path="/display_webtalk_menu.do" />
+		</action>
+
+		<action path="/display_drop_customer_finished"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DisplayDropCustomerFinishedAction"
+			name="dropCustomerFinished" scope="request" validate="false"
+			input="/aceapp/jsp/applications/webtalk/drop_customer/drop_customer_finished.jsp">
+		</action>
+
+		<action path="/drop_customer_finished"
+			type="com.quikj.application.communicator.applications.webtalk.controller.DropCustomerFinishedAction"
+			name="dropCustomerFinished" scope="request"
+			input="/aceapp/jsp/applications/webtalk/drop_customer/drop_customer_finished.jsp">
+			<forward name="Exit" path="/display_webtalk_menu.do" />
+		</action>
+
+
+
+		<!-- The standard administrative actions available with Struts -->
+
+		<!-- These would be either omitted or protected by security -->
+
+		<!-- in a real application deployment -->
+
+		<action path="/admin/addFormBean" type="org.apache.struts.actions.AddFormBeanAction" />
+
+		<action path="/admin/addForward" type="org.apache.struts.actions.AddForwardAction" />
+
+		<action path="/admin/addMapping" type="org.apache.struts.actions.AddMappingAction" />
+
+		<action path="/admin/reload" type="org.apache.struts.actions.ReloadAction" />
+
+		<action path="/admin/removeFormBean" type="org.apache.struts.actions.RemoveFormBeanAction" />
+
+		<action path="/admin/removeForward" type="org.apache.struts.actions.RemoveForwardAction" />
+
+		<action path="/admin/removeMapping" type="org.apache.struts.actions.RemoveMappingAction" />
+
+	</action-mappings>
+	<controller processorClass="org.apache.struts.tiles.TilesRequestProcessor" />
+
+	<message-resources parameter="ApplicationResources" />
+	<message-resources key="WEB_TALK_RESOURCES"
+		parameter="webtalk_resources" />
+
+	<plug-in className="org.apache.struts.tiles.TilesPlugin">
+		<set-property property="definitions-config" value="/WEB-INF/tiles-defs.xml" />
+		<set-property property="moduleAware" value="true" />
+		<set-property property="definitions-parser-validate"
+			value="true" />
+	</plug-in>
+	<plug-in className="org.apache.struts.validator.ValidatorPlugIn">
+		<set-property property="pathnames"
+			value="/WEB-INF/validator-rules.xml,/WEB-INF/validation.xml" />
+	</plug-in>
+
+	<plug-in
+		className="com.quikj.application.communicator.admin.controller.AdminApplication" />
+
+</struts-config>
+

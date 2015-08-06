@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.quikj.ace.db.webtalk.dao.CannedMessageDao">
+
+	<resultMap type="com.quikj.ace.db.core.webtalk.vo.CannedMessage"
+		id="cannedMessageResult">
+		<result property="message" typeHandler="BlobTypeHandler"
+			jdbcType="BLOB" />
+	</resultMap>
+
+	<insert id="create" statementType="PREPARED">
+		INSERT INTO canned_message_tbl
+		(grp, description, message)
+		VALUES (#{groupName}, #{description},
+		#{message,typeHandler=BlobTypeHandler,jdbcType=BLOB})
+	</insert>
+
+	<delete id="delete" statementType="PREPARED">
+		DELETE FROM canned_message_tbl
+		WHERE id = #{id}
+	</delete>
+
+	<update id="update" statementType="PREPARED">
+		UPDATE canned_message_tbl SET
+		grp = #{groupName},
+		description = #{description},
+		message =
+		#{message,typeHandler=BlobTypeHandler,jdbcType=BLOB}
+		WHERE id = #{id}
+	</update>
+
+	<select id="getById" resultMap="cannedMessageResult">
+		SELECT id, grp AS groupName,
+		description, message
+		FROM canned_message_tbl
+		WHERE id = #{id}
+	</select>
+
+	<select id="get" resultMap="cannedMessageResult">
+		SELECT id, grp AS groupName,
+		description, message
+		FROM canned_message_tbl
+		WHERE (grp = #{groupName}
+		OR grp IS NULL)
+		AND description = #{description}
+	</select>
+
+	<select id="search" resultMap="cannedMessageResult">
+		SELECT id, grp AS groupName,
+		description
+		FROM canned_message_tbl
+		<trim prefix="WHERE" prefixOverrides="AND ">
+			<if test="id > 0">
+				id = #{id}
+			</if>
+			
+			<if test="groupName != null &amp;&amp; groupName.length() > 0">
+					AND grp LIKE #{groupName}
+			</if>			
+
+			<if test="description != null &amp;&amp; description.length() > 0">
+				AND description LIKE #{description}
+			</if>
+
+			<if test="message != null &amp;&amp; message.length() > 0">
+				AND message LIKE #{message}
+			</if>
+		</trim>
+	</select>
+
+</mapper>

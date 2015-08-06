@@ -1,0 +1,164 @@
+
+In the steps below, replace "default" with the actual group name or profile.
+
+Initial mobile configuration uses the term "trial". Once the customer has verified the behavior, "trial" can be replaced with "mobile".
+
+______________________________________________________________________
+
+To configure operators for using tablet
+
+1. In .ace/profiles
+
+a) copy default-operator.properties to default-operator-tablet.properties
+b) in the tablet properties, add this line: smallSpace=true
+c) also add this line: fastPollTimer=30000
+
+
+2. In webapps/ace-custom/groups/default, create a tablet version of operator.html
+	by copying operator.html to operator_trial.html, and to that:
+
+a) add the following lines within the <header> element:
+
+<!-- Setup for mobile -->
+<meta name="HandheldFriendly" content="true" />
+<meta name="MobileOptimized" content="width" />
+<meta name="viewport" content="width=device-width; user-scalable=no; initial-scale=1.0; maximum-scale=1.0;" />	
+<meta name="apple-mobile-web-app-capable" content="yes" />
+
+b) remove the onclick window.open call and set the href to chat_trial.html?profile=default-operator-tablet
+    (NOTE profile change)
+	
+c) create a tablet/mobile version of chat.html
+	copy chat.html to chat_trial.html
+	
+	i) add the following lines into the header section of chat_trial.html: 
+	
+<meta name="ao.browser" content="auto">
+<link rel="apple-touch-icon" href="icon.png"/>
+
+<!-- Setup for mobile -->
+<meta name="HandheldFriendly" content="true" />
+<meta name="MobileOptimized" content="width" />
+<meta name="viewport" content="width=device-width; user-scalable=no; initial-scale=1.0; maximum-scale=1.0;" />	
+<meta name="apple-mobile-web-app-capable" content="yes" />
+
+	ii) replace the contents of the <body> element of chat_trial.html with this:
+	<div id="aceoperator"></div>
+
+
+	iii) Next, copy icon.png from ace-custom/groups/default to the customer group folder
+	
+_______________________________________________________________________
+	
+	
+To configure visitors to use tablet or mobile
+	
+	
+1. In .ace/profiles
+
+a) copy default-visitor.properties to default-visitor-mobile.properties
+	
+		theme=chrome-large
+		smallSpace=true
+		fastPollTimer=30000
+		comment out these properties: operatorAvailableOnClickUrl and operatorBusyOnClickUrl
+		add these properties:
+			operatorAvailableHrefUrl and operatorBusyHrefUrl 
+			they will have the URL values from operatorAvailableOnClickUrl, operatorBusyOnClickUrl - note:
+			without the window.open/javascript and appending "_trial" to the chat.html or custom_form.html reference
+			(Ie, change chat.html, if present, to chat_trial.html and change custom_form.html, if present, to custom_form_trial.html)
+			
+		That is, before if you had this:
+			operatorAvailableOnClickUrl=window.open('/ace-custom/groups/default/custom_form.html?profile=${profile}','', 'scrollbars=0,menubar=0,height=650,width=600,resizable=1,toolbar=0,location=0,status=0'); return false;
+		Now you wll have this:
+			operatorAvailableHrefUrl=/ace-custom/groups/default/custom_form_trial.html?profile=${profile}
+
+b) copy default-visitor-mobile.properties to default-visitor-tablet.properties
+   
+        theme=chrome
+
+2. In webapps/ace-custom/groups/default
+
+a) add chat_trial.html as in 2.c above for operator, if not already done
+
+b) copy visitor.html to visitor_trial.html and make the following changes. Or, copy default/visitor_mobile.html, rename to visitor_trial.html and replace profile and text.
+
+	i) make it handheld friendly (2.a above in operator section)
+	
+	ii) update it to pass browsertype to icon servlet:
+	
+	- add above refreshChatButton() javascript:  <script src="/ace-contactcenter/ao-browser-detect.js"></script>
+	
+	- update the javascript refreshChatButton() function for browser detection (preserving profile of the customer):
+		function refreshChatButton() {
+		var browserType = detectBrowser();		
+		dt = new Date();
+		spice = dt.getTime();
+		img = document.getElementById("aceChatButton");
+		img.src = "/ace-contactcenter/icon?profile=default-visitor&browser=" + browserType + "&spice="
+				+ spice;
+	}
+	
+	- in the body, for iframe source, use:  src="icon.png"
+	
+	- under the body table element, add this: <script>refreshChatButton()</script>
+	
+	iii) under the iframe, add this: <b>Note that your mobile service provider may charge you a fee for the use of this service</b>
+	
+	iv) within the <header> element, add this:
+	<style>
+	body {
+		font-family: Arial Unicode MS, Arial, sans-serif;
+  		font-size: 17px;
+	}
+	</style>
+
+c) make busy.html, if used, handheld friendly (2.a above in operator section)
+
+d) For custom_form.html, if used: 
+    - copy custom_form.html to custom_form_trial.html; 
+    - make it handheld friendly (2.a above in operator section)
+    
+    Continue with one of the two alternatives below.
+    
+    Alternative 1: For both mobile and tablet to get the same custom form (no header/footer)
+    ===============
+    
+    - remove the <div> header and footer elements (and the <p> below the header)
+    
+    - add this javascript into the header area:
+    
+    function getQueryString() {
+	var result = {}, queryString = location.search.substring(1),
+	    re = /([^&=]+)=([^&]*)/g, m;
+
+	while (m = re.exec(queryString)) {
+	  result[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
+	}
+
+	return result;
+	}
+	function setProfileFromUrl() {
+		document.getElementById('profile').value = getQueryString()["profile"];
+	}
+
+	- replace the form action and onsubmit, and the profile field definition as follows:
+	
+		<form name="visitorForm" action="/ace-custom/groups/default/chat_trial.html" method="get"
+		onsubmit="setProfileFromUrl(); return validateForm()">
+		
+		<input type="hidden" id="profile" name="profile">
+    
+    
+    Alternative 2: For tablet to get header/footer on the custom form
+    ================
+    
+    - update "visitorForm" action to go to chat_trial.html instead of chat.html
+    - copy custom_form_trial.html to custom_form_trial_tablet.html
+    - in custom_form_trial.html, remove the <div> header and footer elements (and the <p> below the header)
+    - in custom_form_trial.html, append "-mobile" to the hidden profile field value
+    - in custom_form_trial_tablet.html, append "-tablet" to the hidden profile field value
+    
+
+
+

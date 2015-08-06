@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module rename-to='ace_web'>
+	<!-- Inherit the core Web Toolkit stuff. -->
+	<inherits name='com.google.gwt.user.User' />
+	<inherits name='com.quikj.ace.messages.AceMessages' />
+	<inherits name="com.google.gwt.logging.Logging" />
+	<inherits name="com.google.gwt.i18n.I18N" />
+	<inherits name="com.google.gwt.http.HTTP" />
+	<inherits name="com.google.gwt.resources.Resources" />
+
+	<!-- <inherits name='com.google.gwt.user.theme.standard.Standard' /> -->
+	<!-- <inherits name='com.google.gwt.user.theme.chrome.Chrome' /> -->
+	<!-- <inherits name='com.google.gwt.user.theme.dark.Dark' /> -->
+	<inherits name='com.google.gwt.user.theme.clean.Clean' />
+
+	<!-- <set-configuration-property name="CssResource.style" value="pretty" 
+		/> -->
+
+	<!-- Specify the app entry point class. -->
+	<entry-point class='com.quikj.ace.web.client.Ace_web' />
+
+	<!-- Specify the paths for translatable code -->
+	<source path='client' />
+	<source path='shared' />
+
+	<!-- Specify languages supported (other than the default) -->
+	<extend-property name="locale" values="hr_HR,nl_BE" />
+	<!-- values = "{comma-separated-language-codes}" IE: values="fr,es" -->
+
+	<set-property name="gwt.logging.logLevel" value="WARNING" />
+	<set-property name="gwt.logging.enabled" value="TRUE" />
+	<set-property name="gwt.logging.consoleHandler" value="ENABLED" />
+	<set-property name="gwt.logging.popupHandler" value="DISABLED" />
+	<set-property name="gwt.logging.simpleRemoteHandler"
+		value="ENABLED" />
+
+	<define-property name="ao.browser" values="desktop, tablet, mobile" />
+
+	<property-provider name="ao.browser">
+		<![CDATA[
+		{
+		   var browser = "desktop";
+			var metaArray = document.getElementsByTagName("meta");
+    		for (var i = 0; i < metaArray.length; i++) {
+        		if (metaArray[i].getAttribute("name") == "ao.browser") {
+            		browser = metaArray[i].content;
+            		break;
+        		}
+    		}
+    		
+     		if (browser == "auto") {
+    		    var mobileBrowsers = [
+    		     	"iPhone","iPad","Android","MIDP","Opera Mobi",
+      				"Opera Mini","BlackBerry","HP iPAQ","IEMobile",
+      				"Windows Phone","HTC","LG",
+      				"MOT","Nokia","Symbian","Fennec",
+      				"Maemo","Tear","Midori","armv",
+      				"Windows CE","WindowsCE","Smartphone","240x320",
+      				"176x220","320x320","160x160","webOS",
+      				"Palm","Sagem","Samsung","SGH",
+      				"SonyEricsson","MMP","UCWEB"
+    		    	];
+    		    var userAgent = navigator.userAgent;
+    		    for (var i = 0; i < mobileBrowsers.length; i++) {
+    		    	var m = mobileBrowsers[i].toString();
+    		    	if (userAgent.indexOf(m) >= 0 
+    		    		|| userAgent.indexOf(m.toUpperCase()) >= 0
+    		    		|| userAgent.indexOf(m.toLowerCase()) >= 0) {
+    		    		var area = window.innerWidth * window.innerHeight;
+    		    		
+    		    		if (area <= 600 * 400) {
+ 	    		    		browser = "mobile";
+	    		    	} else {
+	    		    		browser = "tablet";
+	    		    	}
+    		    		break;
+    		    	} 
+    		    }   			
+    		}
+    		
+    		if (browser == "auto") {
+    			browser = "desktop";
+    		}
+    		
+    		return browser;
+		}
+		]]>
+	</property-provider>
+
+	<replace-with class="com.quikj.ace.web.client.view.desktop.DesktopChatPanel">
+		<when-type-is class="com.quikj.ace.web.client.view.ChatPanel" />
+	</replace-with>
+
+	<replace-with class="com.quikj.ace.web.client.view.mobile.MobileChatPanel">
+		<when-type-is class="com.quikj.ace.web.client.view.ChatPanel" />
+		<when-property-is name="ao.browser" value="mobile" />
+	</replace-with>
+
+	<replace-with class="com.quikj.ace.web.client.view.tablet.TabletChatPanel">
+		<when-type-is class="com.quikj.ace.web.client.view.ChatPanel" />
+		<when-property-is name="ao.browser" value="tablet" />
+	</replace-with>
+
+	<replace-with
+		class="com.quikj.ace.web.client.view.desktop.DesktopVisitorInfoPanel">
+		<when-type-is class="com.quikj.ace.web.client.view.VisitorInfoPanel" />
+	</replace-with>
+
+	<replace-with
+		class="com.quikj.ace.web.client.view.mobile.MobileVisitorInfoPanel">
+		<when-type-is class="com.quikj.ace.web.client.view.VisitorInfoPanel" />
+		<when-property-is name="ao.browser" value="mobile" />
+	</replace-with>
+
+	<replace-with
+		class="com.quikj.ace.web.client.view.desktop.DesktopUserBusyEmailPanel">
+		<when-type-is class="com.quikj.ace.web.client.view.UserBusyEmailPanel" />
+	</replace-with>
+
+	<replace-with
+		class="com.quikj.ace.web.client.view.mobile.MobileUserBusyEmailPanel">
+		<when-type-is class="com.quikj.ace.web.client.view.UserBusyEmailPanel" />
+		<when-property-is name="ao.browser" value="mobile" />
+	</replace-with>
+	
+	<replace-with class="com.quikj.ace.web.client.view.desktop.DesktopMainPanel">
+		<when-type-is class="com.quikj.ace.web.client.view.MainPanel" />
+	</replace-with>
+
+	<replace-with class="com.quikj.ace.web.client.view.tablet.TabletMainPanel">
+		<when-type-is class="com.quikj.ace.web.client.view.MainPanel" />
+		<when-property-is name="ao.browser" value="tablet" />
+	</replace-with>
+	
+	<replace-with class="com.quikj.ace.web.client.view.mobile.MobileMainPanel">
+		<when-type-is class="com.quikj.ace.web.client.view.MainPanel" />
+		<when-property-is name="ao.browser" value="mobile" />
+	</replace-with>
+
+	<replace-with class="com.quikj.ace.web.client.view.desktop.DesktopMessageBox">
+		<when-type-is class="com.quikj.ace.web.client.view.MessageBox" />
+	</replace-with>
+
+	<replace-with class="com.quikj.ace.web.client.view.mobile.MobileMessageBox">
+		<when-type-is class="com.quikj.ace.web.client.view.MessageBox" />
+		<when-property-is name="ao.browser" value="mobile" />
+	</replace-with>
+
+<!-- 	<replace-with class="com.quikj.ace.web.client.view.mobile.MobileMessageBox"> -->
+<!-- 		<when-type-is class="com.quikj.ace.web.client.view.MessageBox" /> -->
+<!-- 		<when-property-is name="ao.browser" value="tablet" /> -->
+<!-- 	</replace-with> -->
+
+</module>

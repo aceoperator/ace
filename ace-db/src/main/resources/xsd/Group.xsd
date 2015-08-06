@@ -1,0 +1,18 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://www.quikj.com/ace/db/core/webtalk/vo" targetNamespace="http://www.quikj.com/ace/db/core/webtalk/vo"
+	elementFormDefault="qualified">
+
+	<xs:element name="Group" type="Group" />
+
+	<xs:complexType name="Group">
+		<xs:sequence>
+			<xs:element name="Name" type="xs:string" />
+			<xs:element name="Domain" type="xs:string" minOccurs="0"/>
+			<xs:element name="MemberLoginNotification" type="xs:int" default="0" />
+			<xs:element name="MemberBusyNotification" type="xs:int" default="0" />
+			<xs:element name="OwnerLoginNotification" type="xs:int" default="0" />
+			<xs:element name="OwnerBusyNotification" type="xs:int" default="0" />
+		</xs:sequence>
+	</xs:complexType>
+
+</xs:schema>

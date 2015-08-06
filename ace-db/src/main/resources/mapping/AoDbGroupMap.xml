@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.quikj.ace.db.webtalk.dao.GroupDao">
+
+	<resultMap type="com.quikj.ace.db.core.webtalk.vo.Group" id="groupInfoResult" />
+
+	<parameterMap type="com.quikj.ace.db.core.webtalk.vo.Group"
+		id="groupInfoParam" />
+		
+	<resultMap type="java.lang.String" id="stringResult" />
+
+	<insert id="createGroup" statementType="PREPARED" parameterMap="groupInfoParam">
+		INSERT INTO group_tbl (groupid, domain, memberlogin_notif, memberbusy_notif, 
+			ownerlogin_notif, ownerbusy_notif) 
+			VALUES (#{name}, #{domain}, #{memberLoginNotification}, #{memberBusyNotification}, 
+			#{ownerLoginNotification}, #{ownerBusyNotification})
+	</insert>
+
+	<delete id="deleteGroup" statementType="PREPARED">
+		DELETE FROM group_tbl WHERE groupid = #{name}
+	</delete>
+	
+	<select id="listGroups" statementType="PREPARED" resultMap="groupInfoResult">
+		SELECT groupid AS name, domain, memberlogin_notif AS memberLoginNotification, 
+			memberbusy_notif AS memberBusyNotification, 
+			ownerlogin_notif AS ownerLoginNotification,
+			ownerbusy_notif AS ownerBusyNotification 
+			FROM group_tbl
+		<if test="domain != null">
+			WHERE domain = #{domain}
+		</if>
+		ORDER BY groupid
+	</select>
+
+	<select id="listDomains" statementType="PREPARED" resultMap="stringResult">
+		SELECT DISTINCT domain FROM group_tbl
+		ORDER BY domain
+	</select>
+	
+	<insert id="modifyGroup" statementType="PREPARED" parameterMap="groupInfoParam">
+		UPDATE group_tbl SET domain = #{domain}, memberlogin_notif = #{memberLoginNotification}, 
+			memberbusy_notif = #{memberBusyNotification}, 
+			ownerlogin_notif = #{ownerLoginNotification}, 
+			ownerbusy_notif =  #{ownerBusyNotification}
+			WHERE groupid = #{name}
+	</insert>
+	
+	<select id="findByName" statementType="PREPARED" resultMap="groupInfoResult">
+		SELECT groupid AS name, domain, memberlogin_notif AS memberLoginNotification, 
+			memberbusy_notif AS memberBusyNotification, 
+			ownerlogin_notif AS ownerLoginNotification, 
+			ownerbusy_notif AS ownerBusyNotification 
+			FROM group_tbl
+			WHERE groupid = #{name}
+	</select>
+</mapper>

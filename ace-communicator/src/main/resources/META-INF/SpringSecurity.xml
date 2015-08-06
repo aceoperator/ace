@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:security="http://www.springframework.org/schema/security"
+
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd">
+
+	<security:global-method-security
+		secured-annotations="enabled" jsr250-annotations="enabled" />
+
+	<security:http pattern="/aceapp/jsp/logon.jsp" security="none" />
+	
+	<security:http pattern="/aceapp/icons/*" security="none" />
+	
+	<security:http auto-config="true">
+		<security:intercept-url pattern="/**"
+			access="IS_AUTHENTICATED_FULLY" 
+			requires-channel="https"/>
+		<security:form-login login-page="/aceapp/jsp/logon.jsp" default-target-url="/main_menu.do"
+			authentication-failure-url="/aceapp/jsp/logon.jsp?error=true" always-use-default-target="true"/>
+		<security:logout logout-success-url="/aceapp/jsp/logon.jsp" />
+	</security:http>
+
+	<bean id="aceAuthenticationProvider"
+		class="com.quikj.application.communicator.framework.AceAdminAuthenticationProvider">
+		<property name="account" ref="account" />
+	</bean>
+
+	<security:authentication-manager alias="authManager">
+		<security:authentication-provider ref="aceAuthenticationProvider" />				
+	</security:authentication-manager>
+
+</beans>

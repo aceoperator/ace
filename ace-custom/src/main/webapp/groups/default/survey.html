@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=9" />
+<meta http-equiv="expires" content="0">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="pragma" content="no-cache">
+
+<!-- Setup for mobile -->
+<meta name="HandheldFriendly" content="true" />
+<meta name="MobileOptimized" content="width" />
+<meta name="viewport" content="width=device-width; user-scalable=no; initial-scale=1.0; maximum-scale=1.0;" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+
+<link type="text/css" rel="stylesheet"
+	href="/ace-contactcenter/Ace_web.css">
+
+<script type="text/javascript">
+	function refreshCaptcha() {
+		dt = new Date();
+		spice = dt.getTime();
+		img = document.getElementById("captchaImage");
+		img.src = "/ace-custom/captcha?spice=" + spice;
+	}
+
+	String.prototype.trim = function() {
+		return this.replace(/^\s+|\s+$/g, "");
+	}
+
+	function validateForm() {
+		var comment = document.forms["messageForm"]["comment"].value;
+		if (comment == null || comment.trim().length == 0) {
+			alert("Please enter your comment");
+			return false;
+		}
+
+		var captcha = document.forms["messageForm"]["captcha"].value;
+		if (captcha == null || captcha.trim().length == 0) {
+			alert("Please enter the characters you see in the picture");
+			return false;
+		}
+
+		return true;
+	}
+</script>
+
+<title>Customer Survey</title>
+</head>
+<body>
+
+	<div id=header
+		style="width: 100%; font-size: medium; padding: 2px 2px 2px 2px; background-color: white;">
+		<img src="logo.gif" align="middle">&nbsp;&nbsp;<big><b>Ace
+				Operator Contact Center</b>
+		</big>
+	</div>
+
+	<form name="messageForm" action="/ace-custom/formMailer" method="post"
+		onsubmit="return validateForm()">
+
+		<input type="hidden" name="group" value="default" /> <input
+			type="hidden" name="form" value="survey" /> Please tell us about
+		your experience <br />
+		<textarea rows="4" cols="50" name="comment"></textarea>
+		<p />
+
+		<img id="captchaImage" src="/ace-custom/captcha" /> <br /> Type the
+		characters you see in the picture above <br /> <input type="text"
+			name="captcha"
+			style="background-color: #CCCCCC; border-color: black;" />
+		&nbsp;&nbsp; <a href="#"
+			title="If you are not able to read the characters in the picture, click this link to generate another picture."
+			onclick="refreshCaptcha(); captcha.value=''">Regenerate Picture</a>
+
+		<p />
+		<input type="submit" name="submit" value="Submit" /> &nbsp;&nbsp; <input
+			type="reset" name="reset" value="Reset" />
+	</form>
+
+	<div id="footer"
+		style="width: 100%; background-color: white; border-top: 1px solid red; padding: 2px 2px 2px 2px;">
+		Powered by <a href="http://www.quik-j.com" target="_blank"> <img
+			src="/ace-contactcenter/images/poweredbyquiksmall.jpg" align="middle"
+			border="0">
+		</a>
+	</div>
+</body>
+</html>

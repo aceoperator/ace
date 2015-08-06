@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+    PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+	<settings>
+		<setting name="cacheEnabled" value="false" />
+		<setting name="useGeneratedKeys" value="true" />
+		<setting name="defaultExecutorType" value="REUSE" />
+		<setting name="localCacheScope" value="STATEMENT" /> 
+	</settings>
+
+	<typeAliases>
+		<typeAlias type="com.quikj.ace.db.core.util.UnixTimeTypeHandler"
+			alias="UnixTimeTypeHandler" />
+		<typeAlias type="com.quikj.ace.db.core.util.DateTypeHandler"
+			alias="DateTypeHandler" />
+		<typeAlias type="com.quikj.ace.db.core.util.CalendarTypeHandler"
+			alias="CalendarTypeHandler" />
+		<typeAlias type="com.quikj.ace.db.core.util.BlobTypeHandler"
+			alias="BlobTypeHandler" />
+	</typeAliases>
+
+</configuration>

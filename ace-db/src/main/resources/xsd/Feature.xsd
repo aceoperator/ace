@@ -1,0 +1,26 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://www.quikj.com/ace/db/core/webtalk/vo" targetNamespace="http://www.quikj.com/ace/db/core/webtalk/vo"
+	elementFormDefault="qualified">
+
+	<xs:element name="Feature" type="Feature" />
+
+	<xs:complexType name="Feature">
+		<xs:sequence>
+			<xs:element name="Id" type="xs:long" />
+			<xs:element name="Name" type="xs:string" />
+			<xs:element name="Active" type="xs:boolean" default="false" />
+			<xs:element name="Domain" type="xs:string" minOccurs="0" />
+			<xs:element name="ClassName" type="xs:string" />
+			<xs:element name="Param" type="FeatureParam" minOccurs="0"
+				maxOccurs="unbounded" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="FeatureParam">
+		<xs:sequence>
+			<xs:element name="Name" type="xs:string" />
+			<xs:element name="Value" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+
+</xs:schema>

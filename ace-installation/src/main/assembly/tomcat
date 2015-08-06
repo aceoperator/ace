@@ -1,0 +1,40 @@
+#!/bin/sh
+# chkconfig: - 70 36
+# description:  Tomcat server.
+
+CATALINA_HOME=/usr/java/tomcat; export CATALINA_HOME
+JAVA_HOME=/usr/java/jdk; export JAVA_HOME
+
+# Add the following properties to support truested store
+# -Djavax.net.ssl.trustStore=/home/tomcat/.keystore 
+# -Djavax.net.ssl.trustStorePassword=changeit
+JAVA_OPTS="-Xms256m -Xmx512m -XX:MaxPermSize=256m -Djava.awt.headless=true -Dfile.encoding=UTF8" -Duser.timezone=US/Eastern"; export JAVA_OPTS
+TOMCAT_OWNER=tomcat; export TOMCAT_OWNER
+
+start() {
+        echo -n "Starting Tomcat:  "
+        su $TOMCAT_OWNER -c $CATALINA_HOME/bin/startup.sh
+        sleep 2
+}
+stop() {
+        echo -n "Stopping Tomcat: "
+        su $TOMCAT_OWNER -c $CATALINA_HOME/bin/shutdown.sh
+}
+
+# See how we were called.
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  restart)
+        stop
+        start
+        ;;
+  *)
+        echo $"Usage: tomcat {start|stop|restart}"
+        exit
+esac
+

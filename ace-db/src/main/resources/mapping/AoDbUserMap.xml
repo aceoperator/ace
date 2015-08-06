@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.quikj.ace.db.webtalk.dao.UserDao">
+
+	<resultMap type="com.quikj.ace.db.core.webtalk.vo.User" id="userInfoResult" >
+		<result column="passwordUpdated" typeHandler="CalendarTypeHandler" property="passwordUpdated"/>
+	</resultMap>
+
+	<resultMap type="java.lang.String" id="groupsResult" />
+
+	<resultMap type="java.lang.String" id="userResult" />
+	
+	<resultMap type="com.quikj.ace.db.core.webtalk.vo.UserStatistics" id="userStatResult" >
+	    <result column="loginTime" typeHandler="CalendarTypeHandler" property="loginTime"/>
+	    <result column="logoutTime" typeHandler="CalendarTypeHandler" property="logoutTime"/>
+	</resultMap>
+	
+	<resultMap type="com.quikj.ace.db.core.webtalk.vo.VisitorStatistics" id="visitorStatResult" >
+	    <result column="loginTime" typeHandler="CalendarTypeHandler" property="loginTime"/>
+	</resultMap>
+	
+	<resultMap type="com.quikj.ace.db.webtalk.value.TrafficMeasurement" id="trafficMeasurementResult" >
+	    <result column="timestamp" typeHandler="CalendarTypeHandler" property="timestamp"/>
+	</resultMap>
+
+	<parameterMap type="com.quikj.ace.db.core.webtalk.vo.User"
+		id="userInfoParam" />
+
+	<parameterMap type="com.quikj.ace.db.core.webtalk.vo.SecurityQuestion"
+		id="securityQuestionParam" />
+
+	<resultMap type="com.quikj.ace.db.core.webtalk.vo.SecurityQuestion"
+		id="securityQuestionResult" />
+
+	<resultMap type="long" id="userIdResult" />
+
+	<select id="getUserId" resultMap="userIdResult">
+		SELECT id FROM user_tbl WHERE userid = #{userName}
+	</select>
+
+	<select id="authenticate" statementType="PREPARED" resultMap="userInfoResult">
+		SELECT userid AS userName, fullname as fullName, flags, change_password as changePassword
+		FROM user_tbl
+		WHERE userid = #{userName} 
+			AND password = PASSWORD(#{password})
+			AND locked = 0
+	</select>
+
+	<insert id="replace" statementType="PREPARED" parameterMap="userInfoParam">
+		REPLACE INTO user_tbl (userid, password, fullname, flags, locked, change_password, password_updated) 
+			VALUES (#{userName}, PASSWORD(#{password}), #{fullName}, #{flags}, #{locked}, #{changePassword}, NOW())
+	</insert>
+
+	<select id="getBelongsToGroups" statementType="PREPARED"
+		resultMap="groupsResult">
+		SELECT g.groupid
+		FROM user_tbl u, group_member_tbl m, group_tbl g
+		WHERE u.userid = m.userid
+			AND m.groupid = g.groupid
+			AND u.userid = #{userName}
+	</select>
+
+	<select id="getOwnsGroups" statementType="PREPARED" resultMap="groupsResult">
+		SELECT g.groupid
+		FROM user_tbl u, group_owner_tbl m, group_tbl g
+		WHERE u.userid = m.userid
+			AND m.groupid = g.groupid
+			AND u.userid = #{userName}
+	</select>
+
+	<insert id="replaceUserGroupAssociation" statementType="PREPARED">
+			REPLACE INTO group_member_tbl (userid, groupid) 
+				VALUES (#{userName}, #{groupName})
+	</insert>
+
+	<insert id="replaceGroup" statementType="PREPARED">
+			REPLACE INTO group_tbl (groupid, domain) 
+				VALUES (#{groupName}, #{domainName})
+	</insert>
+
+	<update id="changePassword" statementType="PREPARED">
+		UPDATE user_tbl u SET u.password = PASSWORD(#{newPassword}),
+		    u.change_password = 0,
+		    password_updated = NOW()
+			WHERE u.userid = #{userName}
+			AND u.password = PASSWORD(#{oldPassword})
+	</update>
+
+	<update id="changePassword2" statementType="PREPARED">
+		UPDATE user_tbl u SET u.password = PASSWORD(#{newPassword}),
+			u.change_password = 0,
+		    password_updated = NOW()
+			WHERE u.userid = #{userName}
+	</update>
+
+	<select id="groupOwner" statementType="PREPARED" resultMap="userResult">
+		SELECT userid FROM group_owner_tbl
+			WHERE groupid = #{groupName}
+	</select>
+
+	<insert id="createUser" statementType="PREPARED" parameterMap="userInfoParam">
+		INSERT INTO user_tbl (userid, password, fullname, flags, address, 
+			addnl_info, unavail_xferto, gatekeeper, avatar, locked, change_password, domain, private, password_updated) 
+			VALUES (#{userName}, PASSWORD(#{password}), #{fullName}, #{flags}, #{email}, 
+			#{additionalInfo}, #{unavailableTransferTo}, #{gatekeeper}, #{avatar}, #{locked}, #{changePassword}, #{domain},
+			#{privateInfo}, NOW())
+	</insert>
+
+	<insert id="createSecurityQuestion" statementType="PREPARED"
+		parameterMap="securityQuestionParam">
+		INSERT INTO user_security_questions_tbl (user_id, question_id, question_value, answer_value) 
+			VALUES (#{userId}, #{questionId}, #{question}, #{answer})
+	</insert>
+
+	<insert id="createGroupOwner" statementType="PREPARED">
+		INSERT INTO group_owner_tbl (userid, groupid) 
+			VALUES (#{userName}, #{group})
+	</insert>
+
+	<insert id="createGroupMember" statementType="PREPARED">
+		INSERT INTO group_member_tbl (userid, groupid) 
+			VALUES (#{userName}, #{group})
+	</insert>
+
+	<select id="getByName" statementType="PREPARED" resultMap="userInfoResult">
+		SELECT id, userid AS userName, fullname AS fullName, flags, address AS email, 
+			addnl_info AS additionalInfo, unavail_xferto AS unavailableTransferTo, gatekeeper, avatar,
+			locked, change_password AS changePassword, domain, private AS privateInfo,
+			password_updated AS passwordUpdated
+		FROM user_tbl
+		WHERE userid = #{userName}
+	</select>
+
+	<select id="getSecurityQuestions" statementType="PREPARED"
+		resultMap="securityQuestionResult">
+		SELECT question_id AS questionId, question_value AS question, answer_value AS answer 
+		FROM user_security_questions_tbl q, user_tbl u
+		WHERE q.user_id = u.id 
+			AND u.userid = #{userName}
+	</select>
+
+	<update id="modifyUser" statementType="PREPARED">
+		UPDATE user_tbl u SET fullname = #{fullName}, 
+			flags = #{flags}, 
+			address = #{email}, 
+			addnl_info = #{additionalInfo}, 
+			unavail_xferto = #{unavailableTransferTo}, 
+			gatekeeper = #{gatekeeper}, 
+			avatar = #{avatar},
+			locked = #{locked},
+			change_password = #{changePassword},
+			domain = #{domain},
+			private = #{privateInfo}
+			WHERE u.userid = #{userName}
+	</update>
+
+	<delete id="removeGroupMember" statementType="PREPARED">
+		DELETE FROM group_member_tbl
+		WHERE userid = #{userName} AND groupid = #{group}
+	</delete>
+
+	<delete id="removeGroupOwner" statementType="PREPARED">
+		DELETE FROM group_owner_tbl
+		WHERE userid = #{userName} AND groupid = #{group}
+	</delete>
+
+	<delete id="removeSecurityQuestion" statementType="PREPARED">
+		DELETE FROM user_security_questions_tbl
+		WHERE user_id = #{userId} AND question_id = #{questionId}
+	</delete>
+
+	<delete id="removeUser" statementType="PREPARED">
+		DELETE FROM user_tbl
+		WHERE userid = #{userName}
+	</delete>
+
+	<select id="listUsers" statementType="PREPARED" resultMap="userInfoResult">
+		SELECT u.userid AS userName, u.fullname AS fullName, u.addnl_info AS additionalInfo, 
+			avatar, password_updated AS passwordUpdated
+		FROM user_tbl u, group_member_tbl m
+		WHERE u.userid = m.userid
+			AND m.groupid = #{group}
+	</select>
+
+	<select id="searchUser" statementType="PREPARED" resultMap="userResult">
+		SELECT DISTINCT(u.userid)
+		FROM user_tbl u
+		LEFT OUTER JOIN
+		group_member_tbl m ON u.userid = m.userid
+		LEFT OUTER JOIN
+		group_owner_tbl o ON u.userid = o.userid
+		<trim prefix="WHERE" prefixOverrides="AND ">
+			<if test="userName != null &amp;&amp; userName.length() > 0">
+				u.userid LIKE #{userName}
+			</if>
+			<if test="fullName != null &amp;&amp; fullName.length() > 0">
+				AND u.fullname LIKE #{fullName}
+			</if>
+			<if test="email != null &amp;&amp; email.length() > 0">
+				AND u.address LIKE #{email}
+			</if>
+			<if test="additionalInfo != null &amp;&amp; additionalInfo.length() > 0">
+				AND u.addnl_info LIKE #{additionalInfo}
+			</if>
+			<if test="gatekeeper != null &amp;&amp; gatekeeper.length() > 0">
+				AND u.gatekeeper LIKE #{gatekeeper}
+			</if>
+			<if test="avatar != null &amp;&amp; avatar.length() > 0">
+				AND u.avatar LIKE #{avatar}
+			</if>
+			<if test="unavailableTransferTo != null &amp;&amp; unavailableTransferTo.length() > 0">
+				AND u.unavail_xferto LIKE #{unavailableTransferTo}
+			</if>
+			<if test="domain != null &amp;&amp; domain.length() > 0">
+				AND u.domain LIKE #{domain}
+			</if>
+			<if test="searchLocked != null">
+				AND u.locked = #{searchLocked}
+			</if>
+			<if test="searchChangePassword != null">
+				AND u.change_password = #{searchChangePassword}
+			</if>
+			<if test="memberOfGroups.size() != 0">
+				AND m.groupid IN
+				<foreach collection="memberOfGroups" open="(" close=")"
+					index="index" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="ownsGroups.size() != 0">
+				AND o.groupid IN
+				<foreach collection="ownsGroups" open="(" close=")" index="index"
+					separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+		</trim>
+		ORDER by u.userid;
+	</select>
+	
+	<select id="findMembersByGroupDomain" statementType="PREPARED" resultMap="userResult">
+		SELECT DISTINCT m.userid
+		FROM group_tbl g, group_member_tbl m
+		LEFT JOIN group_owner_tbl o ON m.userid = o.userid
+		WHERE o.userid IS NULL
+		AND g.domain = #{domainName} 
+		AND m.groupid = g.groupid
+		ORDER BY m.userid			
+	</select>
+	
+	<select id="findOwnersByGroupDomain" statementType="PREPARED" resultMap="userResult">
+		SELECT DISTINCT o.userid
+		FROM group_tbl g, group_owner_tbl o
+		WHERE g.domain = #{domainName}
+		AND o.groupid = g.groupid
+		ORDER BY o.userid			
+	</select>
+	
+	<select id="listUsersByDomain" statementType="PREPARED" resultMap="userResult">
+		SELECT userid
+		FROM user_tbl
+		WHERE domain = #{domainName}
+		ORDER BY userid
+	</select>
+	
+	<select id="getUserReport" statementType="PREPARED" resultMap="userStatResult">
+	    SELECT login.username AS userName, login.time_stamp AS loginTime, 
+		    (SELECT logout.time_stamp FROM cdr_logout_tbl logout
+		     WHERE login.loginid = logout.loginid LIMIT 1
+		    ) AS logoutTime,
+		    (SELECT COUNT(*) FROM cdr_session_setup_tbl setup
+		     WHERE setup.calling = login.loginid
+		    ) AS chatsInitiated,
+		    (SELECT COUNT(*) FROM cdr_session_setup_tbl setup, cdr_session_setup_resp_tbl setup_resp
+		     WHERE setup.session =  setup_resp.session
+		        AND setup.called = login.loginid
+		        AND setup_resp.status = 233
+		    ) AS chatsAnswered,
+		    (SELECT COUNT(*) FROM cdr_session_setup_tbl setup, cdr_session_setup_resp_tbl setup_resp
+		     WHERE setup.session =  setup_resp.session
+		        AND setup.called = login.loginid
+		        AND setup_resp.status = 431
+		    ) AS chatsNotAnswered,
+		    (SELECT COUNT(*) FROM cdr_session_setup_tbl setup, cdr_session_setup_resp_tbl setup_resp
+		     WHERE setup.session =  setup_resp.session
+		        AND setup.called = login.loginid
+		        AND setup_resp.status = 430
+		    ) AS chatsBusy
+		FROM cdr_reg_login_tbl login
+		WHERE DATE(login.time_stamp) &gt;= #{startDate,typeHandler=CalendarTypeHandler}
+			AND DATE(login.time_stamp) &lt; #{endDate,typeHandler=CalendarTypeHandler}					
+		<choose>
+		    <when test="groupByLoginDate == true">
+		        ORDER BY login.time_stamp DESC
+		    </when>
+		    <otherwise>
+		        ORDER BY login.username DESC
+		    </otherwise>
+		</choose>
+	</select>
+	
+	<select id="getVisitorReport" statementType="PREPARED" resultMap="visitorStatResult">	    
+		SELECT name AS fullName,
+			time_stamp AS loginTime,
+	    	address AS email,
+	    	addnl_info AS additionalInfo
+	    FROM cdr_unreg_login_tbl login
+	    WHERE DATE(login.time_stamp) &gt;= #{startDate,typeHandler=CalendarTypeHandler}
+			AND DATE(login.time_stamp) &lt; #{endDate,typeHandler=CalendarTypeHandler}					
+		<choose>
+		    <when test="groupByLoginDate == true">
+		        ORDER BY login.time_stamp DESC
+		    </when>
+		    <otherwise>
+		        ORDER BY login.name DESC
+		    </otherwise>
+		</choose>   
+	</select>
+	
+	<select id="getTrafficReport" statementType="PREPARED" resultMap="trafficMeasurementResult">
+		SELECT time_stamp AS timestamp,
+	    	opm_name AS param,
+	    	opm_value AS value
+	    FROM opm_operator_tbl
+	    WHERE  groupid = #{groupName}
+	    	AND DATE(time_stamp) &gt;= #{startDate,typeHandler=CalendarTypeHandler}
+			AND DATE(time_stamp) &lt; #{endDate,typeHandler=CalendarTypeHandler}
+			AND ((opm_name='users_waiting') OR (opm_name='users_talking') OR (opm_name='actv_ops'))					
+		ORDER BY time_stamp
+	</select>
+</mapper>

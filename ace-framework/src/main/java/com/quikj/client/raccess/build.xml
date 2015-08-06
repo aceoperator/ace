@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+
+<project name="Ace RMI Access" basedir="." default="all"
+	xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+	
+    <target name="setenv" unless="ace.home">
+        <property environment="env"/> 
+        <property name="ace.home" value="${env.ACE_HOME}"/>
+        <property name="global.build.properties" value="${ace.home}/src/java/build.properties"/>
+        <property file="${global.build.properties}"/>           
+    </target>
+
+    <target name="init" depends="setenv">
+        <property name="module.name" value="Ace RMI Access Client"/>
+        <property name="jar.file" value="${ace.server.lib}/AceRemoteService.jar"/>
+        <property name="src.path" value="com/quikj/client/raccess"/>
+        <echo message="Building ${module.name}"/>
+    	
+		<path id="maven-ant-tasks.classpath" path="${ace.dev.lib}/maven-ant-tasks-2.1.3.jar" />
+
+		<typedef resource="org/apache/maven/artifact/ant/antlib.xml" 
+			uri="antlib:org.apache.maven.artifact.ant" 
+			classpathref="maven-ant-tasks.classpath" />
+    </target>
+    
+    <target name="compile" depends="init" description="Compile source">
+        <javac srcdir="." destdir="${ace.src.root}" 
+        debug="${ace.debug.mode}" deprecation="true"
+        excludes="*/*">
+        </javac>
+        
+        <rmic classname="com.quikj.client.raccess.AceRMIImpl" 
+        base="${ace.src.root}"/>        
+    </target>
+
+    <target name="jar" depends="init" description="Create jar">
+        <jar jarfile="${jar.file}"
+             includes="${src.path}/*.class"
+             compress="true" 
+             basedir="${ace.src.root}"
+             manifest="manifest.mf">
+        </jar>
+        
+        <copy file="${jar.file}"
+              todir="${ace.webapp.lib}"/>        
+    </target>
+	
+	<target name="install" depends="init" description="Installs into local Maven repository">
+		<artifact:pom id="acepom" groupid="com.quikj.ace" artifactid="ace-rmi-service" 
+			version="${ace.maven.version}"
+			name="ace-rmi-service">
+		</artifact:pom>
+		
+		<artifact:writepom file="${java.io.tmpdir}/pom.xml" pomrefid="acepom" />	
+		
+		<artifact:install file="${jar.file}">
+			<artifact:pom  file="${java.io.tmpdir}/pom.xml" />
+		</artifact:install>
+	</target>	
+	
+    <target name="all" depends="init,compile,jar,install" description="Build everything.">
+        <echo message="${module.name} built."/>
+    </target>
+
+    <target name="clean" depends="init" description="Clean all build products.">
+        <delete>
+            <fileset dir=".">
+                <include name="*.class"/>
+            </fileset>
+        </delete>
+    <delete file="${jar.file}"/>
+    <delete file="${ace.webapp.lib}/AceRemoteService.jar"/>    
+    </target>
+
+</project>
