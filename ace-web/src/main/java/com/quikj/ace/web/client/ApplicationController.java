@@ -464,8 +464,9 @@ public class ApplicationController {
 		Window.addWindowClosingHandler(new Window.ClosingHandler() {
 
 			@Override
-			public void onWindowClosing(ClosingEvent event) {
+			public void onWindowClosing(ClosingEvent event) {				
 				cleanupSessionsAndCommunications("user closed the Window");
+				Window.alert("All sessions have been closed");
 			}
 		});
 	}
