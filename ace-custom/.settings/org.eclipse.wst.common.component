@@ -4,7 +4,11 @@
         <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
+<<<<<<< HEAD
         <dependent-module archiveName="ace-framework-2.1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/ace-framework/ace-framework">
+=======
+        <dependent-module archiveName="ace-framework-2.1.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/ace-framework/ace-framework">
+>>>>>>> branch 'develop' of ssh://amitchatterjee@git.code.sf.net/p/aceoperator/git
             <dependency-type>uses</dependency-type>
         </dependent-module>
         <property name="context-root" value="ace-custom"/>

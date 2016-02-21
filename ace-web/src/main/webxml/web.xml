@@ -101,7 +101,6 @@
 	</welcome-file-list>
 
 	<!-- Only allow SSL communication -->
-	<!--
 	<security-constraint>
 		<web-resource-collection>
 			<web-resource-name>Ace Operator</web-resource-name>
@@ -112,5 +111,4 @@
 			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
 		</user-data-constraint>
 	</security-constraint>
-	-->
 </web-app>
