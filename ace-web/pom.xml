@@ -1,25 +1,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.quikj.ace</groupId>
+
+	<parent>
+		<groupId>com.quikj.ace</groupId>
+		<artifactId>ace</artifactId>
+		<version>2.1.0-SNAPSHOT</version>
+	</parent>
+
 	<artifactId>ace-web</artifactId>
-	<version>2.1.0</version>
 	<packaging>war</packaging>
 	<name>ace-web</name>
 	<description>Ace web application and web services</description>
-
-	<properties>
-		<gwt.version>2.7.0</gwt.version>
-		<org.springframework.version>3.1.2.RELEASE</org.springframework.version>
-	</properties>
-
-	<repositories>
-		<repository>
-			<id>maven2-repository.dev.java.net</id>
-			<name>Java.net Maven 2 Repository</name>
-			<url>http://download.java.net/maven/2</url>
-		</repository>
-	</repositories>
 
 	<profiles>
 		<profile>
@@ -71,20 +63,31 @@
 				</plugins>
 			</build>
 		</profile>
+
+		<profile>
+			<id>production</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-war-plugin</artifactId>
+						<version>2.0.2</version>
+						<configuration>
+							<warName>ace-contactcenter</warName>
+							<webXml>src/main/webxml/web.xml</webXml>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
 	</profiles>
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
-				</configuration>
-			</plugin>
-
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
@@ -94,53 +97,9 @@
 				</configuration>
 			</plugin>
 		</plugins>
-		<pluginManagement>
-			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
-					only. It has no influence on the Maven build itself. -->
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											org.codehaus.mojo
-										</groupId>
-										<artifactId>
-											gwt-maven-plugin
-										</artifactId>
-										<versionRange>
-											[2.5.0,)
-										</versionRange>
-										<goals>
-											<goal>css</goal>
-											<goal>i18n</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 	</build>
 
 	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.8.1</version>
-			<scope>test</scope>
-		</dependency>
-
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
@@ -159,8 +118,8 @@
 			<version>${org.springframework.version}</version>
 			<scope>test</scope>
 		</dependency>
-				
-		
+
+
 		<dependency>
 			<groupId>com.google.gwt</groupId>
 			<artifactId>gwt-user</artifactId>
@@ -222,26 +181,26 @@
 		<dependency>
 			<groupId>com.quikj.ace</groupId>
 			<artifactId>ace-messaging</artifactId>
-			<version>2.1.0</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.quikj.ace</groupId>
 			<artifactId>ace-framework</artifactId>
-			<version>2.1.0</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.quikj.ace</groupId>
 			<artifactId>ace-framework</artifactId>
-			<version>2.1.0</version>
+			<version>${project.version}</version>
 			<classifier>client</classifier>
 		</dependency>
 
 		<dependency>
 			<groupId>com.quikj.ace</groupId>
 			<artifactId>ace-app</artifactId>
-			<version>2.1.0</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
@@ -260,14 +219,28 @@
 		<dependency>
 			<groupId>org.apache.tika</groupId>
 			<artifactId>tika-core</artifactId>
-			<version>1.2</version>
+			<version>1.7</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.apache.tika</groupId>
 			<artifactId>tika-parsers</artifactId>
-			<version>1.2</version>
+			<version>1.7</version>
+
+			<exclusions>
+				<exclusion>
+					<groupId>org.ow2.asm</groupId>
+					<artifactId>asm-debug-all</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
+
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm-debug-all</artifactId>
+			<version>5.0.3</version>
+		</dependency>
+
 	</dependencies>
 
 </project>

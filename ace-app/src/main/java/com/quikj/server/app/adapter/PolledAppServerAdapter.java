@@ -37,7 +37,7 @@ import com.quikj.server.framework.AceLogger;
 
 // TODO add a timer after the initial connect. The timer is canceled after the first request from the client. 
 // If the timer expires, drop the session. This will prevent malicious clients from just keeping the session
-// alive and waste resources.
+// alive and wasting resources.
 
 /**
  * @author amit
@@ -45,8 +45,8 @@ import com.quikj.server.framework.AceLogger;
  */
 public class PolledAppServerAdapter implements AppServerAdapter {
 
-	private static final long SESSION_EXPIRY_TIMER = 5 * 60 * 1000L;
-	private static final long MEASUREMENTS_TIMER = 60 * 60 * 1000L;
+	private static final long SESSION_EXPIRY_TIMER = 2 * 60 * 1000L;
+	private static final long MEASUREMENTS_TIMER = 12 * 60 * 60 * 1000L;
 
 	private static Long nextSessionId = 0L;
 	private static PolledAppServerAdapter instance = null;

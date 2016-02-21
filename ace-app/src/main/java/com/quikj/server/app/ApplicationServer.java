@@ -135,6 +135,10 @@ public class ApplicationServer implements ApplicationContextAware {
 
 		initApps();
 
+		startAdapters();
+	}
+
+	private void startAdapters() throws UnknownHostException {
 		new PolledAppServerAdapter();
 	}
 
