@@ -10,4 +10,24 @@
 
 	<artifactId>ace-social</artifactId>
 	<name>ace-social</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.twitter4j</groupId>
+			<artifactId>twitter4j-core</artifactId>
+			<version>4.0.4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.quikj.ace</groupId>
+			<artifactId>ace-db</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.quikj.ace</groupId>
+			<artifactId>ace-app</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	</dependencies>
 </project>
