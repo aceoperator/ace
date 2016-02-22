@@ -33,11 +33,11 @@ public class SocialChatService {
 
 	private Timer timer;
 
-	private Map<String, SocialChatEndpoint> groups = new HashMap<String, SocialChatEndpoint>();
+	private Map<String, ChatEndpoint> groups = new HashMap<String, ChatEndpoint>();
 
 	private FeatureBean featureBean;
 
-	private SocialChatFactory socialChatFactory;
+	private ChatProviderFactory socialChatFactory;
 
 	private long pollPeriod = 60000L;
 
@@ -45,7 +45,7 @@ public class SocialChatService {
 		this.pollPeriod = pollPeriod;
 	}
 
-	public void setSocialChatFactory(SocialChatFactory socialChatFactory) {
+	public void setSocialChatFactory(ChatProviderFactory socialChatFactory) {
 		this.socialChatFactory = socialChatFactory;
 	}
 
@@ -61,7 +61,7 @@ public class SocialChatService {
 				// TODO the update configuration every few times, not every time
 				updateGroupConfigurations();
 
-				for (Entry<String, SocialChatEndpoint> group : groups
+				for (Entry<String, ChatEndpoint> group : groups
 						.entrySet()) {
 					try {
 						List<Message> incoming = group.getValue()
@@ -130,13 +130,13 @@ public class SocialChatService {
 					} else {
 						// check for param changes and reload endpoint if
 						// necessary
-						SocialChatEndpoint endpoint = socialChatFactory
+						ChatEndpoint endpoint = socialChatFactory
 								.updateChatEndpoint(feature);
 						groups.put(feature.getName(), endpoint);
 					}
 				} else if (supportsChat) {
 					// new endpoint that just got added
-					SocialChatEndpoint endpoint = socialChatFactory
+					ChatEndpoint endpoint = socialChatFactory
 							.addChatEndpoint(feature);
 					groups.put(feature.getName(), endpoint);
 				}
