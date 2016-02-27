@@ -28,8 +28,8 @@ import com.quikj.server.app.adapter.PolledAppServerAdapter;
  * @author amit
  *
  */
-public class SocialChatService {
-	private Log logger = LogFactory.getLog(SocialChatService.class);
+public class SocialChatGatewayService {
+	private Log logger = LogFactory.getLog(SocialChatGatewayService.class);
 
 	private Timer timer;
 
