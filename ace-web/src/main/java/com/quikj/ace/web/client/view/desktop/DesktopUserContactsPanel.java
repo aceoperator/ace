@@ -25,8 +25,7 @@ import com.quikj.ace.web.client.view.UserContactsPanel;
  * @author beckie
  * 
  */
-public class DesktopUserContactsPanel extends LayoutPanel implements
-		UserContactsPanel {
+public class DesktopUserContactsPanel extends LayoutPanel implements UserContactsPanel {
 
 	private CellTable<UserContact> table;
 	private ListDataProvider<UserContact> dataProvider;
@@ -43,8 +42,7 @@ public class DesktopUserContactsPanel extends LayoutPanel implements
 		add(tableScrollPanel);
 		tableScrollPanel.setSize("100%", "100%");
 		setWidgetVerticalPosition(tableScrollPanel, Layout.Alignment.BEGIN);
-		setWidgetLeftRight(tableScrollPanel, 0, Style.Unit.PCT, 10,
-				Style.Unit.PX);
+		setWidgetLeftRight(tableScrollPanel, 0, Style.Unit.PCT, 10, Style.Unit.PX);
 
 		table = new CellTable<UserContact>(keyProvider);
 		tableScrollPanel.setWidget(table);
@@ -54,8 +52,7 @@ public class DesktopUserContactsPanel extends LayoutPanel implements
 		final DesktopUserContactCell cell = new DesktopUserContactCell(this);
 
 		// create the image column
-		Column<UserContact, String> imageColumn = new Column<UserContact, String>(
-				cell) {
+		Column<UserContact, String> imageColumn = new Column<UserContact, String>(cell) {
 			@Override
 			public String getValue(UserContact contact) {
 				return cell.renderImage(contact);
@@ -64,41 +61,44 @@ public class DesktopUserContactsPanel extends LayoutPanel implements
 		table.addColumn(imageColumn, "");
 
 		// create the name column
-		Column<UserContact, String> nameColumn = new Column<UserContact, String>(
-				cell) {
+		Column<UserContact, String> nameColumn = new Column<UserContact, String>(cell) {
 			@Override
 			public String getValue(UserContact contact) {
 				return (cell.renderName(contact));
 			}
 		};
-		table.addColumn(nameColumn, ApplicationController.getMessages()
-				.DesktopUserContactsPanel_contact());
+		table.addColumn(nameColumn, ApplicationController.getMessages().DesktopUserContactsPanel_contact());
 
 		// create the action column
-		Column<UserContact, String> actionColumn = new Column<UserContact, String>(
-				cell) {
+		Column<UserContact, String> actionColumn = new Column<UserContact, String>(cell) {
 			@Override
 			public String getValue(UserContact contact) {
 				return (cell.renderAction(contact));
 			}
 		};
-		table.addColumn(actionColumn, ApplicationController.getMessages()
-				.DesktopUserContactsPanel_action());
+		table.addColumn(actionColumn, ApplicationController.getMessages().DesktopUserContactsPanel_action());
 
-		// create the callcount column
-		Column<UserContact, String> callcountColumn = new Column<UserContact, String>(
-				cell) {
+		// create the call count column
+		Column<UserContact, String> callcountColumn = new Column<UserContact, String>(cell) {
 			@Override
 			public String getValue(UserContact contact) {
 				return (cell.renderCallCount(contact));
 			}
 		};
-		table.addColumn(callcountColumn, ApplicationController.getMessages()
-				.DesktopUserContactsPanel_chatCount());
+		table.addColumn(callcountColumn, ApplicationController.getMessages().DesktopUserContactsPanel_chatCount());
+
+		// add a status column
+		Column<UserContact, String> statusColumn = new Column<UserContact, String>(cell) {
+			@Override
+			public String getValue(UserContact contact) {
+				return cell.renderStatus(contact);
+			}
+		};
+
+		table.addColumn(statusColumn, ApplicationController.getMessages().DesktopUserContactsPanel_status());
 
 		// set selection parms
-		NoSelectionModel<UserContact> selectionModel = new NoSelectionModel<UserContact>(
-				keyProvider);
+		NoSelectionModel<UserContact> selectionModel = new NoSelectionModel<UserContact>(keyProvider);
 		table.setSelectionModel(selectionModel);
 
 		// fill up the table with data
@@ -147,10 +147,11 @@ public class DesktopUserContactsPanel extends LayoutPanel implements
 	}
 
 	@Override
-	public void modifyContact(String user, int callCount) {
+	public void modifyContact(String user, int callCount, boolean dnd) {
 		UserContact contact = findContact(user);
 		if (contact != null) {
 			contact.setCallCount(callCount);
+			contact.setDnd(dnd);
 			dataProvider.refresh();
 		}
 	}
@@ -178,5 +179,4 @@ public class DesktopUserContactsPanel extends LayoutPanel implements
 	private void adjustScrollHeight() {
 		tableScrollPanel.onResize();
 	}
-
 }

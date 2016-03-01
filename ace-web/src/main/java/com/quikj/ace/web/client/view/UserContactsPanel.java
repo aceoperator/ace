@@ -17,7 +17,7 @@ public interface UserContactsPanel {
 
 	public void addContacts(List<UserContact> contacts);
 
-	public void modifyContact(String user, int callCount);
+	public void modifyContact(String user, int callCount, boolean dnd);
 
 	public void removeContact(String user);
 

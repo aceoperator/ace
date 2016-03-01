@@ -33,8 +33,8 @@ public class DbEndPointRegistration implements DbOperationInterface {
 
 	private AceSQL database;
 
-	public DbEndPointRegistration(EndPointInterface endpoint, String username,
-			String password, ServiceController parent, AceSQL database) {
+	public DbEndPointRegistration(EndPointInterface endpoint, String username, String password,
+			ServiceController parent, AceSQL database) {
 		this.parent = parent;
 		this.database = database;
 		endpointInfo.setEndPoint(endpoint);
@@ -57,23 +57,16 @@ public class DbEndPointRegistration implements DbOperationInterface {
 				// find the gatekeeper endpoint from the registered endpoint
 				// list
 				EndPointInterface gk = RegisteredEndPointList.Instance()
-						.findRegisteredEndPoint(
-								endpointInfo.getUserData().getGatekeeper());
+						.findRegisteredEndPoint(endpointInfo.getUserData().getGatekeeper());
 				if (gk != null) // present
 				{
 					if (gk instanceof GatekeeperInterface) {
-						boolean allow = ((GatekeeperInterface) gk).allow(
-								endpoint, endpointInfo);
+						boolean allow = ((GatekeeperInterface) gk).allow(endpoint, endpointInfo);
 						if (!allow) {
-							parent.sendRegistrationResponse(
-									endpoint,
-									ResponseMessage.FORBIDDEN,
+							parent.sendRegistrationResponse(endpoint, ResponseMessage.FORBIDDEN,
 									java.util.ResourceBundle
-											.getBundle(
-													"com.quikj.application.web.talk.plugin.language",
-													ServiceController
-															.getLocale((String) endpoint
-																	.getParam("language")))
+											.getBundle("com.quikj.application.web.talk.plugin.language",
+													ServiceController.getLocale((String) endpoint.getParam("language")))
 											.getString(
 													"We_are_unabled_to_process_the_login_request_because_of_license_limitations"),
 									null, null);
@@ -93,39 +86,27 @@ public class DbEndPointRegistration implements DbOperationInterface {
 			// send a messsage to the end-point to instruct it to drop-out
 			if (!oldEndpoint.sendEvent(new DropEndpointEvent())) {
 				// print an error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								"DbEndPointRegistration.finished() (TALK) -- Could not send drop endpoint event to the endpoint "
-										+ oldEndpoint);
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"DbEndPointRegistration.finished() (TALK) -- Could not send drop endpoint event to the endpoint "
+								+ oldEndpoint);
 			}
 
 			// unregister the end-point
 			ServiceController.Instance().unregisterUser(endpointInfo.getName());
 		}
 
-		if (!RegisteredEndPointList.Instance().addRegisteredEndPoint(
-				endpointInfo)) {
+		if (!RegisteredEndPointList.Instance().addRegisteredEndPoint(endpointInfo)) {
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							parent.getName()
-									+ "- DbEndPointRegistration.finished() -- Could not add the endpoint "
-									+ endpointInfo.getName()
-									+ " to the registered endpoint list");
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					parent.getName() + "- DbEndPointRegistration.finished() -- Could not add the endpoint "
+							+ endpointInfo.getName() + " to the registered endpoint list");
 
-			parent.sendRegistrationResponse(
-					endpoint,
-					ResponseMessage.INTERNAL_ERROR,
-					java.util.ResourceBundle.getBundle(
-							"com.quikj.application.web.talk.plugin.language",
-							ServiceController.getLocale((String) endpoint
-									.getParam("language"))).getString(
-							"Failed_to_add_to_the_registered_user_list"), null,
-					null);
+			parent.sendRegistrationResponse(endpoint, ResponseMessage.INTERNAL_ERROR,
+					java.util.ResourceBundle
+							.getBundle("com.quikj.application.web.talk.plugin.language",
+									ServiceController.getLocale((String) endpoint.getParam("language")))
+							.getString("Failed_to_add_to_the_registered_user_list"),
+					null, null);
 
 			return;
 		}
@@ -140,17 +121,17 @@ public class DbEndPointRegistration implements DbOperationInterface {
 
 		response.setLoginDate(new java.util.Date());
 		HtmlElement text = new HtmlElement();
-		text.setHtml(java.util.ResourceBundle.getBundle(
-				"com.quikj.application.web.talk.plugin.language",
-				ServiceController.getLocale((String) endpoint
-						.getParam("language"))).getString("Hello_")
-				+ ' '
-				+ endpointInfo.getName()
-				+ java.util.ResourceBundle.getBundle(
-						"com.quikj.application.web.talk.plugin.language",
-						ServiceController.getLocale((String) endpoint
-								.getParam("language"))).getString(
-						",_welcome_to_the_Talk_Instant_Messaging_Server"));
+		text.setHtml(
+				java.util.ResourceBundle
+						.getBundle("com.quikj.application.web.talk.plugin.language",
+								ServiceController.getLocale((String) endpoint.getParam("language")))
+						.getString(
+								"Hello_")
+						+ ' ' + endpointInfo.getName()
+						+ java.util.ResourceBundle
+								.getBundle("com.quikj.application.web.talk.plugin.language",
+										ServiceController.getLocale((String) endpoint.getParam("language")))
+								.getString(",_welcome_to_the_Talk_Instant_Messaging_Server"));
 
 		MediaElements elements = new MediaElements();
 		elements.getElements().add(text);
@@ -163,41 +144,34 @@ public class DbEndPointRegistration implements DbOperationInterface {
 		callParty.setComment(endpointInfo.getUserData().getAdditionalInfo());
 		callParty.setAvatar(endpointInfo.getUserData().getAvatar());
 		callParty.setLanguage((String) endpoint.getParam("language"));
-		callParty.setChangePassword(endpointInfo.getUserData()
-				.isChangePassword());
+		callParty.setChangePassword(endpointInfo.getUserData().isChangePassword());
 		callParty.setPrivateInfo(endpointInfo.getUserData().isPrivateInfo());
 
 		response.setCallPartyInfo(callParty);
 
 		// set Group(s) members status info in message
-		String[] groupMembers = RegisteredEndPointList.Instance()
-				.getActiveMembers(endpointInfo.getName());
+		String[] groupMembers = RegisteredEndPointList.Instance().getActiveMembers(endpointInfo.getName());
 		if (groupMembers != null) {
 			com.quikj.ace.messages.vo.talk.GroupElement group = new com.quikj.ace.messages.vo.talk.GroupElement();
-			for (int i = 0; i < groupMembers.length; i++) {
-				EndPointInfo info = RegisteredEndPointList.Instance()
-						.findRegisteredEndPointInfo(groupMembers[i]);
+			for (String groupMember : groupMembers) {
+				EndPointInfo info = RegisteredEndPointList.Instance().findRegisteredEndPointInfo(groupMember);
 				if (info == null) {
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									parent.getName()
-											+ "- DbEndPointRegistration.finished() -- Could not find EndPointInfo for group member "
-											+ groupMembers[i]);
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							parent.getName()
+									+ "- DbEndPointRegistration.finished() -- Could not find EndPointInfo for group member "
+									+ groupMember);
 
 					continue;
 				}
 
-				if (!info.isDnd()) {
-					GroupMemberElement element = new GroupMemberElement();
-					element.setOperation(GroupMemberElement.OPERATION_ADD_LIST);
-					element.setUser(groupMembers[i]);
-					element.setFullName(info.getUserData().getFullName());
-					element.setCallCount(info.getCallCount());
-					element.setAvatar(info.getUserData().getAvatar());
-					group.addElement(element);
-				}
+				GroupMemberElement element = new GroupMemberElement();
+				element.setOperation(GroupMemberElement.OPERATION_ADD_LIST);
+				element.setUser(groupMember);
+				element.setFullName(info.getUserData().getFullName());
+				element.setCallCount(info.getCallCount());
+				element.setAvatar(info.getUserData().getAvatar());
+				element.setDnd(info.isDnd());
+				group.addElement(element);
 			}
 
 			response.setGroup(group);
@@ -219,17 +193,15 @@ public class DbEndPointRegistration implements DbOperationInterface {
 			response.setGroupList(groups);
 		}
 
-		if (!parent.sendRegistrationResponse(endpoint, ResponseMessage.OK,
-				"OK", response, null)) {
+		if (!parent.sendRegistrationResponse(endpoint, ResponseMessage.OK, "OK", response, null)) {
 			// remove from the list
-			RegisteredEndPointList.Instance().removeRegisteredEndPoint(
-					endpointInfo.getName());
+			RegisteredEndPointList.Instance().removeRegisteredEndPoint(endpointInfo.getName());
 			return;
 		}
 
 		// create a login CDR
-		RegisteredUserLoginCDR cdr = new RegisteredUserLoginCDR(endpointInfo
-				.getEndPoint().getIdentifier(), endpointInfo.getName());
+		RegisteredUserLoginCDR cdr = new RegisteredUserLoginCDR(endpointInfo.getEndPoint().getIdentifier(),
+				endpointInfo.getName());
 
 		// send the CDR to the CDR processing thread
 		ServiceController.Instance().sendCDR(cdr);
@@ -255,49 +227,34 @@ public class DbEndPointRegistration implements DbOperationInterface {
 		if (endpointInfo.getUserData() == null) {
 			// first time around, we're validating the user
 			if (message.getStatus() == AceSQLMessage.SQL_ERROR) {
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								parent.getName()
-										+ "- DbEndPointRegistration.processResponse() -- Database error result authenticating user name "
-										+ username + ".");
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						parent.getName()
+								+ "- DbEndPointRegistration.processResponse() -- Database error result authenticating user name "
+								+ username + ".");
 
 				// send a error response to the client
-				parent.sendRegistrationResponse(
-						endpoint,
-						ResponseMessage.INTERNAL_ERROR,
+				parent.sendRegistrationResponse(endpoint, ResponseMessage.INTERNAL_ERROR,
 						java.util.ResourceBundle
-								.getBundle(
-										"com.quikj.application.web.talk.plugin.language",
-										ServiceController
-												.getLocale((String) endpoint
-														.getParam("language")))
-								.getString("Authentication_error"), null, null);
+								.getBundle("com.quikj.application.web.talk.plugin.language",
+										ServiceController.getLocale((String) endpoint.getParam("language")))
+								.getString("Authentication_error"),
+						null, null);
 
 				return true;
 			}
 
 			List<Object> results = message.getResults();
 			if (results == null || results.size() < 3) {
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								parent.getName()
-										+ "- DbEndPointRegistration.processResponse() -- Multiple results not returned on user query");
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, parent.getName()
+						+ "- DbEndPointRegistration.processResponse() -- Multiple results not returned on user query");
 
 				// send a error response to the client
-				parent.sendRegistrationResponse(
-						endpoint,
-						ResponseMessage.INTERNAL_ERROR,
+				parent.sendRegistrationResponse(endpoint, ResponseMessage.INTERNAL_ERROR,
 						java.util.ResourceBundle
-								.getBundle(
-										"com.quikj.application.web.talk.plugin.language",
-										ServiceController
-												.getLocale((String) endpoint
-														.getParam("language")))
-								.getString("Database_error"), null, null);
+								.getBundle("com.quikj.application.web.talk.plugin.language",
+										ServiceController.getLocale((String) endpoint.getParam("language")))
+								.getString("Database_error"),
+						null, null);
 
 				return true;
 			}
@@ -306,17 +263,12 @@ public class DbEndPointRegistration implements DbOperationInterface {
 
 			if (results.get(0) == null) {
 				// send error response to the client
-				parent.sendRegistrationResponse(
-						endpoint,
-						ResponseMessage.FORBIDDEN,
+				parent.sendRegistrationResponse(endpoint, ResponseMessage.FORBIDDEN,
 						java.util.ResourceBundle
-								.getBundle(
-										"com.quikj.application.web.talk.plugin.language",
-										ServiceController
-												.getLocale((String) endpoint
-														.getParam("language")))
-								.getString("User_authentication_failed"), null,
-						null);
+								.getBundle("com.quikj.application.web.talk.plugin.language",
+										ServiceController.getLocale((String) endpoint.getParam("language")))
+								.getString("User_authentication_failed"),
+						null, null);
 
 				return true;
 			}
@@ -331,14 +283,9 @@ public class DbEndPointRegistration implements DbOperationInterface {
 				for (Object o : groups) {
 					String group = (String) o;
 					if (!userData.addOwnsGroup(group)) {
-						AceLogger
-								.Instance()
-								.log(AceLogger.ERROR,
-										AceLogger.SYSTEM_LOG,
-										username
-												+ " DbEndpointRegistration.processResponse() -- Couldn't add owned group "
-												+ group
-												+ " to UserElement, probably duplicate error.");
+						AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+								username + " DbEndpointRegistration.processResponse() -- Couldn't add owned group "
+										+ group + " to UserElement, probably duplicate error.");
 					}
 				}
 			}
@@ -349,20 +296,14 @@ public class DbEndPointRegistration implements DbOperationInterface {
 				for (Object o : groups) {
 					String group = (String) o;
 					if (!userData.addBelongsToGroup(group)) {
-						AceLogger
-								.Instance()
-								.log(AceLogger.ERROR,
-										AceLogger.SYSTEM_LOG,
-										username
-												+ " DbEndpointRegistration.processResponse() -- Couldn't add belongs to group "
-												+ group
-												+ " to UserElement, probably duplicate error.");
+						AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+								username + " DbEndpointRegistration.processResponse() -- Couldn't add belongs to group "
+										+ group + " to UserElement, probably duplicate error.");
 					}
 				}
 			}
 
-			if ((userData.numBelongsToGroups() > 0)
-					|| (userData.numOwnsGroups() > 0)) {
+			if ((userData.numBelongsToGroups() > 0) || (userData.numOwnsGroups() > 0)) {
 				hasAssociatedGroups = true;
 			}
 
@@ -372,24 +313,19 @@ public class DbEndPointRegistration implements DbOperationInterface {
 			}
 
 			// get group info
-			SQLParam[] statements = GroupTable
-					.getGroupInfoByUserQueryStatements(username);
+			SQLParam[] statements = GroupTable.getGroupInfoByUserQueryStatements(username);
 
 			operationId = database.executeSQL(parent, this, statements);
 
 			if (operationId == -1L) {
 				lastError = parent.getErrorMessage();
 
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								"DbEndPointRegistration.processResponse() -- Failure getting group info for user "
-										+ username + ", error : " + lastError);
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"DbEndPointRegistration.processResponse() -- Failure getting group info for user " + username
+								+ ", error : " + lastError);
 
-				parent.sendRegistrationResponse(endpoint,
-						ResponseMessage.INTERNAL_ERROR,
-						"Database error (group data)", null, null);
+				parent.sendRegistrationResponse(endpoint, ResponseMessage.INTERNAL_ERROR, "Database error (group data)",
+						null, null);
 
 				return true;
 			}
@@ -400,46 +336,36 @@ public class DbEndPointRegistration implements DbOperationInterface {
 		// second time around, processing group info result
 
 		if (message.getStatus() == AceSQLMessage.SQL_ERROR) {
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							parent.getName()
-									+ "- DbEndPointRegistration.processResponse() -- Database error result getting group info for user "
-									+ username + ".");
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					parent.getName()
+							+ "- DbEndPointRegistration.processResponse() -- Database error result getting group info for user "
+							+ username + ".");
 
 			// send a error response to the client
-			parent.sendRegistrationResponse(
-					endpoint,
-					ResponseMessage.INTERNAL_ERROR,
-					java.util.ResourceBundle.getBundle(
-							"com.quikj.application.web.talk.plugin.language",
-							ServiceController.getLocale((String) endpoint
-									.getParam("language"))).getString(
-							"Database_error_(group_data)"), null, null);
+			parent.sendRegistrationResponse(endpoint, ResponseMessage.INTERNAL_ERROR,
+					java.util.ResourceBundle
+							.getBundle("com.quikj.application.web.talk.plugin.language",
+									ServiceController.getLocale((String) endpoint.getParam("language")))
+							.getString("Database_error_(group_data)"),
+					null, null);
 
 			return true;
 		}
 
 		List<Object> results = message.getResults();
 		if (results == null || results.size() < 4) {
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							parent.getName()
-									+ "- DbEndPointRegistration.processResponse() -- Database result error getting group info for user "
-									+ username + ".");
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					parent.getName()
+							+ "- DbEndPointRegistration.processResponse() -- Database result error getting group info for user "
+							+ username + ".");
 
 			// send a error response to the client
-			parent.sendRegistrationResponse(
-					endpoint,
-					ResponseMessage.INTERNAL_ERROR,
-					java.util.ResourceBundle.getBundle(
-							"com.quikj.application.web.talk.plugin.language",
-							ServiceController.getLocale((String) endpoint
-									.getParam("language"))).getString(
-							"Database_error_(group_data)"), null, null);
+			parent.sendRegistrationResponse(endpoint, ResponseMessage.INTERNAL_ERROR,
+					java.util.ResourceBundle
+							.getBundle("com.quikj.application.web.talk.plugin.language",
+									ServiceController.getLocale((String) endpoint.getParam("language")))
+							.getString("Database_error_(group_data)"),
+					null, null);
 
 			return true;
 		}
@@ -451,15 +377,12 @@ public class DbEndPointRegistration implements DbOperationInterface {
 	}
 
 	public boolean registerEndPoint() {
-		if (password == null
-				&& FeatureFactory.getInstance().isFeature(username)) {
+		if (password == null && FeatureFactory.getInstance().isFeature(username)) {
 			// allow feature login with no password
-			SQLParam[] statements = UserTable
-					.getUserElementQueryStatements(username);
+			SQLParam[] statements = UserTable.getUserElementQueryStatements(username);
 			operationId = database.executeSQL(parent, this, statements);
 		} else {
-			SQLParam[] statements = UserTable.getUserElementQueryStatements(
-					username, password);
+			SQLParam[] statements = UserTable.getUserElementQueryStatements(username, password);
 
 			operationId = database.executeSQL(parent, this, statements);
 		}
@@ -472,8 +395,7 @@ public class DbEndPointRegistration implements DbOperationInterface {
 		return true;
 	}
 
-	private GroupInfo[] processGroupInfoByUserQueryResult(String username,
-			List<Object> results) {
+	private GroupInfo[] processGroupInfoByUserQueryResult(String username, List<Object> results) {
 		GroupInfo[] list = null;
 
 		HashMap<String, GroupInfo> grouplist = new HashMap<String, GroupInfo>();
@@ -498,28 +420,15 @@ public class DbEndPointRegistration implements DbOperationInterface {
 				GroupInfo info = grouplist.get(member.getGroupName());
 
 				if (info == null) {
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									" DbEndPointRegistration.processGroupInfoByUserQueryResult() -- Couldn't find group "
-											+ member.getGroupName()
-											+ " in list, owned by user "
-											+ username
-											+ ", trying to add member "
-											+ member);
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							" DbEndPointRegistration.processGroupInfoByUserQueryResult() -- Couldn't find group "
+									+ member.getGroupName() + " in list, owned by user " + username
+									+ ", trying to add member " + member);
 				} else if (!info.addMember(member.getUserName())) {
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									" DbEndPointRegistration.processGroupInfoByUserQueryResult() -- Couldn't add member "
-											+ member.getUserName()
-											+ " to group "
-											+ member.getGroupName()
-											+ " owned by "
-											+ username
-											+ ", probably duplicate error.");
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							" DbEndPointRegistration.processGroupInfoByUserQueryResult() -- Couldn't add member "
+									+ member.getUserName() + " to group " + member.getGroupName() + " owned by "
+									+ username + ", probably duplicate error.");
 				}
 			}
 		}
@@ -541,28 +450,15 @@ public class DbEndPointRegistration implements DbOperationInterface {
 				GroupInfo info = grouplist.get(member.getGroupName());
 
 				if (info == null) {
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									" DbEndPointRegistration.processGroupInfoByUserQueryResult() -- Couldn't find group "
-											+ member.getGroupName()
-											+ " in list, referenced by member user "
-											+ username
-											+ ", trying to add member "
-											+ member);
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							" DbEndPointRegistration.processGroupInfoByUserQueryResult() -- Couldn't find group "
+									+ member.getGroupName() + " in list, referenced by member user " + username
+									+ ", trying to add member " + member);
 				} else if (!info.addMember(member.getUserName())) {
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									" DbEndPointRegistration.processGroupInfoByUserQueryResult() -- Couldn't add member "
-											+ member.getUserName()
-											+ " to group "
-											+ member.getGroupName()
-											+ " referenced by member "
-											+ username
-											+ ", probably duplicate error.");
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							" DbEndPointRegistration.processGroupInfoByUserQueryResult() -- Couldn't add member "
+									+ member.getUserName() + " to group " + member.getGroupName()
+									+ " referenced by member " + username + ", probably duplicate error.");
 				}
 			}
 		}

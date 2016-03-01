@@ -53,8 +53,7 @@ import com.quikj.server.framework.AceSQLMessage;
 import com.quikj.server.framework.AceSignalMessage;
 import com.quikj.server.framework.AceThread;
 
-public class ServiceController extends AceThread implements
-		RemoteServiceInterface {
+public class ServiceController extends AceThread implements RemoteServiceInterface {
 
 	private Hashtable<Long, SessionInfo> sessionList = new Hashtable<Long, SessionInfo>();
 
@@ -143,8 +142,7 @@ public class ServiceController extends AceThread implements
 		// System.out.println ("ServiceController.cancelDbOperation() -
 		// canceling operation for endpoint" + endpoint);
 		synchronized (pendingDbOps) {
-			DbOperationInterface op = (DbOperationInterface) pendingDbOps
-					.get(endpoint);
+			DbOperationInterface op = (DbOperationInterface) pendingDbOps.get(endpoint);
 			if (op != null) {
 				pendingDbOps.remove(endpoint);
 				op.cancel();
@@ -152,36 +150,24 @@ public class ServiceController extends AceThread implements
 		}
 	}
 
-	private void checkUnavailableUserTransfer(SessionInfo session,
-			String unavail_username, EndPointInterface active_called_endpoint,
-			SetupResponseMessage original_setupresp_message,
+	private void checkUnavailableUserTransfer(SessionInfo session, String unavail_username,
+			EndPointInterface active_called_endpoint, SetupResponseMessage original_setupresp_message,
 			int original_setupresp_status, String original_setupresp_reason) {
-		DbUnavailableUserTransfer dbOp = new DbUnavailableUserTransfer(
-				unavail_username, session, active_called_endpoint,
-				original_setupresp_message, original_setupresp_status,
+		DbUnavailableUserTransfer dbOp = new DbUnavailableUserTransfer(unavail_username, session,
+				active_called_endpoint, original_setupresp_message, original_setupresp_status,
 				original_setupresp_reason, this, database);
 
 		if (!dbOp.checkForTransfer()) {
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							"ServiceController.checkUnavailableUserTransfer() (TALK) -- Failure initiating DB check for unavailable user "
-									+ unavail_username
-									+ ", error : "
-									+ dbOp.getLastError());
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"ServiceController.checkUnavailableUserTransfer() (TALK) -- Failure initiating DB check for unavailable user "
+							+ unavail_username + ", error : " + dbOp.getLastError());
 
-			if (session.getCallingEndPoint().sendEvent(
-					new MessageEvent(MessageEvent.SETUP_RESPONSE, null,
-							original_setupresp_status,
-							original_setupresp_reason, null, null)) == false) {
+			if (session.getCallingEndPoint().sendEvent(new MessageEvent(MessageEvent.SETUP_RESPONSE, null,
+					original_setupresp_status, original_setupresp_reason, null, null)) == false) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								"ServiceController.checkUnavailableUserTransfer() (TALK) -- Could not send setup response message to the endpoint "
-										+ session.getCallingEndPoint());
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"ServiceController.checkUnavailableUserTransfer() (TALK) -- Could not send setup response message to the endpoint "
+								+ session.getCallingEndPoint());
 			}
 
 			// remove the call from the session list
@@ -227,8 +213,7 @@ public class ServiceController extends AceThread implements
 			for (int i = 0; i < num; i++) {
 				EndPointInterface ep = session.elementAt(i);
 				// if the party is a non-registered user, generate a logout CDR
-				if (RegisteredEndPointList.Instance()
-						.findRegisteredEndPointInfo(ep) == null) {
+				if (RegisteredEndPointList.Instance().findRegisteredEndPointInfo(ep) == null) {
 					sendCDR(new LogoutCDR(ep.getIdentifier()));
 				}
 			}
@@ -259,8 +244,7 @@ public class ServiceController extends AceThread implements
 		return (SessionInfo) sessionList.get(new Long(session));
 	}
 
-	public void finishSetupResponse(SetupResponseMessage message, int status,
-			String reason, EndPointInterface from) {
+	public void finishSetupResponse(SetupResponseMessage message, int status, String reason, EndPointInterface from) {
 		// we may get here immediately from processSetupResponse() or we may get
 		// here
 		// later after checking for unavailable user transfer then finding out
@@ -272,27 +256,20 @@ public class ServiceController extends AceThread implements
 
 		if (session == null) {
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							"ServiceController.finishSetupResponse() (TALK) -- Could not find session with id "
-									+ message.getSessionId());
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"ServiceController.finishSetupResponse() (TALK) -- Could not find session with id "
+							+ message.getSessionId());
 
 			return;
 		}
 
 		// send the message over to the calling party
 		if (session.getCallingEndPoint().sendEvent(
-				new MessageEvent(MessageEvent.SETUP_RESPONSE, from, status,
-						reason, message, null)) == false) {
+				new MessageEvent(MessageEvent.SETUP_RESPONSE, from, status, reason, message, null)) == false) {
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							"ServiceController.finishSetupResponse() (TALK) -- Could not send setup response message to the endpoint "
-									+ session.getCallingEndPoint());
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"ServiceController.finishSetupResponse() (TALK) -- Could not send setup response message to the endpoint "
+							+ session.getCallingEndPoint());
 
 			// remove the call from the session list
 			removeSession(message.getSessionId());
@@ -310,8 +287,8 @@ public class ServiceController extends AceThread implements
 		}
 	}
 
-	public void generateSetupResponseCDR(SetupResponseMessage message,
-			int status, EndPointInterface from, SessionInfo session) {
+	public void generateSetupResponseCDR(SetupResponseMessage message, int status, EndPointInterface from,
+			SessionInfo session) {
 		String called_name = "unspecified";
 		if (from != null) {
 			called_name = from.getIdentifier();
@@ -321,8 +298,7 @@ public class ServiceController extends AceThread implements
 				called_name = message.getCalledParty().getCallParty().getName();
 			}
 		}
-		SessionSetupResponseCDR cdr = new SessionSetupResponseCDR(
-				session.getBillingId(), called_name, status);
+		SessionSetupResponseCDR cdr = new SessionSetupResponseCDR(session.getBillingId(), called_name, status);
 		sendCDR(cdr);
 	}
 
@@ -340,11 +316,10 @@ public class ServiceController extends AceThread implements
 
 	public String getRMIParam(String param) {
 		String str = "logged-in:";
-		if (param.startsWith(str) == true) {
+		if (param.startsWith(str)) {
 			String name = param.substring(str.length());
 			if (name.length() > 0) {
-				EndPointInterface ep = RegisteredEndPointList.Instance()
-						.findRegisteredEndPoint(name);
+				EndPointInterface ep = RegisteredEndPointList.Instance().findRegisteredEndPoint(name);
 				if (ep == null) {
 					return "no";
 				} else {
@@ -355,20 +330,18 @@ public class ServiceController extends AceThread implements
 		return null;
 	}
 
-	private void groupNotifyOfAvailabilityChange(EndPointInfo info,
-			boolean available) {
+	private void groupNotifyOfAvailabilityChange(EndPointInfo info, boolean available) {
 		String username = info.getName();
 
-		String[] notify_endpoints = RegisteredEndPointList.Instance()
-				.notifyOfLoginLogout(username);
+		String[] notifyEndpoints = RegisteredEndPointList.Instance().notifyOfLoginLogout(username);
 
-		if (notify_endpoints != null) {
+		if (notifyEndpoints != null) {
 			GroupActivityMessage ga = new GroupActivityMessage();
 			com.quikj.ace.messages.vo.talk.GroupElement ge = new com.quikj.ace.messages.vo.talk.GroupElement();
 			GroupMemberElement gm = new GroupMemberElement();
 
 			gm.setUser(username);
-			if (available == true) {
+			if (available) {
 				gm.setOperation(GroupMemberElement.OPERATION_ADD_LIST);
 				gm.setFullName(info.getUserData().getFullName());
 				gm.setAvatar(info.getUserData().getAvatar());
@@ -380,23 +353,18 @@ public class ServiceController extends AceThread implements
 			ge.addElement(gm);
 			ga.setGroup(ge);
 
-			for (int i = 0; i < notify_endpoints.length; i++) {
+			for (int i = 0; i < notifyEndpoints.length; i++) {
 				EndPointInterface endpoint = RegisteredEndPointList.Instance()
-						.findRegisteredEndPoint(notify_endpoints[i]);
+						.findRegisteredEndPoint(notifyEndpoints[i]);
 				if (endpoint != null) {
 					// send group message to the endpoint
 
-					if (endpoint
-							.sendEvent(new MessageEvent(
-									MessageEvent.CLIENT_REQUEST_MESSAGE, null,
-									ga, null)) == false) {
+					if (endpoint.sendEvent(
+							new MessageEvent(MessageEvent.CLIENT_REQUEST_MESSAGE, null, ga, null)) == false) {
 						// print error message
-						AceLogger
-								.Instance()
-								.log(AceLogger.ERROR,
-										AceLogger.SYSTEM_LOG,
-										"ServiceController.groupNotifyOfAvailabilityChange (TALK) -- Could not send group activity message to the endpoint "
-												+ endpoint);
+						AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+								"ServiceController.groupNotifyOfAvailabilityChange (TALK) -- Could not send group activity message to the endpoint "
+										+ endpoint);
 					}
 
 				}
@@ -404,19 +372,11 @@ public class ServiceController extends AceThread implements
 		}
 	}
 
-	private void groupNotifyOfAvailabilityChange(EndPointInterface endpoint,
-			boolean available) {
-		EndPointInfo info = RegisteredEndPointList.Instance()
-				.findRegisteredEndPointInfo(endpoint);
+	private void groupNotifyOfAvailabilityChange(EndPointInterface endpoint, boolean available) {
+		EndPointInfo info = RegisteredEndPointList.Instance().findRegisteredEndPointInfo(endpoint);
 		if (info == null) {
-			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							getName()
-									+ "- ServiceController.groupNotifyOfAvailabilityChange() -- EndPoint not registered "
-									+ endpoint);
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, getName()
+					+ "- ServiceController.groupNotifyOfAvailabilityChange() -- EndPoint not registered " + endpoint);
 
 			return;
 		}
@@ -424,78 +384,100 @@ public class ServiceController extends AceThread implements
 		groupNotifyOfAvailabilityChange(info, available);
 	}
 
-	public void groupNotifyOfAvailabilityChange(String username,
-			boolean available) {
-		EndPointInfo info = RegisteredEndPointList.Instance()
-				.findRegisteredEndPointInfo(username);
-		if (info == null) {
-			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							getName()
-									+ "- ServiceController.groupNotifyOfAvailabilityChange() -- Username not registered "
-									+ username);
-
-			return;
-
-		}
-
-		groupNotifyOfAvailabilityChange(info, available);
-	}
-
-	private void groupNotifyOfCallCountChange(EndPointInfo info) {
+	private void groupNotifyOfDNDChange(EndPointInfo info) {
 		String username = info.getName();
 
-		String[] notify_endpoints = RegisteredEndPointList.Instance()
-				.notifyOfCallCountChange(username);
+		String[] notifyEndpoints = RegisteredEndPointList.Instance().notifyOfLoginLogout(username);
 
-		int call_count = info.getCallCount();
-		if (call_count == -1) {
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							getName()
-									+ "- ServiceController.groupNotifyOfCallCountChange() -- Could not get new call count for user "
-									+ username
-									+ ", the user is not in the EndPointList");
+		if (notifyEndpoints == null) {
+			return;
+		}
+
+		GroupActivityMessage ga = new GroupActivityMessage();
+		com.quikj.ace.messages.vo.talk.GroupElement ge = new com.quikj.ace.messages.vo.talk.GroupElement();
+		GroupMemberElement gm = new GroupMemberElement();
+
+		gm.setUser(username);
+		gm.setFullName(info.getUserData().getFullName());
+		gm.setOperation(GroupMemberElement.OPERATION_MOD_LIST);
+		gm.setDnd(info.isDnd());
+		gm.setCallCount(info.getCallCount());
+
+		ge.addElement(gm);
+		ga.setGroup(ge);
+
+		for (int i = 0; i < notifyEndpoints.length; i++) {
+			EndPointInterface endpoint = RegisteredEndPointList.Instance().findRegisteredEndPoint(notifyEndpoints[i]);
+			if (endpoint != null) {
+				if (!endpoint.sendEvent(new MessageEvent(MessageEvent.CLIENT_REQUEST_MESSAGE, null, ga, null))) {
+					// print error message
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							"ServiceController.groupNotifyOfDNDChange (TALK) -- Could not send group activity message to the endpoint "
+									+ endpoint);
+				}
+			}
+		}
+	}
+
+	public void groupNotifyOfAvailabilityChange(String username, boolean available) {
+		EndPointInfo info = RegisteredEndPointList.Instance().findRegisteredEndPointInfo(username);
+		if (info == null) {
+			// print error message
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, getName()
+					+ "- ServiceController.groupNotifyOfAvailabilityChange() -- Username not registered " + username);
+
+			return;
+
+		}
+
+		groupNotifyOfAvailabilityChange(info, available);
+	}
+
+	public void groupNotifyOfCallCountChange(EndPointInterface endpoint) {
+		EndPointInfo info = RegisteredEndPointList.Instance().findRegisteredEndPointInfo(endpoint);
+		if (info == null) {
+			// print error message
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, getName()
+					+ "- ServiceController.groupNotifyOfCallCountChange() -- EndPoint not registered " + endpoint);
 
 			return;
 		}
 
-		if (notify_endpoints != null && !info.isDnd()) {
+		String username = info.getName();
+
+		String[] notifyEndpoints = RegisteredEndPointList.Instance().notifyOfCallCountChange(username);
+
+		int callCount = info.getCallCount();
+		if (callCount == -1) {
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					getName()
+							+ "- ServiceController.groupNotifyOfCallCountChange() -- Could not get new call count for user "
+							+ username + ", the user is not in the EndPointList");
+
+			return;
+		}
+
+		if (notifyEndpoints != null) {
 			GroupActivityMessage ga = new GroupActivityMessage();
 			com.quikj.ace.messages.vo.talk.GroupElement ge = new com.quikj.ace.messages.vo.talk.GroupElement();
 			GroupMemberElement gm = new GroupMemberElement();
 
 			gm.setUser(username);
+			gm.setFullName(info.getUserData().getFullName());
 			gm.setOperation(GroupMemberElement.OPERATION_MOD_LIST);
 			gm.setCallCount(info.getCallCount());
 
 			ge.addElement(gm);
 			ga.setGroup(ge);
 
-			for (int i = 0; i < notify_endpoints.length; i++) {
-				EndPointInterface endpoint = RegisteredEndPointList.Instance()
-						.findRegisteredEndPoint(notify_endpoints[i]);
+			for (int i = 0; i < notifyEndpoints.length; i++) {
+				EndPointInterface ep = RegisteredEndPointList.Instance().findRegisteredEndPoint(notifyEndpoints[i]);
 
-				if (endpoint != null) {
-					// send group message to the endpoint
-
-					if (endpoint
-							.sendEvent(new MessageEvent(
-									MessageEvent.CLIENT_REQUEST_MESSAGE, null,
-									ga, null)) == false) {
-						// print error message
-						AceLogger
-								.Instance()
-								.log(AceLogger.ERROR,
-										AceLogger.SYSTEM_LOG,
-										"ServiceController.groupNotifyOfCallCountChange(TALK) -- Could not send group activity message to the endpoint "
-												+ endpoint);
-
+				if (ep != null) {
+					if (!ep.sendEvent(new MessageEvent(MessageEvent.CLIENT_REQUEST_MESSAGE, null, ga, null))) {
+						AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+								"ServiceController.groupNotifyOfCallCountChange(TALK) -- Could not send group activity message to the endpoint "
+										+ ep);
 					}
 
 				}
@@ -503,27 +485,7 @@ public class ServiceController extends AceThread implements
 		}
 	}
 
-	public void groupNotifyOfCallCountChange(EndPointInterface endpoint) {
-		EndPointInfo info = RegisteredEndPointList.Instance()
-				.findRegisteredEndPointInfo(endpoint);
-		if (info == null) {
-			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							getName()
-									+ "- ServiceController.groupNotifyOfCallCountChange() -- EndPoint not registered "
-									+ endpoint);
-
-			return;
-		}
-
-		groupNotifyOfCallCountChange(info);
-	}
-
-	private void processChangePasswordRequest(
-			ChangePasswordRequestMessage message, EndPointInterface from,
+	private void processChangePasswordRequest(ChangePasswordRequestMessage message, EndPointInterface from,
 			int req_id) {
 		String enc_old_password = message.getOldPassword();
 		String old_password = null;
@@ -537,69 +499,46 @@ public class ServiceController extends AceThread implements
 			new_password = enc_new_password;
 		}
 
-		DbChangeUserPassword cp = new DbChangeUserPassword(
-				message.getUserName(), old_password, new_password, from, this,
-				database, req_id, null);
+		DbChangeUserPassword cp = new DbChangeUserPassword(message.getUserName(), old_password, new_password, from,
+				this, database, req_id, null);
 
 		if (cp.initiate() == false) {
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							"ServiceController.processChangePasswordRequest() (TALK) -- Failure initiating change password for "
-									+ message.getUserName()
-									+ ", error : "
-									+ cp.getLastError());
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"ServiceController.processChangePasswordRequest() (TALK) -- Failure initiating change password for "
+							+ message.getUserName() + ", error : " + cp.getLastError());
 
-			if (from.sendEvent(new MessageEvent(
-					MessageEvent.CLIENT_RESPONSE_MESSAGE,
-					null,
-					ResponseMessage.INTERNAL_ERROR,
-					java.util.ResourceBundle
-							.getBundle(
-									"com.quikj.application.web.talk.plugin.language",
-									getLocale((String) from
-											.getParam("language")))
-							.getString(
-									"Database_error_occured_while_trying_to_change_password"),
-					new RegistrationResponseMessage(), null)) == false) {
+			if (from.sendEvent(
+					new MessageEvent(MessageEvent.CLIENT_RESPONSE_MESSAGE, null, ResponseMessage.INTERNAL_ERROR,
+							java.util.ResourceBundle
+									.getBundle("com.quikj.application.web.talk.plugin.language",
+											getLocale((String) from.getParam("language")))
+									.getString("Database_error_occured_while_trying_to_change_password"),
+							new RegistrationResponseMessage(), null)) == false) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								"ServiceController.processChangePasswordRequest() (TALK) -- Could not send change password response message to the endpoint "
-										+ from);
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"ServiceController.processChangePasswordRequest() (TALK) -- Could not send change password response message to the endpoint "
+								+ from);
 			}
 		}
 	}
 
-	private void processClientRequestMessage(TalkMessageInterface message,
-			EndPointInterface from, int req_id) {
-		if ((message instanceof JoinRequestMessage) == true) {
+	private void processClientRequestMessage(TalkMessageInterface message, EndPointInterface from, int req_id) {
+		if (message instanceof JoinRequestMessage) {
 			processJoinRequest((JoinRequestMessage) message, from, req_id);
-		} else if ((message instanceof ChangePasswordRequestMessage) == true) {
-			processChangePasswordRequest(
-					(ChangePasswordRequestMessage) message, from, req_id);
-		} else if ((message instanceof SendMailRequestMessage) == true) {
-			processSendMailRequest((SendMailRequestMessage) message, from,
-					req_id);
-		} else if ((message instanceof DndRequestMessage) == true) {
+		} else if (message instanceof ChangePasswordRequestMessage) {
+			processChangePasswordRequest((ChangePasswordRequestMessage) message, from, req_id);
+		} else if (message instanceof SendMailRequestMessage) {
+			processSendMailRequest((SendMailRequestMessage) message, from, req_id);
+		} else if (message instanceof DndRequestMessage) {
 			processDndRequest((DndRequestMessage) message, from, req_id);
 		} else {
-			// print warning message
-			AceLogger
-					.Instance()
-					.log(AceLogger.WARNING,
-							AceLogger.SYSTEM_LOG,
-							"ServiceController.processClientRequestMessage() (TALK) -- Unknown message of type "
-									+ message.getClass().getName()
-									+ " received");
+			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
+					"ServiceController.processClientRequestMessage() (TALK) -- Unknown message of type "
+							+ message.getClass().getName() + " received");
 		}
 	}
 
-	private void processDisconnectRequest(DisconnectMessage message,
-			EndPointInterface from) {
+	private void processDisconnectRequest(DisconnectMessage message, EndPointInterface from) {
 		// check for null 'from' party - this could be a transfer due to called
 		// party not logged in
 		if (from != null) {
@@ -612,12 +551,9 @@ public class ServiceController extends AceThread implements
 
 		if (session == null) {
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							"ServiceController.processDisconnectRequest() (TALK) -- Could not find session with id "
-									+ session_id);
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"ServiceController.processDisconnectRequest() (TALK) -- Could not find session with id "
+							+ session_id);
 
 			return;
 		}
@@ -635,20 +571,17 @@ public class ServiceController extends AceThread implements
 				// left, remove the called party info, because the call
 				// cannot be transferred.
 				message.setCalledInfo(null);
-				DisconnectReasonElement disc_reason = message
-						.getDisconnectReason();
+				DisconnectReasonElement disc_reason = message.getDisconnectReason();
 				if (disc_reason == null) {
 					// if it was not included
 					disc_reason = new DisconnectReasonElement();
-					disc_reason
-							.setReasonCode(DisconnectReasonElement.SERVER_DISCONNECT);
+					disc_reason.setReasonCode(DisconnectReasonElement.SERVER_DISCONNECT);
 				}
 
-				disc_reason.setReasonText(java.util.ResourceBundle.getBundle(
-						"com.quikj.application.web.talk.plugin.language",
-						getLocale((String) session.elementAt(0).getParam(
-								"language"))).getString(
-						"Transfer_failed_-_cannot_transfer_conference_call"));
+				disc_reason.setReasonText(java.util.ResourceBundle
+						.getBundle("com.quikj.application.web.talk.plugin.language",
+								getLocale((String) session.elementAt(0).getParam("language")))
+						.getString("Transfer_failed_-_cannot_transfer_conference_call"));
 				message.setDisconnectReason(disc_reason);
 			} else {
 				transfer_cdr = new SessionTransferCDR(session.getBillingId(),
@@ -658,11 +591,9 @@ public class ServiceController extends AceThread implements
 				// default the transferFrom, if not already set
 				if (from != null) {
 					if (message.getFrom() == null) {
-						UserElement udata = RegisteredEndPointList.Instance()
-								.findRegisteredUserData(from);
+						UserElement udata = RegisteredEndPointList.Instance().findRegisteredUserData(from);
 						if (udata != null) {
-							message.setFrom(new CallPartyElement(udata
-									.getName(), null));
+							message.setFrom(new CallPartyElement(udata.getName(), null));
 						}
 					}
 				}
@@ -685,8 +616,7 @@ public class ServiceController extends AceThread implements
 			}
 
 			// if the from party is a non-registered user, generate a logout CDR
-			if (RegisteredEndPointList.Instance().findRegisteredEndPointInfo(
-					from) == null) {
+			if (RegisteredEndPointList.Instance().findRegisteredEndPointInfo(from) == null) {
 				sendCDR(new LogoutCDR(from.getIdentifier()));
 			}
 
@@ -708,29 +638,23 @@ public class ServiceController extends AceThread implements
 
 			// if the from party is a non-registered user, generate a logout CDR
 			if (from != null) {
-				if (RegisteredEndPointList.Instance()
-						.findRegisteredEndPointInfo(from) == null) {
+				if (RegisteredEndPointList.Instance().findRegisteredEndPointInfo(from) == null) {
 					sendCDR(new LogoutCDR(from.getIdentifier()));
 				}
 			}
 
 			// if the other party is a non-registered user, generate a logout
 			// CDR
-			if (RegisteredEndPointList.Instance().findRegisteredEndPointInfo(
-					party) == null) {
+			if (RegisteredEndPointList.Instance().findRegisteredEndPointInfo(party) == null) {
 				sendCDR(new LogoutCDR(party.getIdentifier()));
 			}
 
 			// send the DISCONNECT message to the other party
-			if (party.sendEvent(new MessageEvent(
-					MessageEvent.DISCONNECT_MESSAGE, from, message, null)) == false) {
+			if (party.sendEvent(new MessageEvent(MessageEvent.DISCONNECT_MESSAGE, from, message, null)) == false) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								"ServiceController.processDisconnectRequest() (TALK) -- Could not send disconnect message to the endpoint "
-										+ party);
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"ServiceController.processDisconnectRequest() (TALK) -- Could not send disconnect message to the endpoint "
+								+ party);
 				return;
 			}
 		} else {
@@ -738,23 +662,18 @@ public class ServiceController extends AceThread implements
 			ConferenceBridge bridge = session.getConferenceBridge();
 			if (bridge == null) {
 				// something must be wrong
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								"ServiceController.processDisconnectRequest() (TALK) -- Could not find conference bridge for a multi-party session");
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"ServiceController.processDisconnectRequest() (TALK) -- Could not find conference bridge for a multi-party session");
 				return;
 			}
 
 			bridge.removeEndPoint(from);
 			bridge.notifyEndPoints();
 
-			sendCDR(new SessionLeaveCDR(session.getBillingId(),
-					from.getIdentifier()));
+			sendCDR(new SessionLeaveCDR(session.getBillingId(), from.getIdentifier()));
 
 			// if the from party is a non-registered user, generate a logout CDR
-			if (RegisteredEndPointList.Instance().findRegisteredEndPointInfo(
-					from) == null) {
+			if (RegisteredEndPointList.Instance().findRegisteredEndPointInfo(from) == null) {
 				sendCDR(new LogoutCDR(from.getIdentifier()));
 			}
 
@@ -765,18 +684,14 @@ public class ServiceController extends AceThread implements
 				EndPointInterface ep1 = session.elementAt(1);
 
 				ActionEvent event = new ActionEvent(null);
-				ChangeEndPointAction change = new ChangeEndPointAction(
-						session_id, ep1);
+				ChangeEndPointAction change = new ChangeEndPointAction(session_id, ep1);
 				event.addAction(change);
 
 				if (ep0.sendEvent(event) == false) {
 					// print error message
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									"ServiceController.processDisconnectRequest() (TALK) -- Could not send action event to an endpoint: "
-											+ ep0);
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							"ServiceController.processDisconnectRequest() (TALK) -- Could not send action event to an endpoint: "
+									+ ep0);
 
 					// and continue (??)
 				}
@@ -787,12 +702,9 @@ public class ServiceController extends AceThread implements
 
 				if (ep1.sendEvent(event) == false) {
 					// print error message
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									"ServiceController.processDisconnectRequest() (TALK) -- Could not send action event to an endpoint: "
-											+ ep1);
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							"ServiceController.processDisconnectRequest() (TALK) -- Could not send action event to an endpoint: "
+									+ ep1);
 
 					// and continue (??)
 				}
@@ -807,89 +719,51 @@ public class ServiceController extends AceThread implements
 
 	}
 
-	private void processDndRequest(DndRequestMessage message,
-			EndPointInterface from, int req_id) {
+	private void processDndRequest(DndRequestMessage message, EndPointInterface from, int reqId) {
 		boolean enable = message.isEnable();
-		EndPointInfo info = RegisteredEndPointList.Instance()
-				.findRegisteredEndPointInfo(from);
+		EndPointInfo info = RegisteredEndPointList.Instance().findRegisteredEndPointInfo(from);
 		if (info == null) {
-			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							"ServiceController.processDndRequest() (TALK) -- Could not find the endpoint info "
-									+ from);
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"ServiceController.processDndRequest() (TALK) -- Could not find the endpoint info " + from);
 
-			if (from.sendEvent(new MessageEvent(
-					MessageEvent.CLIENT_RESPONSE_MESSAGE, null,
-					ResponseMessage.INTERNAL_ERROR, "Internal error",
-					new DndResponseMessage(), null, req_id)) == false) {
-				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								"ServiceController.processDndRequest() (TALK) -- Could not send DndResponse to  "
-										+ from);
+			if (!from.sendEvent(new MessageEvent(MessageEvent.CLIENT_RESPONSE_MESSAGE, null,
+					ResponseMessage.INTERNAL_ERROR, "Internal error", new DndResponseMessage(), null, reqId))) {
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"ServiceController.processDndRequest() (TALK) -- Could not send DndResponse to  " + from);
 			}
 
 			return;
 		}
 
 		info.setDnd(enable);
-		if (enable == true) {
-			groupNotifyOfAvailabilityChange(from, false);
-		} else {
-			groupNotifyOfAvailabilityChange(from, true);
+		groupNotifyOfDNDChange(info);
 
-			if (info.getCallCount() > 0) {
-				groupNotifyOfCallCountChange(info);
-			}
-
-		}
-
-		if (from.sendEvent(new MessageEvent(
-				MessageEvent.CLIENT_RESPONSE_MESSAGE, null, ResponseMessage.OK,
-				"OK", new DndResponseMessage(), null, req_id)) == false) {
-			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							"ServiceController.processDndRequest() (TALK) -- Could not send ok response message to the endpoint "
-									+ from);
+		if (!from.sendEvent(new MessageEvent(MessageEvent.CLIENT_RESPONSE_MESSAGE, null, ResponseMessage.OK, "OK",
+				new DndResponseMessage(), null, reqId))) {
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"ServiceController.processDndRequest() (TALK) -- Could not send ok response message to the endpoint "
+							+ from);
 		}
 	}
 
-	private void processJoinRequest(JoinRequestMessage message,
-			EndPointInterface from, int req_id) {
+	private void processJoinRequest(JoinRequestMessage message, EndPointInterface from, int req_id) {
 		int num_sessions = message.getSessionList().size();
 		if (num_sessions <= 1) {
 			// print warning message
-			AceLogger
-					.Instance()
-					.log(AceLogger.WARNING,
-							AceLogger.SYSTEM_LOG,
-							"ServiceController.processJoinRequest() (TALK) -- Received join request with only one session");
+			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
+					"ServiceController.processJoinRequest() (TALK) -- Received join request with only one session");
 
 			// send join response
-			if (from.sendEvent(new MessageEvent(
-					MessageEvent.CLIENT_RESPONSE_MESSAGE, null,
-					ResponseMessage.BAD_REQUEST,
-					java.util.ResourceBundle.getBundle(
-							"com.quikj.application.web.talk.plugin.language",
-							getLocale((String) from.getParam("language")))
-							.getString(
-									"At_least_two_sessions_must_be_specified"),
+			if (from.sendEvent(new MessageEvent(MessageEvent.CLIENT_RESPONSE_MESSAGE, null, ResponseMessage.BAD_REQUEST,
+					java.util.ResourceBundle
+							.getBundle("com.quikj.application.web.talk.plugin.language",
+									getLocale((String) from.getParam("language")))
+							.getString("At_least_two_sessions_must_be_specified"),
 					null, null, req_id)) == false) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								"ServiceController.processJoinRequest() (TALK) -- Could not send join response message to the endpoint "
-										+ from);
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"ServiceController.processJoinRequest() (TALK) -- Could not send join response message to the endpoint "
+								+ from);
 			}
 			return;
 		}
@@ -898,32 +772,20 @@ public class ServiceController extends AceThread implements
 		SessionInfo first_session = findSession(first_session_id);
 		if (first_session == null) {
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							"ServiceController.processJoinRequest() (TALK) -- Could not find session for a join request");
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"ServiceController.processJoinRequest() (TALK) -- Could not find session for a join request");
 
 			// send response
-			if (from.sendEvent(new MessageEvent(
-					MessageEvent.CLIENT_RESPONSE_MESSAGE,
-					null,
-					ResponseMessage.BAD_REQUEST,
+			if (from.sendEvent(new MessageEvent(MessageEvent.CLIENT_RESPONSE_MESSAGE, null, ResponseMessage.BAD_REQUEST,
 					java.util.ResourceBundle
-							.getBundle(
-									"com.quikj.application.web.talk.plugin.language",
-									getLocale((String) from
-											.getParam("language")))
-							.getString(
-									"Could_not_get_information_on_the_first_session"),
+							.getBundle("com.quikj.application.web.talk.plugin.language",
+									getLocale((String) from.getParam("language")))
+							.getString("Could_not_get_information_on_the_first_session"),
 					null, null, req_id)) == false) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								"ServiceController.processJoinRequest() (TALK) -- Could not send join response message to the endpoint "
-										+ from);
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"ServiceController.processJoinRequest() (TALK) -- Could not send join response message to the endpoint "
+								+ from);
 			}
 
 			return;
@@ -944,31 +806,21 @@ public class ServiceController extends AceThread implements
 			SessionInfo session_info = findSession(session);
 			if (session_info == null) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								"ServiceController.processJoinRequest() (TALK) -- Could not find session for a join request");
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"ServiceController.processJoinRequest() (TALK) -- Could not find session for a join request");
 
 				// send join response
-				if (from.sendEvent(new MessageEvent(
-						MessageEvent.CLIENT_RESPONSE_MESSAGE,
-						null,
-						ResponseMessage.INTERNAL_ERROR,
-						java.util.ResourceBundle
-								.getBundle(
-										"com.quikj.application.web.talk.plugin.language",
-										getLocale((String) from
-												.getParam("language")))
-								.getString("Could_not_find_session"), null,
-						null, req_id)) == false) {
+				if (from.sendEvent(
+						new MessageEvent(MessageEvent.CLIENT_RESPONSE_MESSAGE, null, ResponseMessage.INTERNAL_ERROR,
+								java.util.ResourceBundle
+										.getBundle("com.quikj.application.web.talk.plugin.language",
+												getLocale((String) from.getParam("language")))
+										.getString("Could_not_find_session"),
+								null, null, req_id)) == false) {
 					// print error message
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									"ServiceController.processJoinRequest() (TALK) -- Could not send join response message to the endpoint "
-											+ from);
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							"ServiceController.processJoinRequest() (TALK) -- Could not send join response message to the endpoint "
+									+ from);
 				}
 				return;
 			}
@@ -978,32 +830,21 @@ public class ServiceController extends AceThread implements
 			// all sessions must be in connected state
 			if (session_info.isConnected() == false) {
 				// print warning message
-				AceLogger
-						.Instance()
-						.log(AceLogger.WARNING,
-								AceLogger.SYSTEM_LOG,
-								"ServiceController.processJoinRequest() (TALK) -- All specified session in a join request are not connected");
+				AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
+						"ServiceController.processJoinRequest() (TALK) -- All specified session in a join request are not connected");
 
 				// send join response
-				if (from.sendEvent(new MessageEvent(
-						MessageEvent.CLIENT_RESPONSE_MESSAGE,
-						null,
+				if (from.sendEvent(new MessageEvent(MessageEvent.CLIENT_RESPONSE_MESSAGE, null,
 						ResponseMessage.BAD_REQUEST,
 						java.util.ResourceBundle
-								.getBundle(
-										"com.quikj.application.web.talk.plugin.language",
-										getLocale((String) from
-												.getParam("language")))
-								.getString(
-										"All_sessions_must_be_in_connected_state"),
+								.getBundle("com.quikj.application.web.talk.plugin.language",
+										getLocale((String) from.getParam("language")))
+								.getString("All_sessions_must_be_in_connected_state"),
 						null, null, req_id)) == false) {
 					// print error message
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									"ServiceController.processJoinRequest() (TALK) -- Could not send join response message to the endpoint "
-											+ from);
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							"ServiceController.processJoinRequest() (TALK) -- Could not send join response message to the endpoint "
+									+ from);
 				}
 				return;
 			}
@@ -1011,33 +852,21 @@ public class ServiceController extends AceThread implements
 			// the session must belong to the from end point
 			if (session_info.indexOf(from) == -1) {
 				// print warning message
-				AceLogger
-						.Instance()
-						.log(AceLogger.WARNING,
-								AceLogger.SYSTEM_LOG,
-								"ServiceController.processJoinRequest() (TALK) --  All specified sessions for a join request do not belong to the same end point");
+				AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
+						"ServiceController.processJoinRequest() (TALK) --  All specified sessions for a join request do not belong to the same end point");
 
 				// send join response
-				if (from.sendEvent(new MessageEvent(
-						MessageEvent.CLIENT_RESPONSE_MESSAGE,
-						null,
-						ResponseMessage.BAD_REQUEST,
-						java.util.ResourceBundle
-								.getBundle(
-										"com.quikj.application.web.talk.plugin.language",
-										ServiceController
-												.getLocale((String) from
-														.getParam("language")))
-								.getString(
-										"The_end_point_does_not_have_all_the_specified_sessions"),
-						null, null, req_id)) == false) {
+				if (from.sendEvent(
+						new MessageEvent(MessageEvent.CLIENT_RESPONSE_MESSAGE, null, ResponseMessage.BAD_REQUEST,
+								java.util.ResourceBundle
+										.getBundle("com.quikj.application.web.talk.plugin.language",
+												ServiceController.getLocale((String) from.getParam("language")))
+										.getString("The_end_point_does_not_have_all_the_specified_sessions"),
+								null, null, req_id)) == false) {
 					// print error message
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									"ServiceController.processJoinRequest() (TALK) -- Could not send join response message to the endpoint "
-											+ from);
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							"ServiceController.processJoinRequest() (TALK) -- Could not send join response message to the endpoint "
+									+ from);
 				}
 				return;
 			}
@@ -1072,29 +901,22 @@ public class ServiceController extends AceThread implements
 			// should not happen
 
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							"ServiceController.processJoinRequest() (TALK) -- IO Error occured while creating a conference bridge",
-							ex);
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"ServiceController.processJoinRequest() (TALK) -- IO Error occured while creating a conference bridge",
+					ex);
 
 			// send join response
-			if (from.sendEvent(new MessageEvent(
-					MessageEvent.CLIENT_RESPONSE_MESSAGE, null,
-					ResponseMessage.INTERNAL_ERROR,
-					java.util.ResourceBundle.getBundle(
-							"com.quikj.application.web.talk.plugin.language",
-							getLocale((String) from.getParam("language")))
-							.getString("Could_not_obtain_a_conference_bridge"),
-					null, null, req_id)) == false) {
+			if (from.sendEvent(
+					new MessageEvent(MessageEvent.CLIENT_RESPONSE_MESSAGE, null, ResponseMessage.INTERNAL_ERROR,
+							java.util.ResourceBundle
+									.getBundle("com.quikj.application.web.talk.plugin.language",
+											getLocale((String) from.getParam("language")))
+									.getString("Could_not_obtain_a_conference_bridge"),
+							null, null, req_id)) == false) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								"ServiceController.processJoinRequest() (TALK) -- Could not send join response message to the endpoint "
-										+ from);
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"ServiceController.processJoinRequest() (TALK) -- Could not send join response message to the endpoint "
+								+ from);
 			}
 
 			return;
@@ -1111,31 +933,21 @@ public class ServiceController extends AceThread implements
 			SessionInfo session_info = findSession(session);
 			if (session_info == null) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								"ServiceController.processJoinRequest() (TALK) -- Could not find session for a join request");
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"ServiceController.processJoinRequest() (TALK) -- Could not find session for a join request");
 
 				// send join response
-				if (from.sendEvent(new MessageEvent(
-						MessageEvent.CLIENT_RESPONSE_MESSAGE,
-						null,
-						ResponseMessage.INTERNAL_ERROR,
-						java.util.ResourceBundle
-								.getBundle(
-										"com.quikj.application.web.talk.plugin.language",
-										getLocale((String) from
-												.getParam("language")))
-								.getString("Could_not_find_session"), null,
-						null, req_id)) == false) {
+				if (from.sendEvent(
+						new MessageEvent(MessageEvent.CLIENT_RESPONSE_MESSAGE, null, ResponseMessage.INTERNAL_ERROR,
+								java.util.ResourceBundle
+										.getBundle("com.quikj.application.web.talk.plugin.language",
+												getLocale((String) from.getParam("language")))
+										.getString("Could_not_find_session"),
+								null, null, req_id)) == false) {
 					// print error message
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									"ServiceController.processJoinRequest() (TALK) -- Could not send join response message to the endpoint "
-											+ from);
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							"ServiceController.processJoinRequest() (TALK) -- Could not send join response message to the endpoint "
+									+ from);
 				}
 				return;
 			}
@@ -1162,13 +974,12 @@ public class ServiceController extends AceThread implements
 		// create the action event to be sent
 		ActionEvent action = new ActionEvent(null);
 		for (int j = 1; j < num_sessions; j++) {
-			ReplaceSessionAction replace = new ReplaceSessionAction(message
-					.getSessionList().get(j), message.getSessionList().get(0));
+			ReplaceSessionAction replace = new ReplaceSessionAction(message.getSessionList().get(j),
+					message.getSessionList().get(0));
 			action.addAction(replace);
 		}
 
-		ChangeEndPointAction change = new ChangeEndPointAction(
-				first_session_id, bridge);
+		ChangeEndPointAction change = new ChangeEndPointAction(first_session_id, bridge);
 		action.addAction(change);
 
 		// send message to the end-point
@@ -1179,12 +990,9 @@ public class ServiceController extends AceThread implements
 			// send the event to the end point
 			if (ep.sendEvent(action) == false) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								"ServiceController.processJoinRequest() (TALK) -- Could not send action event to an endpoint: "
-										+ ep);
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"ServiceController.processJoinRequest() (TALK) -- Could not send action event to an endpoint: "
+								+ ep);
 
 				// and continue (??)
 			}
@@ -1196,16 +1004,12 @@ public class ServiceController extends AceThread implements
 			response.getSessionList().add(message.getSessionList().get(i));
 		}
 
-		if (!from.sendEvent(new MessageEvent(
-				MessageEvent.CLIENT_RESPONSE_MESSAGE, null, ResponseMessage.OK,
-				"OK", response, null, req_id))) {
+		if (!from.sendEvent(new MessageEvent(MessageEvent.CLIENT_RESPONSE_MESSAGE, null, ResponseMessage.OK, "OK",
+				response, null, req_id))) {
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							"ServiceController.processJoinRequest() (TALK) -- Could not send join response message to the endpoint "
-									+ from);
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"ServiceController.processJoinRequest() (TALK) -- Could not send join response message to the endpoint "
+							+ from);
 		} else {
 			bridge.notifyEndPoints();
 
@@ -1218,77 +1022,60 @@ public class ServiceController extends AceThread implements
 
 		switch (type) {
 		case MessageEvent.REGISTRATION_REQUEST:
-			processRegistrationRequest(
-					(RegistrationRequestMessage) event.getMessage(),
-					event.getFrom());
+			processRegistrationRequest((RegistrationRequestMessage) event.getMessage(), event.getFrom());
 			break;
 
 		case MessageEvent.SETUP_REQUEST:
-			processSetupRequest((SetupRequestMessage) event.getMessage(),
-					event.getFrom());
+			processSetupRequest((SetupRequestMessage) event.getMessage(), event.getFrom());
 			break;
 
 		case MessageEvent.SETUP_RESPONSE:
-			processSetupResponse((SetupResponseMessage) event.getMessage(),
-					event.getResponseStatus(), event.getReason(),
-					event.getFrom());
+			processSetupResponse((SetupResponseMessage) event.getMessage(), event.getResponseStatus(),
+					event.getReason(), event.getFrom());
 			break;
 
 		case MessageEvent.DISCONNECT_MESSAGE:
-			processDisconnectRequest((DisconnectMessage) event.getMessage(),
-					event.getFrom());
+			processDisconnectRequest((DisconnectMessage) event.getMessage(), event.getFrom());
 			break;
 
 		case MessageEvent.CLIENT_REQUEST_MESSAGE:
-			processClientRequestMessage(event.getMessage(), event.getFrom(),
-					event.getRequestId());
+			processClientRequestMessage(event.getMessage(), event.getFrom(), event.getRequestId());
 			break;
 
 		default:
 			// print error message
-			AceLogger.Instance().log(
-					AceLogger.WARNING,
-					AceLogger.SYSTEM_LOG,
-					"ServiceController.processMessageEvent() (TALK)-- Unknown event : "
-							+ event.messageType() + " received");
+			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
+					"ServiceController.processMessageEvent() (TALK)-- Unknown event : " + event.messageType()
+							+ " received");
 			break;
 		}
 	}
 
-	private void processRegistrationRequest(RegistrationRequestMessage message,
-			EndPointInterface from) {
+	private void processRegistrationRequest(RegistrationRequestMessage message, EndPointInterface from) {
 		// set language information, if any
 		if (message.getLanguage() != null) {
 			from.setParam("language", message.getLanguage());
 		}
 
 		// make sure that it is not a duplicate
-		if (RegisteredEndPointList.Instance().findRegisteredEndPoint(
-				message.getUserName()) != null) {
+		if (RegisteredEndPointList.Instance().findRegisteredEndPoint(message.getUserName()) != null) {
 			// check if this is a feature
 			String[] features = FeatureFactory.getInstance().getFeatureNames();
 			int num_features = features.length;
 
 			for (int i = 0; i < num_features; i++) {
 				if (features[i].equals(message.getUserName()) == true) {
-					if (from.sendEvent(new MessageEvent(
-							MessageEvent.REGISTRATION_RESPONSE,
-							null,
-							ResponseMessage.FORBIDDEN,
-							java.util.ResourceBundle
-									.getBundle(
-											"com.quikj.application.web.talk.plugin.language",
-											ServiceController.getLocale((String) from
-													.getParam("language")))
-									.getString("User_already_registered"),
-							null, null)) == false) {
+					if (from.sendEvent(
+							new MessageEvent(MessageEvent.REGISTRATION_RESPONSE, null, ResponseMessage.FORBIDDEN,
+									java.util.ResourceBundle
+											.getBundle("com.quikj.application.web.talk.plugin.language",
+													ServiceController.getLocale((String) from.getParam("language")))
+											.getString("User_already_registered"),
+									null, null)) == false) {
 						// print error message
-						AceLogger
-								.Instance()
-								.log(AceLogger.ERROR,
-										AceLogger.SYSTEM_LOG,
-										"ServiceController.processRegistrationRequest() (TALK) -- Could not send registration response message to the endpoint "
-												+ from);
+						AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+								"ServiceController.processRegistrationRequest() (TALK) -- Could not send registration response message to the endpoint "
+										+ from);
 					}
 
 					return;
@@ -1302,34 +1089,25 @@ public class ServiceController extends AceThread implements
 			password = enc_password;
 		}
 
-		DbEndPointRegistration regRequest = new DbEndPointRegistration(from,
-				message.getUserName(), password, this, database);
+		DbEndPointRegistration regRequest = new DbEndPointRegistration(from, message.getUserName(), password, this,
+				database);
 
 		if (!regRequest.registerEndPoint()) {
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							"ServiceController.processRegistrationRequest() (TALK) -- Failure authenticating user "
-									+ message.getUserName()
-									+ ", error : "
-									+ regRequest.getLastError());
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"ServiceController.processRegistrationRequest() (TALK) -- Failure authenticating user "
+							+ message.getUserName() + ", error : " + regRequest.getLastError());
 
-			if (from.sendEvent(new MessageEvent(
-					MessageEvent.REGISTRATION_RESPONSE, null,
-					ResponseMessage.INTERNAL_ERROR,
-					java.util.ResourceBundle.getBundle(
-							"com.quikj.application.web.talk.plugin.language",
-							ServiceController.getLocale((String) from
-									.getParam("language"))).getString(
-							"Failure_authenticating_user"), null, null)) == false) {
+			if (from.sendEvent(
+					new MessageEvent(MessageEvent.REGISTRATION_RESPONSE, null, ResponseMessage.INTERNAL_ERROR,
+							java.util.ResourceBundle
+									.getBundle("com.quikj.application.web.talk.plugin.language",
+											ServiceController.getLocale((String) from.getParam("language")))
+									.getString("Failure_authenticating_user"),
+							null, null)) == false) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								"ServiceController.processRegistrationRequest() (TALK) -- Could not send registration response message to the endpoint "
-										+ from);
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"ServiceController.processRegistrationRequest() (TALK) -- Could not send registration response message to the endpoint "
+								+ from);
 			}
 
 			return;
@@ -1342,40 +1120,27 @@ public class ServiceController extends AceThread implements
 		return;
 	}
 
-	private void processSendMailRequest(SendMailRequestMessage message,
-			EndPointInterface from, int req_id) {
+	private void processSendMailRequest(SendMailRequestMessage message, EndPointInterface from, int req_id) {
 		// validate the requesting endpoint
 		if (RegisteredEndPointList.Instance().findRegisteredEndPointInfo(from) == null) {
 			// log a warning
-			AceLogger
-					.Instance()
-					.log(AceLogger.WARNING,
-							AceLogger.SYSTEM_LOG,
-							"ServiceController.processSendMailRequest() (TALK) -- Send mail request message received from unregistered endpoint "
-									+ from);
+			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
+					"ServiceController.processSendMailRequest() (TALK) -- Send mail request message received from unregistered endpoint "
+							+ from);
 
 			// send a response
 			if (message.isReplyRequired() == true) {
-				if (from.sendEvent(new MessageEvent(
-						MessageEvent.CLIENT_RESPONSE_MESSAGE,
-						null,
-						ResponseMessage.FORBIDDEN,
-						java.util.ResourceBundle
-								.getBundle(
-										"com.quikj.application.web.talk.plugin.language",
-										ServiceController
-												.getLocale((String) from
-														.getParam("language")))
-								.getString(
-										"Unauthorized_send_mail_attempt_rejected"),
-						new SendMailResponseMessage(), null, req_id)) == false) {
+				if (from.sendEvent(
+						new MessageEvent(MessageEvent.CLIENT_RESPONSE_MESSAGE, null, ResponseMessage.FORBIDDEN,
+								java.util.ResourceBundle
+										.getBundle("com.quikj.application.web.talk.plugin.language",
+												ServiceController.getLocale((String) from.getParam("language")))
+										.getString("Unauthorized_send_mail_attempt_rejected"),
+								new SendMailResponseMessage(), null, req_id)) == false) {
 					// print error message
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									"ServiceController.processSendMailRequest() (TALK) -- Could not send unauthorized send-mail response message to the endpoint "
-											+ from);
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							"ServiceController.processSendMailRequest() (TALK) -- Could not send unauthorized send-mail response message to the endpoint "
+									+ from);
 				}
 			}
 			return;
@@ -1384,25 +1149,17 @@ public class ServiceController extends AceThread implements
 		if (AceMailService.getInstance() == null) {
 			// mail service is not active
 			if (message.isReplyRequired() == true) {
-				if (from.sendEvent(new MessageEvent(
-						MessageEvent.CLIENT_RESPONSE_MESSAGE,
-						null,
+				if (from.sendEvent(new MessageEvent(MessageEvent.CLIENT_RESPONSE_MESSAGE, null,
 						ResponseMessage.SERVICE_UNAVAILABLE,
 						java.util.ResourceBundle
-								.getBundle(
-										"com.quikj.application.web.talk.plugin.language",
-										ServiceController
-												.getLocale((String) from
-														.getParam("language")))
+								.getBundle("com.quikj.application.web.talk.plugin.language",
+										ServiceController.getLocale((String) from.getParam("language")))
 								.getString("Mail_Service_not_active"),
 						new SendMailResponseMessage(), null, req_id)) == false) {
 					// print error message
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									"ServiceController.processSendMailRequest() (TALK) -- Could not send service unavailable response message to the endpoint "
-											+ from);
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							"ServiceController.processSendMailRequest() (TALK) -- Could not send service unavailable response message to the endpoint "
+									+ from);
 				}
 			}
 			return;
@@ -1452,54 +1209,39 @@ public class ServiceController extends AceThread implements
 
 		if (AceMailService.getInstance().addToMailQueue(out_mail) == true) {
 			if (message.isReplyRequired() == true) {
-				if (from.sendEvent(new MessageEvent(
-						MessageEvent.CLIENT_RESPONSE_MESSAGE, null,
-						ResponseMessage.OK, "OK",
-						new SendMailResponseMessage(), null, req_id)) == false) {
+				if (from.sendEvent(new MessageEvent(MessageEvent.CLIENT_RESPONSE_MESSAGE, null, ResponseMessage.OK,
+						"OK", new SendMailResponseMessage(), null, req_id)) == false) {
 					// print error message
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									"ServiceController.processSendMailRequest() (TALK) -- Could not send OK send-mail response message to the endpoint "
-											+ from);
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							"ServiceController.processSendMailRequest() (TALK) -- Could not send OK send-mail response message to the endpoint "
+									+ from);
 				}
 			}
 		} else {
 			if (message.isReplyRequired() == true) {
-				if (from.sendEvent(new MessageEvent(
-						MessageEvent.CLIENT_RESPONSE_MESSAGE,
-						null,
-						ResponseMessage.INTERNAL_ERROR,
-						java.util.ResourceBundle
-								.getBundle(
-										"com.quikj.application.web.talk.plugin.language",
-										ServiceController
-												.getLocale((String) from
-														.getParam("language")))
-								.getString("Send_mail_attempt_failed"),
-						new SendMailResponseMessage(), null, req_id)) == false) {
+				if (from.sendEvent(
+						new MessageEvent(MessageEvent.CLIENT_RESPONSE_MESSAGE, null, ResponseMessage.INTERNAL_ERROR,
+								java.util.ResourceBundle
+										.getBundle("com.quikj.application.web.talk.plugin.language",
+												ServiceController.getLocale((String) from.getParam("language")))
+										.getString("Send_mail_attempt_failed"),
+								new SendMailResponseMessage(), null, req_id)) == false) {
 					// print error message
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									"ServiceController.processSendMailRequest() (TALK) -- Could not send fail send-mail response message to the endpoint "
-											+ from);
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							"ServiceController.processSendMailRequest() (TALK) -- Could not send fail send-mail response message to the endpoint "
+									+ from);
 				}
 			}
 		}
 	}
 
-	private void processSetupRequest(SetupRequestMessage message,
-			EndPointInterface from) {
+	private void processSetupRequest(SetupRequestMessage message, EndPointInterface from) {
 		// set the language information
 		if (from.getParam("language") == null) {
 			// not initialized, probably because the user is not a registered
 			// user
 			if (message.getCallingNameElement() != null) {
-				String language = message.getCallingNameElement()
-						.getCallParty().getLanguage();
+				String language = message.getCallingNameElement().getCallParty().getLanguage();
 				if (language != null) {
 					from.setParam("language", language);
 				}
@@ -1510,49 +1252,32 @@ public class ServiceController extends AceThread implements
 		if (findSession(session_id) != null) {
 			SetupResponseMessage response = new SetupResponseMessage();
 			response.setSessionId(session_id);
-			if (from.sendEvent(new MessageEvent(MessageEvent.SETUP_RESPONSE,
-					null, ResponseMessage.INTERNAL_ERROR,
-					java.util.ResourceBundle.getBundle(
-							"com.quikj.application.web.talk.plugin.language",
-							getLocale((String) from.getParam("language")))
-							.getString("Duplicate_session_id"), response, null)) == false) {
+			if (from.sendEvent(new MessageEvent(MessageEvent.SETUP_RESPONSE, null, ResponseMessage.INTERNAL_ERROR,
+					java.util.ResourceBundle.getBundle("com.quikj.application.web.talk.plugin.language",
+							getLocale((String) from.getParam("language"))).getString("Duplicate_session_id"),
+					response, null)) == false) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								"ServiceController.processSetupRequest() (TALK) -- Could not send setup response message to the endpoint "
-										+ from);
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"ServiceController.processSetupRequest() (TALK) -- Could not send setup response message to the endpoint "
+								+ from);
 			}
 			return;
 		}
 
 		if (message.getCallingNameElement().getCallParty().getEndUserCookie() != null) {
-			DbBlacklistVerification bl = new DbBlacklistVerification(from,
-					message, this, database);
+			DbBlacklistVerification bl = new DbBlacklistVerification(from, message, this, database);
 			if (!bl.checkBlacklist()) {
 				adjustFailedTransferCallCount(message);
 				SetupResponseMessage response = new SetupResponseMessage();
 				response.setSessionId(session_id);
-				if (!from
-						.sendEvent(new MessageEvent(
-								MessageEvent.SETUP_RESPONSE,
-								null,
-								ResponseMessage.INTERNAL_ERROR,
-								java.util.ResourceBundle
-										.getBundle(
-												"com.quikj.application.web.talk.plugin.language",
-												getLocale((String) from
-														.getParam("language")))
-										.getString("Database_error")
-										+ " " + bl.getLastError(), response,
-								null))) {
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									"ServiceController.processSetupRequest() (TALK) -- Could not send setup response message to the endpoint "
-											+ from);
+				if (!from.sendEvent(new MessageEvent(MessageEvent.SETUP_RESPONSE, null, ResponseMessage.INTERNAL_ERROR,
+						java.util.ResourceBundle.getBundle("com.quikj.application.web.talk.plugin.language",
+								getLocale((String) from.getParam("language"))).getString("Database_error") + " "
+								+ bl.getLastError(),
+						response, null))) {
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							"ServiceController.processSetupRequest() (TALK) -- Could not send setup response message to the endpoint "
+									+ from);
 				}
 				return;
 			}
@@ -1573,11 +1298,9 @@ public class ServiceController extends AceThread implements
 			return;
 		}
 
-		String calledName = message.getCalledNameElement().getCallParty()
-				.getName();
+		String calledName = message.getCalledNameElement().getCallParty().getName();
 
-		EndPointInterface calledEndpoint = RegisteredEndPointList.Instance()
-				.findRegisteredEndPoint(calledName);
+		EndPointInterface calledEndpoint = RegisteredEndPointList.Instance().findRegisteredEndPoint(calledName);
 		if (calledEndpoint == null) {
 			return;
 		}
@@ -1585,8 +1308,7 @@ public class ServiceController extends AceThread implements
 		groupNotifyOfCallCountChange(calledEndpoint);
 	}
 
-	public void finishChatSetup(SetupRequestMessage message,
-			EndPointInterface from) {
+	public void finishChatSetup(SetupRequestMessage message, EndPointInterface from) {
 
 		long session_id = message.getSessionId();
 		if (message.getTransferId() == null) {
@@ -1594,8 +1316,7 @@ public class ServiceController extends AceThread implements
 
 			// if the calling user is an unregistered user, generate the
 			// necessary CDR
-			if (RegisteredEndPointList.Instance().findRegisteredEndPointInfo(
-					from) == null) {
+			if (RegisteredEndPointList.Instance().findRegisteredEndPointInfo(from) == null) {
 				// unregistered user
 				String name = null;
 				String email = null;
@@ -1615,28 +1336,24 @@ public class ServiceController extends AceThread implements
 					cookie = calling.getCallParty().getEndUserCookie();
 				}
 
-				UnregisteredUserLoginCDR cdr = new UnregisteredUserLoginCDR(
-						from.getIdentifier(), name, email, additional,
-						environment, ip, cookie);
+				UnregisteredUserLoginCDR cdr = new UnregisteredUserLoginCDR(from.getIdentifier(), name, email,
+						additional, environment, ip, cookie);
 
 				sendCDR(cdr);
 			}
 		}
 
-		String called_name = message.getCalledNameElement().getCallParty()
-				.getName();
+		String called_name = message.getCalledNameElement().getCallParty().getName();
 
 		// check if the user is in the registered list
-		EndPointInterface called_endpoint = RegisteredEndPointList.Instance()
-				.findRegisteredEndPoint(called_name);
+		EndPointInterface called_endpoint = RegisteredEndPointList.Instance().findRegisteredEndPoint(called_name);
 		if (called_endpoint == null) {
 			adjustFailedTransferCallCount(message);
 
 			// called user not logged in, check for unavailable transfer-to
 			// number
 
-			SessionSetupCDR cdr = new SessionSetupCDR(from.getIdentifier(),
-					called_name, message.getTransferId());
+			SessionSetupCDR cdr = new SessionSetupCDR(from.getIdentifier(), called_name, message.getTransferId());
 			sendCDR(cdr);
 
 			// add to the session list
@@ -1648,55 +1365,36 @@ public class ServiceController extends AceThread implements
 			response.setSessionId(session_id);
 			response.setCalledParty(message.getCalledNameElement());
 
-			checkUnavailableUserTransfer(
-					session,
-					called_name,
-					null,
-					response,
-					SetupResponseMessage.UNAVAILABLE,
-					java.util.ResourceBundle.getBundle(
-							"com.quikj.application.web.talk.plugin.language",
-							ServiceController.getLocale((String) from
-									.getParam("language"))).getString(
-							"User_not_found"));
+			checkUnavailableUserTransfer(session, called_name, null, response, SetupResponseMessage.UNAVAILABLE,
+					java.util.ResourceBundle
+							.getBundle("com.quikj.application.web.talk.plugin.language",
+									ServiceController.getLocale((String) from.getParam("language")))
+							.getString("User_not_found"));
 			// Setup response info may be needed later
 			return;
 		}
 
-		EndPointInfo info = RegisteredEndPointList.Instance()
-				.findRegisteredEndPointInfo(called_endpoint);
+		EndPointInfo info = RegisteredEndPointList.Instance().findRegisteredEndPointInfo(called_endpoint);
 		if (info == null) {
 			adjustFailedTransferCallCount(message);
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							"ServiceController.processSetupRequest() (TALK) -- Could not find the end-point info for "
-									+ called_endpoint);
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"ServiceController.processSetupRequest() (TALK) -- Could not find the end-point info for "
+							+ called_endpoint);
 
 			SetupResponseMessage response = new SetupResponseMessage();
 			response.setSessionId(session_id);
 
 			// send a response
-			if (from.sendEvent(new MessageEvent(
-					MessageEvent.SETUP_RESPONSE,
-					null,
-					ResponseMessage.INTERNAL_ERROR,
+			if (from.sendEvent(new MessageEvent(MessageEvent.SETUP_RESPONSE, null, ResponseMessage.INTERNAL_ERROR,
 					java.util.ResourceBundle
-							.getBundle(
-									"com.quikj.application.web.talk.plugin.language",
-									getLocale((String) from
-											.getParam("language")))
-							.getString(
-									"Failed_to_send_message_to_the_called_party"),
+							.getBundle("com.quikj.application.web.talk.plugin.language",
+									getLocale((String) from.getParam("language")))
+							.getString("Failed_to_send_message_to_the_called_party"),
 					response, null)) == false) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								"ServiceController.processSetupRequest() (TALK) -- Could not send setup response message to the endpoint "
-										+ from);
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"ServiceController.processSetupRequest() (TALK) -- Could not send setup response message to the endpoint "
+								+ from);
 			}
 			return;
 		}
@@ -1704,69 +1402,51 @@ public class ServiceController extends AceThread implements
 		if (info.isDnd()) {
 			adjustFailedTransferCallCount(message);
 
-			// the user has set DO NOT DISTURB
+			// the user has set DND
 			SetupResponseMessage response = new SetupResponseMessage();
 			response.setSessionId(session_id);
 
 			// send a response
-			if (!from.sendEvent(new MessageEvent(MessageEvent.SETUP_RESPONSE,
-					null, SetupResponseMessage.BUSY,
-					java.util.ResourceBundle.getBundle(
-							"com.quikj.application.web.talk.plugin.language",
-							getLocale((String) from.getParam("language")))
+			if (!from.sendEvent(new MessageEvent(MessageEvent.SETUP_RESPONSE, null, SetupResponseMessage.BUSY,
+					java.util.ResourceBundle
+							.getBundle("com.quikj.application.web.talk.plugin.language",
+									getLocale((String) from.getParam("language")))
 							.getString("The_user_has_enabled_do_not_disturb"),
 					response, null))) {
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								"ServiceController.processSetupRequest() (TALK) -- Could not send setup response message to the endpoint "
-										+ from);
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"ServiceController.processSetupRequest() (TALK) -- Could not send setup response message to the endpoint "
+								+ from);
 			}
 			return;
 		}
 
 		// send the message to the called party
-		if (!called_endpoint.sendEvent(new MessageEvent(
-				MessageEvent.SETUP_REQUEST, from, message, null))) {
+		if (!called_endpoint.sendEvent(new MessageEvent(MessageEvent.SETUP_REQUEST, from, message, null))) {
 			adjustFailedTransferCallCount(message);
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							"ServiceController.processSetupRequest() (TALK) -- Could not send setup message to the called endpoint "
-									+ called_endpoint);
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"ServiceController.processSetupRequest() (TALK) -- Could not send setup message to the called endpoint "
+							+ called_endpoint);
 
 			SetupResponseMessage response = new SetupResponseMessage();
 			response.setSessionId(session_id);
 
 			// send a response
-			if (!from
-					.sendEvent(new MessageEvent(
-							MessageEvent.SETUP_RESPONSE,
-							null,
-							ResponseMessage.INTERNAL_ERROR,
-							java.util.ResourceBundle
-									.getBundle(
-											"com.quikj.application.web.talk.plugin.language",
-											getLocale((String) from
-													.getParam("language")))
-									.getString(
-											"Failed_to_send_message_to_the_called_party"),
-							response, null))) {
+			if (!from.sendEvent(new MessageEvent(MessageEvent.SETUP_RESPONSE, null, ResponseMessage.INTERNAL_ERROR,
+					java.util.ResourceBundle
+							.getBundle("com.quikj.application.web.talk.plugin.language",
+									getLocale((String) from.getParam("language")))
+							.getString("Failed_to_send_message_to_the_called_party"),
+					response, null))) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								"ServiceController.processSetupRequest() (TALK) -- Could not send setup response message to the endpoint "
-										+ from);
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"ServiceController.processSetupRequest() (TALK) -- Could not send setup response message to the endpoint "
+								+ from);
 			}
 			return;
 		}
 
-		SessionSetupCDR cdr = new SessionSetupCDR(from.getIdentifier(),
-				called_endpoint.getIdentifier(), message.getTransferId());
+		SessionSetupCDR cdr = new SessionSetupCDR(from.getIdentifier(), called_endpoint.getIdentifier(),
+				message.getTransferId());
 		sendCDR(cdr);
 
 		// add to the session list
@@ -1776,26 +1456,20 @@ public class ServiceController extends AceThread implements
 		addSession(session);
 	}
 
-	private void processSetupResponse(SetupResponseMessage message, int status,
-			String reason, EndPointInterface from) {
+	private void processSetupResponse(SetupResponseMessage message, int status, String reason, EndPointInterface from) {
 		SessionInfo session = findSession(message.getSessionId());
 		if (session == null) {
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							"ServiceController.processSetupResponse() (TALK) -- Could not find session with id "
-									+ message.getSessionId());
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"ServiceController.processSetupResponse() (TALK) -- Could not find session with id "
+							+ message.getSessionId());
 
 			return;
 		}
 
-		if ((status == SetupResponseMessage.NOANS)
-				|| (status == SetupResponseMessage.BUSY)) {
+		if ((status == SetupResponseMessage.NOANS) || (status == SetupResponseMessage.BUSY)) {
 			// see if called party has unavailable transfer-to number set
-			UserElement unavail_user = RegisteredEndPointList.Instance()
-					.findRegisteredUserData(from);
+			UserElement unavail_user = RegisteredEndPointList.Instance().findRegisteredUserData(from);
 			String xferto_name = unavail_user.getUnavailXferTo();
 
 			if (xferto_name != null) {
@@ -1803,18 +1477,14 @@ public class ServiceController extends AceThread implements
 					generateSetupResponseCDR(message, status, from, session);
 
 					// see if xferto user logged in
-					UserElement xferto_user = RegisteredEndPointList.Instance()
-							.findRegisteredUserData(xferto_name);
+					UserElement xferto_user = RegisteredEndPointList.Instance().findRegisteredUserData(xferto_name);
 					if (xferto_user != null) {
-						transferUserUnavailableCall(session, xferto_user, from,
-								unavail_user.getName());
+						transferUserUnavailableCall(session, xferto_user, from, unavail_user.getName());
 						return;
 					} else {
 						// Start xfer process using original called party name,
 						// so caller sees first xfer hop
-						checkUnavailableUserTransfer(session,
-								unavail_user.getName(), from, message, status,
-								reason);
+						checkUnavailableUserTransfer(session, unavail_user.getName(), from, message, status, reason);
 						return;
 					}
 				}
@@ -1827,9 +1497,8 @@ public class ServiceController extends AceThread implements
 			removeSession(session.getSessionId());
 
 			// Create a transfer CDR
-			SessionTransferCDR transferCdr = new SessionTransferCDR(
-					session.getBillingId(), message.getCalledParty()
-							.getCallParty().getName());
+			SessionTransferCDR transferCdr = new SessionTransferCDR(session.getBillingId(),
+					message.getCalledParty().getCallParty().getName());
 			sendCDR(transferCdr);
 
 			// Create a new session id (treat the transfer like a new session
@@ -1838,16 +1507,12 @@ public class ServiceController extends AceThread implements
 			message.setNewSessionId(newSessionId);
 
 			// Forward the message to the calling end point
-			if (!session.getCallingEndPoint().sendEvent(
-					new MessageEvent(MessageEvent.SETUP_RESPONSE, from, status,
-							reason, message, null))) {
+			if (!session.getCallingEndPoint()
+					.sendEvent(new MessageEvent(MessageEvent.SETUP_RESPONSE, from, status, reason, message, null))) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								"ServiceController.processSetupResponse() (TALK) -- Could not send setup response message to the endpoint "
-										+ session.getCallingEndPoint());
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"ServiceController.processSetupResponse() (TALK) -- Could not send setup response message to the endpoint "
+								+ session.getCallingEndPoint());
 				return;
 			}
 
@@ -1856,9 +1521,8 @@ public class ServiceController extends AceThread implements
 			SetupRequestMessage req = new SetupRequestMessage();
 			req.setSessionId(newSessionId);
 
-			CallPartyElement epInfo = (CallPartyElement) session
-					.getCallingEndPoint().getParam(
-							EndPointInterface.PARAM_SELF_INFO);
+			CallPartyElement epInfo = (CallPartyElement) session.getCallingEndPoint()
+					.getParam(EndPointInterface.PARAM_SELF_INFO);
 			if (epInfo != null) {
 				CallingNameElement cpElement = new CallingNameElement();
 				req.setCallingNameElement(cpElement);
@@ -1903,9 +1567,7 @@ public class ServiceController extends AceThread implements
 		AceRMIImpl rs = AceRMIImpl.getInstance();
 		if (rs != null) // if remote service has been started
 		{
-			rs.registerService(
-					"com.quikj.application.web.talk.plugin.ServiceController",
-					this);
+			rs.registerService("com.quikj.application.web.talk.plugin.ServiceController", this);
 		}
 
 		while (true) {
@@ -1913,13 +1575,10 @@ public class ServiceController extends AceThread implements
 				AceMessageInterface message = waitMessage();
 				if (message == null) {
 					// print error message
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									getName()
-											+ "- ServiceController.run() -- A null message was received while waiting for a message - "
-											+ getErrorMessage());
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							getName()
+									+ "- ServiceController.run() -- A null message was received while waiting for a message - "
+									+ getErrorMessage());
 
 					break;
 				}
@@ -1927,25 +1586,17 @@ public class ServiceController extends AceThread implements
 				if (message instanceof AceSignalMessage) {
 					// A signal message is received
 
-					AceLogger
-							.Instance()
-							.log(AceLogger.INFORMATIONAL,
-									AceLogger.SYSTEM_LOG,
-									getName()
-											+ " - ServiceController.run() --  A signal "
-											+ ((AceSignalMessage) message)
-													.getSignalId()
-											+ " is received : "
-											+ ((AceSignalMessage) message)
-													.getMessage());
+					AceLogger.Instance().log(AceLogger.INFORMATIONAL, AceLogger.SYSTEM_LOG,
+							getName() + " - ServiceController.run() --  A signal "
+									+ ((AceSignalMessage) message).getSignalId() + " is received : "
+									+ ((AceSignalMessage) message).getMessage());
 					break;
 				} else if (message instanceof MessageEvent) {
 					processMessageEvent((MessageEvent) message);
 				} else if (message instanceof UnregistrationEvent) {
 					processUnregistrationEvent((UnregistrationEvent) message);
 				} else if (message instanceof AceSQLMessage) {
-					DbOperationInterface op = (DbOperationInterface) ((AceSQLMessage) message)
-							.getUserParm();
+					DbOperationInterface op = (DbOperationInterface) ((AceSQLMessage) message).getUserParm();
 					if (op != null) {
 						synchronized (pendingDbOps) {
 							if (pendingDbOps.contains(op)) {
@@ -1957,32 +1608,22 @@ public class ServiceController extends AceThread implements
 							}
 						}
 					} else {
-						AceLogger
-								.Instance()
-								.log(AceLogger.ERROR,
-										AceLogger.SYSTEM_LOG,
-										getName()
-												+ "- ServiceController.run() -- No database handler for database event.");
+						AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+								getName() + "- ServiceController.run() -- No database handler for database event.");
 					}
 				} else {
 					// unexpected event
-					AceLogger
-							.Instance()
-							.log(AceLogger.WARNING,
-									AceLogger.SYSTEM_LOG,
-									getName()
-											+ "- ServiceController.run() -- An unexpected event is received : "
-											+ message.messageType());
+					AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
+							getName() + "- ServiceController.run() -- An unexpected event is received : "
+									+ message.messageType());
 				}
 
 			} catch (Exception e) {
-				AceLogger
-						.Instance()
-						.log(AceLogger.WARNING,
-								AceLogger.SYSTEM_LOG,
-								getName()
-										+ "- ServiceController.run() -- An exception occured while processing queue messages : "
-										+ e.getClass().getName(), e);
+				AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
+						getName()
+								+ "- ServiceController.run() -- An exception occured while processing queue messages : "
+								+ e.getClass().getName(),
+						e);
 			}
 		}
 
@@ -1994,11 +1635,8 @@ public class ServiceController extends AceThread implements
 		if (handler != null) {
 			if (handler.sendCDR(cdr) == false) {
 				// print error message
-				AceLogger.Instance().log(
-						AceLogger.ERROR,
-						AceLogger.SYSTEM_LOG,
-						"ServiceController.sendCDR() (TALK) -- Could not send CDR"
-								+ getErrorMessage());
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"ServiceController.sendCDR() (TALK) -- Could not send CDR" + getErrorMessage());
 			}
 		}
 	}
@@ -2007,20 +1645,15 @@ public class ServiceController extends AceThread implements
 		return sendMessage(message);
 	}
 
-	public boolean sendRegistrationResponse(EndPointInterface endpoint,
-			int response_status, String reason, TalkMessageInterface message,
-			Object user_parm) {
-		if (endpoint.sendEvent(new MessageEvent(
-				MessageEvent.REGISTRATION_RESPONSE, null, response_status,
-				reason, message, user_parm)) == false) {
+	public boolean sendRegistrationResponse(EndPointInterface endpoint, int response_status, String reason,
+			TalkMessageInterface message, Object user_parm) {
+		if (endpoint.sendEvent(new MessageEvent(MessageEvent.REGISTRATION_RESPONSE, null, response_status, reason,
+				message, user_parm)) == false) {
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							getName()
-									+ "- ServiceController.sendRegistrationResponse() -- Could not send registration response message to the endpoint "
-									+ endpoint);
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					getName()
+							+ "- ServiceController.sendRegistrationResponse() -- Could not send registration response message to the endpoint "
+							+ endpoint);
 
 			return false;
 		}
@@ -2028,18 +1661,14 @@ public class ServiceController extends AceThread implements
 		return true;
 	}
 
-	public boolean sendSetupResponse(EndPointInterface endpoint,
-			int responseStatus, String reason, TalkMessageInterface message,
-			Object userParm) {
-		if (endpoint.sendEvent(new MessageEvent(MessageEvent.SETUP_RESPONSE,
-				null, responseStatus, reason, message, userParm)) == false) {
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							getName()
-									+ "- ServiceController.sendSetupResponse() -- Could not send setup response message to the endpoint "
-									+ endpoint);
+	public boolean sendSetupResponse(EndPointInterface endpoint, int responseStatus, String reason,
+			TalkMessageInterface message, Object userParm) {
+		if (endpoint.sendEvent(new MessageEvent(MessageEvent.SETUP_RESPONSE, null, responseStatus, reason, message,
+				userParm)) == false) {
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					getName()
+							+ "- ServiceController.sendSetupResponse() -- Could not send setup response message to the endpoint "
+							+ endpoint);
 			return false;
 		}
 
@@ -2050,8 +1679,8 @@ public class ServiceController extends AceThread implements
 		return false;
 	}
 
-	public void transferUserUnavailableCall(SessionInfo session,
-			UserElement xferto, EndPointInterface from, String transferFromName) {
+	public void transferUserUnavailableCall(SessionInfo session, UserElement xferto, EndPointInterface from,
+			String transferFromName) {
 		DisconnectMessage message = new DisconnectMessage();
 		message.setSessionId(session.getSessionId());
 		DisconnectReasonElement reason = new DisconnectReasonElement();
@@ -2065,13 +1694,9 @@ public class ServiceController extends AceThread implements
 		}
 
 		reason.setReasonText(java.util.ResourceBundle
-				.getBundle(
-						"com.quikj.application.web.talk.plugin.language",
-						ServiceController.getLocale((String) session
-								.getCallingEndPoint().getParam("language")))
-				.getString(
-						"Called_party_unavailable_-_your_session_is_being_transferred_to_")
-				+ ' ' + user);
+				.getBundle("com.quikj.application.web.talk.plugin.language",
+						ServiceController.getLocale((String) session.getCallingEndPoint().getParam("language")))
+				.getString("Called_party_unavailable_-_your_session_is_being_transferred_to_") + ' ' + user);
 		message.setDisconnectReason(reason);
 
 		CalledNameElement called = new CalledNameElement();
@@ -2088,17 +1713,11 @@ public class ServiceController extends AceThread implements
 	}
 
 	public void unregisterUser(String user_name) {
-		EndPointInfo info = RegisteredEndPointList.Instance()
-				.findRegisteredEndPointInfo(user_name);
+		EndPointInfo info = RegisteredEndPointList.Instance().findRegisteredEndPointInfo(user_name);
 		if (info == null) {
-			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							"ServiceController.processUnregistrationEvent() (TALK) -- Could not find endpoint info "
-									+ user_name
-									+ " in the registered end-point list");
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"ServiceController.processUnregistrationEvent() (TALK) -- Could not find endpoint info " + user_name
+							+ " in the registered end-point list");
 			return;
 		}
 
@@ -2108,25 +1727,18 @@ public class ServiceController extends AceThread implements
 		cancelDbOperation(endpoint);
 
 		// notify user's group members of logout
-		if (info.isDnd() == false) {
-			groupNotifyOfAvailabilityChange(user_name, false);
-		}
+		groupNotifyOfAvailabilityChange(user_name, false);
 
 		LogoutCDR cdr = new LogoutCDR(endpoint.getIdentifier());
 		// send the CDR to the CDR processing thread
 		sendCDR(cdr);
 
 		// remove the user from the registered end points list
-		if (RegisteredEndPointList.Instance().removeRegisteredEndPoint(
-				user_name) == false) {
+		if (RegisteredEndPointList.Instance().removeRegisteredEndPoint(user_name) == false) {
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							"ServiceController.processUnregistrationEvent() (TALK) -- Could not remove endpoint "
-									+ user_name
-									+ " from the registered end-point list");
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"ServiceController.processUnregistrationEvent() (TALK) -- Could not remove endpoint " + user_name
+							+ " from the registered end-point list");
 			return;
 		}
 
