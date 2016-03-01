@@ -17,6 +17,8 @@ public class GroupInfo implements Serializable {
 	private int queueSize;
 	private boolean allOperatorsBusy;
 	private int numOperators;
+	private int numDND;
+	private int waitTime;
 	
 	public GroupInfo() {
 	}
@@ -51,5 +53,21 @@ public class GroupInfo implements Serializable {
 
 	public void setNumOperators(int numOperators) {
 		this.numOperators = numOperators;
+	}
+
+	public int getNumDND() {
+		return numDND;
+	}
+
+	public void setNumDND(int numDND) {
+		this.numDND = numDND;
+	}
+
+	public int getWaitTime() {
+		return waitTime;
+	}
+
+	public void setWaitTime(int waitTime) {
+		this.waitTime = waitTime;
 	}
 }

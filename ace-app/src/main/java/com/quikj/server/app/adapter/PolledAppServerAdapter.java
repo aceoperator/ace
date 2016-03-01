@@ -526,6 +526,20 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 
 						groupInfo.setNumOperators(Integer.parseInt(val));
 
+						val = getParam(key, "operators-with-dnd-count");
+						if (val == null) {
+							continue;
+						}
+
+						groupInfo.setNumDND(Integer.parseInt(val));
+						
+						val = getParam(key, "average-wait-time");
+						if (val == null) {
+							continue;
+						}
+
+						groupInfo.setWaitTime(Integer.parseInt(val));
+						
 						list.add(groupInfo);
 					} catch (Exception e) {
 						// Ignore this error because if the user is not a part

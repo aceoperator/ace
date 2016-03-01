@@ -14,13 +14,15 @@ public class UserContact implements Comparable<UserContact> {
 	private String fullName;
 	private int callCount;
 	private String avatar;
+	private boolean dnd;
 
-	public UserContact(String user, String fullName, int callCount, String avatar) {
+	public UserContact(String user, String fullName, int callCount, String avatar, boolean dnd) {
 		super();
 		this.user = user;
 		this.fullName = fullName;
 		this.callCount = callCount;
 		this.avatar = avatar;
+		this.dnd = dnd;
 	}
 
 	public UserContact(String user) {
@@ -90,5 +92,13 @@ public class UserContact implements Comparable<UserContact> {
 
 	public void setAvatar(String avatar) {
 		this.avatar = avatar;
+	}
+
+	public boolean isDnd() {
+		return dnd;
+	}
+
+	public void setDnd(boolean dnd) {
+		this.dnd = dnd;
 	}
 }

@@ -191,6 +191,11 @@ public class DesktopUserInfoPanel extends StackLayoutPanel implements
 			buffer.append(ApplicationController.getMessages()
 					.DesktopUserInfoPanel_numOperators() + ": ");
 			buffer.append(group.getNumOperators());
+			buffer.append("<br>");
+			
+			buffer.append(ApplicationController.getMessages()
+					.DesktopUserInfoPanel_numOperatorsWithDND() + ": ");
+			buffer.append(group.getNumDND());
 
 			buffer.append("</blockquote>");
 		}
