@@ -466,6 +466,7 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 			gm.setFullName(info.getUserData().getFullName());
 			gm.setOperation(GroupMemberElement.OPERATION_MOD_LIST);
 			gm.setCallCount(info.getCallCount());
+			gm.setDnd(info.isDnd());
 
 			ge.addElement(gm);
 			ga.setGroup(ge);

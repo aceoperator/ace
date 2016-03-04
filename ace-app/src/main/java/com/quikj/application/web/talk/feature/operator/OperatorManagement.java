@@ -16,8 +16,13 @@ public class OperatorManagement implements OperatorManagementMBean {
 	}
 	
 	@Override
-	public String getOperatorQueueSize() {
-		return Integer.toString(operator.getOperatorQueueSize());
+	public String getOperatorAvailableQueueSize() {
+		return Integer.toString(operator.getOperatorAvailableQueueSize());
+	}
+	
+	@Override
+	public String getOperatorsWithDNDSize() {
+		return Integer.toString(operator.getOperatorsWithDNDSize());
 	}
 
 	@Override
