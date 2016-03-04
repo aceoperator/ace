@@ -12,14 +12,11 @@ import java.net.UnknownHostException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
 
 import com.quikj.ace.messages.vo.app.ResponseMessage;
 import com.quikj.ace.messages.vo.talk.CallPartyElement;
@@ -35,11 +32,11 @@ import com.quikj.ace.messages.vo.talk.RegistrationResponseMessage;
 import com.quikj.ace.messages.vo.talk.SetupRequestMessage;
 import com.quikj.ace.messages.vo.talk.SetupResponseMessage;
 import com.quikj.application.web.talk.plugin.EndPointInfo;
-import com.quikj.application.web.talk.plugin.RegisteredEndPointList;
 import com.quikj.application.web.talk.plugin.FeatureInterface;
 import com.quikj.application.web.talk.plugin.GatekeeperInterface;
 import com.quikj.application.web.talk.plugin.MessageEvent;
 import com.quikj.application.web.talk.plugin.OPMUtil;
+import com.quikj.application.web.talk.plugin.RegisteredEndPointList;
 import com.quikj.application.web.talk.plugin.ServiceController;
 import com.quikj.application.web.talk.plugin.UnregistrationEvent;
 import com.quikj.application.web.talk.plugin.UserElement;
@@ -170,15 +167,20 @@ public class Operator extends AceThread
 			}
 		}
 
-		// If we are here, the operator is not in the queue, if the operator has
-		// disabled DND, add him back to the queue
+		// Check if the operator is in the DND list
 		Iterator<OperatorElement> j = dndList.iterator();
 		while (j.hasNext()) {
 			OperatorElement element = j.next();
 			if (name.equals(element.getOperatorInfo().getUser())) {
+				// Update the call count
 				element.getOperatorInfo().setCallCount(operator.getCallCount());
-				addToQueue(element.getOperatorInfo());
-				j.remove();
+
+				// If the operator disabled the DND, add him back to the
+				// operator queue
+				if (!operator.isDnd()) {
+					addToQueue(element.getOperatorInfo());
+					j.remove();
+				}
 				return;
 			}
 		}
@@ -207,24 +209,25 @@ public class Operator extends AceThread
 			return;
 		}
 
-		if ((operatorQueue.isEmpty() && maxQSize == 0) || (operatorQueue.isEmpty() && dndList.isEmpty())) {
+		if (allOperatorsBusy()) {
 			// queuing is not allowed and no operators are available
 			// OR
-			// queuing is enabled but no operators are available and no one has enabled DND
+			// queuing is enabled but no operators are available and no one has
+			// enabled DND
 			dropAllSubscribers();
 			return;
 		}
 
+		// Some operators have the capacity to take calls but they can be on DND		
 		if (operatorQueue.isEmpty()) {
-			// No operators are available to accept chat requests (because they
-			// are on DND)
+			// No operators are available to accept chat requests because they
+			// must be on DND
 			return;
 		}
 
 		OperatorElement operator = operatorQueue.removeFirst();
-
-		if (operator.getOperatorInfo().getCallCount() >= maxSessionsPerOperator) {
-			// if the operators' hands are full
+		if (operatorBusy(operator)) {
+			// if the operator is busy - should not happen
 			operatorQueue.addFirst(operator); // add him back
 			return;
 		}
@@ -341,30 +344,7 @@ public class Operator extends AceThread
 			if (key.equals("operator-queue-size")) {
 				return new Integer(operatorQueue.size()).toString();
 			} else if (key.equals("all-operators-busy")) {
-				if (operatorQueue.size() == 0) {
-					return "true";
-				}
-
-				// if the max queue has been initialized
-				if (maxQSize >= 0) {
-					if (maxQSize == 0) {
-						for (OperatorElement operator : operatorQueue) {
-							if (!operator.getOperatorInfo().isDnd()
-									&& operator.getOperatorInfo().getCallCount() < maxSessionsPerOperator) {
-								return "false";
-							}
-						}
-
-						return "true";
-					} else if (visitorQueue.size() >= maxQSize) {
-						return "true";
-					} else {
-						return "false";
-					}
-				} else {
-					return "false";
-				}
-
+				return Boolean.toString(allOperatorsBusy());
 			} else if (key.equals("subscriber-queue-size")) {
 				return new Integer(visitorQueue.size()).toString();
 			} else if (key.equals("operators-with-dnd-count")) {
@@ -420,12 +400,11 @@ public class Operator extends AceThread
 
 	private boolean initParams(Map<?, ?> params) {
 		synchronized (paramLock) {
-			String max_session_s = (String) params.get("max-sessions");
-			if (max_session_s != null) {
+			String maxSessions = (String) params.get("max-sessions");
+			if (maxSessions != null) {
 				try {
-					maxSessionsPerOperator = Integer.parseInt(max_session_s);
+					maxSessionsPerOperator = Integer.parseInt(maxSessions);
 				} catch (NumberFormatException ex) {
-					// print error message
 					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
 							getName() + "- Operator.initParams() -- max-sessions must be numeric");
 					return false;
@@ -434,24 +413,22 @@ public class Operator extends AceThread
 
 			password = (String) params.get("password");
 
-			String max_operators_s = (String) params.get("max-operators");
-			if (max_operators_s != null) {
+			String maxOperatorsString = (String) params.get("max-operators");
+			if (maxOperatorsString != null) {
 				try {
-					maxOperators = Integer.parseInt(max_operators_s);
+					maxOperators = Integer.parseInt(maxOperatorsString);
 				} catch (NumberFormatException ex) {
-					// print error message
 					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
 							getName() + "- Operator.initParams() -- max-operators must be numeric");
 					return false;
 				}
 			}
 
-			String max_queue_s = (String) params.get("max-queue-size");
-			if (max_queue_s != null) {
+			String maxQueueString = (String) params.get("max-queue-size");
+			if (maxQueueString != null) {
 				try {
-					maxQSize = Integer.parseInt(max_queue_s);
+					maxQSize = Integer.parseInt(maxQueueString);
 				} catch (NumberFormatException ex) {
-					// print error message
 					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
 							getName() + "- Operator.initParams() -- max-queue-size must be numeric");
 					return false;
@@ -748,31 +725,14 @@ public class Operator extends AceThread
 			subs.setSessionId(setup.getSessionId());
 			subs.setEndpoint(event.getFrom());
 
-			boolean sendBusy = false;
-			if (maxQSize >= 0) { // if a queue size has been specified
-				if (maxQSize == 0) {
-					// queue size = 0 means no queueing is allowed.
-					// If operators are immediately available, then
-					// transfer to an operator, else send busy
-					sendBusy = true;
-					for (OperatorElement operator : operatorQueue) {
-						if (operator.getOperatorInfo().getCallCount() < maxSessionsPerOperator) {
-							sendBusy = false;
-							break;
-						}
-					}
-				} else if (dndList.isEmpty() && visitorQueue.size() >= maxQSize) {
-					sendBusy = true;
-				}
-			}
-
+			boolean sendBusy = allOperatorsBusy();
 			if (sendBusy) {
 				// send a BUSY message
 				SetupResponseMessage resp = new SetupResponseMessage();
 				resp.setSessionId(setup.getSessionId());
 
 				// send the message
-				if (ServiceController.Instance()
+				if (!ServiceController.Instance()
 						.sendMessage(
 								new MessageEvent(MessageEvent.SETUP_RESPONSE, this, SetupResponseMessage.BUSY,
 										java.util.ResourceBundle
@@ -780,7 +740,7 @@ public class Operator extends AceThread
 														ServiceController.getLocale(
 																(String) event.getFrom().getParam("language")))
 										.getString("All_operators_are_currently_busy,_please_try_again_later"), resp,
-								null)) == false) {
+								null))) {
 					// print error message
 					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
 							+ "- Operator.processSetupRequestEvent() -- Error sending BUSY message to the service controller");
@@ -837,6 +797,47 @@ public class Operator extends AceThread
 			checkQueueStatus();
 		}
 		return true;
+	}
+
+	private boolean allOperatorsBusy() {
+		boolean busy = true;
+		if (maxQSize == 0) {
+			// queue size = 0 means no queueing is allowed.
+			// If operators are immediately available, then
+			// transfer to an operator, else send busy
+			for (OperatorElement operator : operatorQueue) {
+				if (!operatorBusy(operator)) {
+					busy = false;
+					break;
+				}
+			}			
+		} else if (maxQSize > 0) {
+			// if a queue size has been specified
+			for (OperatorElement operator : operatorQueue) {
+				if (!operatorBusy(operator)) {
+					busy = false;
+					break;
+				}
+			}
+
+			if (busy) {
+				// if all operators were busy in the operator queue, check the DND list
+				for (OperatorElement operator : dndList) {
+					if (!operatorBusy(operator)) {
+						busy = false;
+						break;
+					}
+				}
+			}			
+		} else if (!operatorQueue.isEmpty() || !dndList.isEmpty()) {
+			// unlimited queue size and no operators available 
+			busy = false;			
+		}
+		return busy;
+	}
+
+	private boolean operatorBusy(OperatorElement operator) {
+		return operator.getOperatorInfo().getCallCount() < maxSessionsPerOperator ? false : true;
 	}
 
 	private void removeFromQueue(GroupMemberElement operator) {
@@ -975,8 +976,6 @@ public class Operator extends AceThread
 			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
 					getName() + "- Operator.startOPMTimer() -- Could not start the measurements collection timer - "
 							+ getErrorMessage());
-
-			// and continue
 		}
 	}
 
@@ -1012,9 +1011,15 @@ public class Operator extends AceThread
 		return true;
 	}
 
-	public int getOperatorQueueSize() {
+	public int getOperatorAvailableQueueSize() {
 		synchronized (paramLock) {
 			return operatorQueue.size();
+		}
+	}
+
+	public int getOperatorsWithDNDSize() {
+		synchronized (paramLock) {
+			return dndList.size();
 		}
 	}
 
@@ -1025,35 +1030,44 @@ public class Operator extends AceThread
 	}
 
 	public String getOperatorSummary() {
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder b = new StringBuilder();
 		synchronized (paramLock) {
+			b.append("Operators: ");
 			for (OperatorElement operator : operatorQueue) {
-				appendProperty(buffer, "Operator: ", operator.getOperatorInfo().getUser(), true);
-				appendProperty(buffer, "# chats:", operator.getOperatorInfo().getCallCount(), false);
-				buffer.append("\n");
+				appendProperty(b, "name", operator.getOperatorInfo().getUser());
+				appendProperty(b, "numChats", operator.getOperatorInfo().getCallCount());
 			}
-			return buffer.toString();
+
+			b.append(" Operators with DND: ");
+			synchronized (paramLock) {
+				for (OperatorElement operator : dndList) {
+					appendProperty(b, "name", operator.getOperatorInfo().getUser());
+					appendProperty(b, "numChats", operator.getOperatorInfo().getCallCount());
+				}
+			}
+			return b.toString();
 		}
 	}
 
 	public String getVisitorSummary() {
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder b = new StringBuilder();
 		synchronized (paramLock) {
+			b.append("Visitors: ");
 			for (SubscriberElement subscriber : visitorQueue) {
-				appendProperty(buffer, "Visitor: ", subscriber.getEndpoint().getIdentifier(), true);
-				appendProperty(buffer, "Waiting since: ", new Date(subscriber.getStartWaitTime()), true);
-				buffer.append("\n");
+				appendProperty(b, "identifier", subscriber.getEndpoint().getIdentifier());
+				appendProperty(b, "waitingSince", new Date(subscriber.getStartWaitTime()));
 			}
 		}
 
-		return buffer.toString();
+		return b.toString();
 	}
 
-	public void appendProperty(StringBuffer buffer, String label, Object value, boolean first) {
-		if (!first) {
-			buffer.append(", ");
+	public void appendProperty(StringBuilder b, String label, Object value) {
+		if (b.length() > 0) {
+			b.append(" ");
 		}
-		buffer.append(label);
-		buffer.append(value);
+		b.append(label);
+		b.append("=");
+		b.append(value);
 	}
 }
