@@ -55,8 +55,8 @@ import com.quikj.server.framework.AceTimerMessage;
  * 
  * @author amit
  */
-public class Operator extends AceThread
-		implements FeatureInterface, EndPointInterface, RemoteServiceInterface, GatekeeperInterface {
+public class Operator extends AceThread implements FeatureInterface, EndPointInterface, RemoteServiceInterface,
+		GatekeeperInterface, OperatorMBean {
 	private static final int CALL_Q_MESSAGE_TIMER = 0; // timer parm
 
 	private static final int OPM_TIMER = 1; // timer parm
@@ -102,8 +102,6 @@ public class Operator extends AceThread
 	private int maxQSize = -1;
 
 	private String password;
-
-	private Object paramLock = new Object();
 
 	private HashMap<String, Object> keyValuePair = new HashMap<String, Object>();
 
@@ -186,6 +184,7 @@ public class Operator extends AceThread
 		}
 	}
 
+	@Override
 	public boolean allow(EndPointInterface ep, EndPointInfo info) {
 		if (operatorQueue.size() >= maxOperators) {
 
@@ -204,21 +203,12 @@ public class Operator extends AceThread
 	}
 
 	private void checkQueueStatus() {
-		if (visitorQueue.size() <= 0) {
+		if (visitorQueue.isEmpty()) {
 			// no one waiting to be serviced
 			return;
 		}
 
-		if (allOperatorsBusy()) {
-			// queuing is not allowed and no operators are available
-			// OR
-			// queuing is enabled but no operators are available and no one has
-			// enabled DND
-			dropAllSubscribers();
-			return;
-		}
-
-		// Some operators have the capacity to take calls but they can be on DND		
+		// Some operators have the capacity to take calls but they can be on DND
 		if (operatorQueue.isEmpty()) {
 			// No operators are available to accept chat requests because they
 			// must be on DND
@@ -279,7 +269,7 @@ public class Operator extends AceThread
 			}
 
 			if (ApplicationServer.getInstance() != null) {
-				ApplicationServer.getInstance().unregisterMbean(OperatorManagementMBean.MBEAN_SUFFIX + userName);
+				ApplicationServer.getInstance().unregisterMbean(OperatorMBean.MBEAN_SUFFIX + userName);
 			}
 			registered = false;
 		}
@@ -339,22 +329,20 @@ public class Operator extends AceThread
 		}
 	}
 
-	public String getRMIParam(String key) {
-		synchronized (paramLock) {
-			if (key.equals("operator-queue-size")) {
-				return new Integer(operatorQueue.size()).toString();
-			} else if (key.equals("all-operators-busy")) {
-				return Boolean.toString(allOperatorsBusy());
-			} else if (key.equals("subscriber-queue-size")) {
-				return new Integer(visitorQueue.size()).toString();
-			} else if (key.equals("operators-with-dnd-count")) {
-				return new Integer(dndList.size()).toString();
-			} else if (key.equals("average-wait-time")) {
-				return new Integer(0).toString();
-			}
-
-			return null;
+	public synchronized String getRMIParam(String key) {
+		if (key.equals("operator-queue-size")) {
+			return new Integer(operatorQueue.size()).toString();
+		} else if (key.equals("all-operators-busy")) {
+			return Boolean.toString(allOperatorsBusy());
+		} else if (key.equals("subscriber-queue-size")) {
+			return new Integer(visitorQueue.size()).toString();
+		} else if (key.equals("operators-with-dnd-count")) {
+			return new Integer(dndList.size()).toString();
+		} else if (key.equals("average-wait-time")) {
+			return new Integer(0).toString();
 		}
+
+		return null;
 	}
 
 	public String getUserName() {
@@ -398,45 +386,43 @@ public class Operator extends AceThread
 		return true;
 	}
 
-	private boolean initParams(Map<?, ?> params) {
-		synchronized (paramLock) {
-			String maxSessions = (String) params.get("max-sessions");
-			if (maxSessions != null) {
-				try {
-					maxSessionsPerOperator = Integer.parseInt(maxSessions);
-				} catch (NumberFormatException ex) {
-					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
-							getName() + "- Operator.initParams() -- max-sessions must be numeric");
-					return false;
-				}
+	private synchronized boolean initParams(Map<?, ?> params) {
+		String maxSessions = (String) params.get("max-sessions");
+		if (maxSessions != null) {
+			try {
+				maxSessionsPerOperator = Integer.parseInt(maxSessions);
+			} catch (NumberFormatException ex) {
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						getName() + "- Operator.initParams() -- max-sessions must be numeric");
+				return false;
 			}
-
-			password = (String) params.get("password");
-
-			String maxOperatorsString = (String) params.get("max-operators");
-			if (maxOperatorsString != null) {
-				try {
-					maxOperators = Integer.parseInt(maxOperatorsString);
-				} catch (NumberFormatException ex) {
-					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
-							getName() + "- Operator.initParams() -- max-operators must be numeric");
-					return false;
-				}
-			}
-
-			String maxQueueString = (String) params.get("max-queue-size");
-			if (maxQueueString != null) {
-				try {
-					maxQSize = Integer.parseInt(maxQueueString);
-				} catch (NumberFormatException ex) {
-					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
-							getName() + "- Operator.initParams() -- max-queue-size must be numeric");
-					return false;
-				}
-			}
-
-			return true;
 		}
+
+		password = (String) params.get("password");
+
+		String maxOperatorsString = (String) params.get("max-operators");
+		if (maxOperatorsString != null) {
+			try {
+				maxOperators = Integer.parseInt(maxOperatorsString);
+			} catch (NumberFormatException ex) {
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						getName() + "- Operator.initParams() -- max-operators must be numeric");
+				return false;
+			}
+		}
+
+		String maxQueueString = (String) params.get("max-queue-size");
+		if (maxQueueString != null) {
+			try {
+				maxQSize = Integer.parseInt(maxQueueString);
+			} catch (NumberFormatException ex) {
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						getName() + "- Operator.initParams() -- max-queue-size must be numeric");
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	private boolean isMyOperator(GroupMemberElement element) {
@@ -545,9 +531,9 @@ public class Operator extends AceThread
 				case GroupMemberElement.OPERATION_REM_LIST:
 					removeFromQueue(ge);
 
-					// check if all operators are gone, if yes and if there
-					// are subscribers in the queue, drop them
-					checkQueueStatus();
+					if (allOperatorsBusy()) {
+						dropAllSubscribers();
+					}
 					break;
 				}
 			}
@@ -577,24 +563,22 @@ public class Operator extends AceThread
 		return true;
 	}
 
-	private boolean processMessageEvent(MessageEvent message) {
-		synchronized (paramLock) {
-			switch (message.getEventType()) {
-			case MessageEvent.REGISTRATION_RESPONSE:
-				return processRegistrationResponseEvent(message);
+	private synchronized boolean processMessageEvent(MessageEvent message) {
+		switch (message.getEventType()) {
+		case MessageEvent.REGISTRATION_RESPONSE:
+			return processRegistrationResponseEvent(message);
 
-			case MessageEvent.CLIENT_REQUEST_MESSAGE:
-				return processClientRequestMessage(message);
+		case MessageEvent.CLIENT_REQUEST_MESSAGE:
+			return processClientRequestMessage(message);
 
-			case MessageEvent.SETUP_REQUEST:
-				return processSetupRequestEvent(message);
+		case MessageEvent.SETUP_REQUEST:
+			return processSetupRequestEvent(message);
 
-			case MessageEvent.DISCONNECT_MESSAGE:
-				return processDisconnectMessage(message);
-			}
-
-			return true; // ignore unknown message event
+		case MessageEvent.DISCONNECT_MESSAGE:
+			return processDisconnectMessage(message);
 		}
+
+		return true; // ignore unknown message event
 	}
 
 	private boolean processOPMs(AceTimerMessage event) {
@@ -709,8 +693,7 @@ public class Operator extends AceThread
 
 		if (ApplicationServer.getInstance() != null) {
 			ApplicationServer.getInstance().registerMbean(
-					OperatorManagementMBean.MBEAN_SUFFIX + resp_message.getCallPartyInfo().getName(),
-					new OperatorManagement(this));
+					OperatorMBean.MBEAN_SUFFIX + resp_message.getCallPartyInfo().getName(), this);
 		}
 
 		registered = true;
@@ -727,6 +710,8 @@ public class Operator extends AceThread
 
 			boolean sendBusy = allOperatorsBusy();
 			if (sendBusy) {
+				dropAllSubscribers();
+
 				// send a BUSY message
 				SetupResponseMessage resp = new SetupResponseMessage();
 				resp.setSessionId(setup.getSessionId());
@@ -810,28 +795,16 @@ public class Operator extends AceThread
 					busy = false;
 					break;
 				}
-			}			
+			}
 		} else if (maxQSize > 0) {
 			// if a queue size has been specified
-			for (OperatorElement operator : operatorQueue) {
-				if (!operatorBusy(operator)) {
-					busy = false;
-					break;
-				}
+			if ((!operatorQueue.isEmpty() || !dndList.isEmpty()) && (visitorQueue.size() < maxQSize)) {
+				// If there is capacity available in the queue
+				busy = false;
 			}
-
-			if (busy) {
-				// if all operators were busy in the operator queue, check the DND list
-				for (OperatorElement operator : dndList) {
-					if (!operatorBusy(operator)) {
-						busy = false;
-						break;
-					}
-				}
-			}			
 		} else if (!operatorQueue.isEmpty() || !dndList.isEmpty()) {
-			// unlimited queue size and no operators available 
-			busy = false;			
+			// unlimited queue size and operators available
+			busy = false;
 		}
 		return busy;
 	}
@@ -1011,54 +984,46 @@ public class Operator extends AceThread
 		return true;
 	}
 
-	public int getOperatorAvailableQueueSize() {
-		synchronized (paramLock) {
-			return operatorQueue.size();
-		}
+	@Override
+	public synchronized int getOperatorAvailableQueueSize() {
+		return operatorQueue.size();
 	}
 
-	public int getOperatorsWithDNDSize() {
-		synchronized (paramLock) {
-			return dndList.size();
-		}
+	@Override
+	public synchronized int getOperatorsWithDNDSize() {
+		return dndList.size();
 	}
 
-	public int getSubscriberQueueSize() {
-		synchronized (paramLock) {
-			return visitorQueue.size();
-		}
+	@Override
+	public synchronized int getSubscriberQueueSize() {
+		return visitorQueue.size();
 	}
 
-	public String getOperatorSummary() {
+	@Override
+	public synchronized String getOperatorSummary() {
 		StringBuilder b = new StringBuilder();
-		synchronized (paramLock) {
-			b.append("Operators: ");
-			for (OperatorElement operator : operatorQueue) {
-				appendProperty(b, "name", operator.getOperatorInfo().getUser());
-				appendProperty(b, "numChats", operator.getOperatorInfo().getCallCount());
-			}
-
-			b.append(" Operators with DND: ");
-			synchronized (paramLock) {
-				for (OperatorElement operator : dndList) {
-					appendProperty(b, "name", operator.getOperatorInfo().getUser());
-					appendProperty(b, "numChats", operator.getOperatorInfo().getCallCount());
-				}
-			}
-			return b.toString();
+		b.append("Operators: ");
+		for (OperatorElement operator : operatorQueue) {
+			appendProperty(b, "name", operator.getOperatorInfo().getUser());
+			appendProperty(b, "numChats", operator.getOperatorInfo().getCallCount());
 		}
+
+		b.append(" Operators with DND: ");
+		for (OperatorElement operator : dndList) {
+			appendProperty(b, "name", operator.getOperatorInfo().getUser());
+			appendProperty(b, "numChats", operator.getOperatorInfo().getCallCount());
+		}
+		return b.toString();
 	}
 
-	public String getVisitorSummary() {
+	@Override
+	public synchronized String getVisitorSummary() {
 		StringBuilder b = new StringBuilder();
-		synchronized (paramLock) {
-			b.append("Visitors: ");
-			for (SubscriberElement subscriber : visitorQueue) {
-				appendProperty(b, "identifier", subscriber.getEndpoint().getIdentifier());
-				appendProperty(b, "waitingSince", new Date(subscriber.getStartWaitTime()));
-			}
+		b.append("Visitors: ");
+		for (SubscriberElement subscriber : visitorQueue) {
+			appendProperty(b, "identifier", subscriber.getEndpoint().getIdentifier());
+			appendProperty(b, "waitingSince", new Date(subscriber.getStartWaitTime()));
 		}
-
 		return b.toString();
 	}
 
