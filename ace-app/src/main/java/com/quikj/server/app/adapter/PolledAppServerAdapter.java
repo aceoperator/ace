@@ -505,53 +505,43 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 						String key = "com.quikj.application.web.talk.feature.operator.Operator:"
 								+ owner;
 						String val = getParam(key, "subscriber-queue-size");
-						if (val == null) {
-							continue;
-						}
-
-						groupInfo.setQueueSize(Integer.parseInt(val));
+						if (val != null) {
+							groupInfo.setQueueSize(Integer.parseInt(val));
+						}						
 
 						val = getParam(key, "all-operators-busy");
-						if (val == null) {
-							continue;
+						if (val != null) {
+							groupInfo
+							.setAllOperatorsBusy(Boolean.parseBoolean(val));
 						}
-
-						groupInfo
-								.setAllOperatorsBusy(Boolean.parseBoolean(val));
 
 						val = getParam(key, "operator-queue-size");
-						if (val == null) {
-							continue;
+						if (val != null) {
+							groupInfo.setNumOperators(Integer.parseInt(val));
 						}
-
-						groupInfo.setNumOperators(Integer.parseInt(val));
-
-						val = getParam(key, "operators-with-dnd-count");
-						if (val == null) {
-							continue;
-						}
-
-						groupInfo.setNumDND(Integer.parseInt(val));
 						
-						val = getParam(key, "average-wait-time");
-						if (val == null) {
-							continue;
+						val = getParam(key, "operators-with-dnd-count");
+						if (val != null) {
+							groupInfo.setNumDND(Integer.parseInt(val));
 						}
-
-						groupInfo.setWaitTime(Integer.parseInt(val));
+						
+						val = getParam(key, "estimated-wait-time");
+						if (val != null) {
+							groupInfo.setWaitTime(val);
+						}
+						
+						val = getParam(key, "paused-until");
+						if (val != null) {
+							groupInfo.setPausedUntil(Long.parseLong(val));
+						}
 						
 						list.add(groupInfo);
 					} catch (Exception e) {
-						// Ignore this error because if the user is not a part
-						// of
-						// any operator group, this will occur.
-
-						// TODO remove this log after thorough testing
 						AceLogger.Instance().log(
 								AceLogger.WARNING,
 								AceLogger.SYSTEM_LOG,
-								"AppServerAdapter.getQueueSize() -- Could not get queue size. Error: "
-										+ e.getMessage());
+								"AppServerAdapter.getGroupInfo() -- Could not get group parameters. Error: "
+										+ e.getMessage(), e);
 					}
 				}
 			}

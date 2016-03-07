@@ -358,10 +358,8 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 						.findRegisteredEndPoint(notifyEndpoints[i]);
 				if (endpoint != null) {
 					// send group message to the endpoint
-
 					if (endpoint.sendEvent(
 							new MessageEvent(MessageEvent.CLIENT_REQUEST_MESSAGE, null, ga, null)) == false) {
-						// print error message
 						AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
 								"ServiceController.groupNotifyOfAvailabilityChange (TALK) -- Could not send group activity message to the endpoint "
 										+ endpoint);
@@ -370,18 +368,6 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 				}
 			}
 		}
-	}
-
-	private void groupNotifyOfAvailabilityChange(EndPointInterface endpoint, boolean available) {
-		EndPointInfo info = RegisteredEndPointList.Instance().findRegisteredEndPointInfo(endpoint);
-		if (info == null) {
-			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, getName()
-					+ "- ServiceController.groupNotifyOfAvailabilityChange() -- EndPoint not registered " + endpoint);
-
-			return;
-		}
-
-		groupNotifyOfAvailabilityChange(info, available);
 	}
 
 	private void groupNotifyOfDNDChange(EndPointInfo info) {
@@ -503,7 +489,7 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 		DbChangeUserPassword cp = new DbChangeUserPassword(message.getUserName(), old_password, new_password, from,
 				this, database, req_id, null);
 
-		if (cp.initiate() == false) {
+		if (!cp.initiate()) {
 			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
 					"ServiceController.processChangePasswordRequest() (TALK) -- Failure initiating change password for "
 							+ message.getUserName() + ", error : " + cp.getLastError());
@@ -523,15 +509,15 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 		}
 	}
 
-	private void processClientRequestMessage(TalkMessageInterface message, EndPointInterface from, int req_id) {
+	private void processClientRequestMessage(TalkMessageInterface message, EndPointInterface from, int reqId) {
 		if (message instanceof JoinRequestMessage) {
-			processJoinRequest((JoinRequestMessage) message, from, req_id);
+			processJoinRequest((JoinRequestMessage) message, from, reqId);
 		} else if (message instanceof ChangePasswordRequestMessage) {
-			processChangePasswordRequest((ChangePasswordRequestMessage) message, from, req_id);
+			processChangePasswordRequest((ChangePasswordRequestMessage) message, from, reqId);
 		} else if (message instanceof SendMailRequestMessage) {
-			processSendMailRequest((SendMailRequestMessage) message, from, req_id);
+			processSendMailRequest((SendMailRequestMessage) message, from, reqId);
 		} else if (message instanceof DndRequestMessage) {
-			processDndRequest((DndRequestMessage) message, from, req_id);
+			processDndRequest((DndRequestMessage) message, from, reqId);
 		} else {
 			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
 					"ServiceController.processClientRequestMessage() (TALK) -- Unknown message of type "
@@ -564,10 +550,10 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 			session.removeEndPoint(from);
 		}
 
-		SessionTransferCDR transfer_cdr = null;
-		int num_ep = session.numEndPoints();
+		SessionTransferCDR transferCdr = null;
+		int numEp = session.numEndPoints();
 		if (message.getCalledInfo() != null) { // transfer
-			if (num_ep != 1) {
+			if (numEp != 1) {
 				// if there are more than 1 party or if there are no parties
 				// left, remove the called party info, because the call
 				// cannot be transferred.
@@ -585,9 +571,9 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 						.getString("Transfer_failed_-_cannot_transfer_conference_call"));
 				message.setDisconnectReason(disc_reason);
 			} else {
-				transfer_cdr = new SessionTransferCDR(session.getBillingId(),
+				transferCdr = new SessionTransferCDR(session.getBillingId(),
 						message.getCalledInfo().getCallParty().getName());
-				message.setTransferId(transfer_cdr.getIdentifier());
+				message.setTransferId(transferCdr.getIdentifier());
 
 				// default the transferFrom, if not already set
 				if (from != null) {
@@ -606,14 +592,14 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 			code = message.getDisconnectReason().getReasonCode();
 		}
 
-		if (num_ep == 0) {
+		if (numEp == 0) {
 			// remove the session
 			removeSession(session_id);
 
-			if (transfer_cdr == null) {
+			if (transferCdr == null) {
 				sendCDR(new SessionDisconnectCDR(session.getBillingId(), code));
 			} else {
-				sendCDR(transfer_cdr);
+				sendCDR(transferCdr);
 			}
 
 			// if the from party is a non-registered user, generate a logout CDR
@@ -621,7 +607,7 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 				sendCDR(new LogoutCDR(from.getIdentifier()));
 			}
 
-		} else if (num_ep == 1) {
+		} else if (numEp == 1) {
 			// two-party call or caller
 			// being transferred due to
 			// called party not logged in
@@ -629,10 +615,10 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 			// remove the session
 			removeSession(session_id);
 
-			if (transfer_cdr == null) {
+			if (transferCdr == null) {
 				sendCDR(new SessionDisconnectCDR(session.getBillingId(), code));
 			} else {
-				sendCDR(transfer_cdr);
+				sendCDR(transferCdr);
 			}
 
 			EndPointInterface party = session.elementAt(0);
@@ -651,7 +637,7 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 			}
 
 			// send the DISCONNECT message to the other party
-			if (party.sendEvent(new MessageEvent(MessageEvent.DISCONNECT_MESSAGE, from, message, null)) == false) {
+			if (!party.sendEvent(new MessageEvent(MessageEvent.DISCONNECT_MESSAGE, from, message, null))) {
 				// print error message
 				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
 						"ServiceController.processDisconnectRequest() (TALK) -- Could not send disconnect message to the endpoint "
@@ -679,7 +665,7 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 			}
 
 			// if there are only two parties left
-			if (num_ep == 2) {
+			if (numEp == 2) {
 				// send message to each of the party to change end-point
 				EndPointInterface ep0 = session.elementAt(0);
 				EndPointInterface ep1 = session.elementAt(1);
@@ -701,7 +687,7 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 				change = new ChangeEndPointAction(session_id, ep0);
 				event.addAction(change);
 
-				if (ep1.sendEvent(event) == false) {
+				if (!ep1.sendEvent(event)) {
 					// print error message
 					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
 							"ServiceController.processDisconnectRequest() (TALK) -- Could not send action event to an endpoint: "
