@@ -29,62 +29,46 @@ import com.quikj.server.framework.AceLogger;
  * @author bhm
  */
 public class FeatureManagementAction extends Action {
+	private static final String SERVICE_NAME_PREFIX = "com.quikj.application.web.talk.feature.operator.Operator:";
 
 	public FeatureManagementAction() {
 	}
 
-	public static boolean notifyAppServer(HttpServletRequest request,
-			String feature_name, String cmd, ActionErrors errors,
-			String log_prefix) {
-		RemoteAccessClient cl = (RemoteAccessClient) request.getSession()
-				.getServletContext().getAttribute("remoteAccess");
+	public static boolean notifyAppServer(HttpServletRequest request, String featureName, String cmd,
+			ActionErrors errors, String log_prefix) {
+		RemoteAccessClient cl = (RemoteAccessClient) request.getSession().getServletContext()
+				.getAttribute("remoteAccess");
 		if (cl == null) {
 			if (errors != null) {
-				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
-						"error.rmi.error"));
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.rmi.error"));
 			}
 
-			AceLogger.Instance().log(
-					AceLogger.ERROR,
-					AceLogger.SYSTEM_LOG,
-					"FeatureManagementAction.notifyAppServer()/" + log_prefix
-							+ ": Could not obtain RMI client object");
-
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"FeatureManagementAction.notifyAppServer()/" + log_prefix + ": Could not obtain RMI client object");
 			return false;
 		}
 
 		try {
-			boolean result = cl.getRemoteAccess().setParam(
-					"com.quikj.application.web.talk.plugin.FeatureFactory",
-					"feature:" + feature_name, cmd);
-			if (result == false) {
+			boolean result = cl.getRemoteAccess().setParam("com.quikj.application.web.talk.plugin.FeatureFactory",
+					"feature:" + featureName, cmd);
+			if (!result) {
 				if (errors != null) {
-					errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
-							"error.rmi.feature.error"));
+					errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.rmi.feature.error"));
 				}
 
-				AceLogger.Instance().log(
-						AceLogger.ERROR,
-						AceLogger.SYSTEM_LOG,
-						"FeatureManagementAction.notifyAppServer()/"
-								+ log_prefix + ": Operation " + cmd
-								+ " was not applied to feature " + feature_name
-								+ " at the application server");
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"FeatureManagementAction.notifyAppServer()/" + log_prefix + ": Operation " + cmd
+								+ " was not applied to feature " + featureName + " at the application server");
 
 				return false;
 			}
 		} catch (Exception ex) {
 			if (errors != null) {
-				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
-						"error.rmi.error"));
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.rmi.error"));
 			}
 
-			AceLogger.Instance().log(
-					AceLogger.ERROR,
-					AceLogger.SYSTEM_LOG,
-					"FeatureManagementAction.notifyAppServer()/" + log_prefix
-							+ " Error - " + ex.getClass().getName() + ": "
-							+ ex.getMessage());
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, "FeatureManagementAction.notifyAppServer()/"
+					+ log_prefix + " Error - " + ex.getClass().getName() + ": " + ex.getMessage());
 
 			return false;
 		}
@@ -92,14 +76,91 @@ public class FeatureManagementAction extends Action {
 		return true;
 	}
 
-	public ActionForward execute(ActionMapping mapping, ActionForm form,
-			HttpServletRequest request, HttpServletResponse response) {
+	public static String getFeatureParam(HttpServletRequest request, String featureName, String param,
+			ActionErrors errors, String logPrefix) {
+		RemoteAccessClient cl = (RemoteAccessClient) request.getSession().getServletContext()
+				.getAttribute("remoteAccess");
+		if (cl == null) {
+			if (errors != null) {
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.rmi.error"));
+			}
+
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"FeatureManagementAction.getFeatureParam()/" + logPrefix + ": Could not obtain RMI client object");
+			return null;
+		}
+
+		String result = null;
+		try {
+			result = cl.getRemoteAccess().getParam(SERVICE_NAME_PREFIX + featureName, param);
+			if (result == null) {
+				if (errors != null) {
+					errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.rmi.feature.error"));
+				}
+
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"FeatureManagementAction.getFeatureParam()/" + logPrefix + ": getParam " + param
+								+ " for feature " + featureName + " could not be fetched");
+			}
+		} catch (Exception ex) {
+			if (errors != null) {
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.rmi.error"));
+			}
+
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"FeatureManagementAction.etFeatureParam()()/" + logPrefix + " Error - " + ex.getClass().getName()
+							+ ": " + ex.getMessage(),
+					ex);
+		}
+
+		return result;
+	}
+
+	public static boolean setFeatureParam(HttpServletRequest request, String featureName, String param, String value,
+			ActionErrors errors, String logPrefix) {
+		RemoteAccessClient cl = (RemoteAccessClient) request.getSession().getServletContext()
+				.getAttribute("remoteAccess");
+		if (cl == null) {
+			if (errors != null) {
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.rmi.error"));
+			}
+
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"FeatureManagementAction.setFeatureParam()/" + logPrefix + ": Could not obtain RMI client object");
+			return false;
+		}
+
+		boolean result = false;
+		try {
+			result = cl.getRemoteAccess().setParam(SERVICE_NAME_PREFIX + featureName, param, value);
+			if (!result) {
+				if (errors != null) {
+					errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.rmi.feature.error"));
+				}
+
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"FeatureManagementAction.setFeatureParam()/" + logPrefix + ": setParam " + param
+								+ " for feature " + featureName + " could not be set");
+			}
+		} catch (Exception ex) {
+			if (errors != null) {
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.rmi.error"));
+			}
+
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, "FeatureManagementAction.setFeatureParam()"
+					+ logPrefix + " Error - " + ex.getClass().getName() + ": " + ex.getMessage(), ex);
+		}
+
+		return result;
+	}
+
+	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
+			HttpServletResponse response) {
 		FeatureManagementForm fform = (FeatureManagementForm) form;
 
 		ActionErrors errors = new ActionErrors();
 
-		FeatureBean featureBean = SpringUtils.getBean(request.getSession()
-				.getServletContext(), FeatureBean.class);
+		FeatureBean featureBean = SpringUtils.getBean(request.getSession().getServletContext(), FeatureBean.class);
 		ActionMessages messages = new ActionMessages();
 
 		if (fform.getSubmit().equals("Find")) {
@@ -123,13 +184,10 @@ public class FeatureManagementAction extends Action {
 				}
 
 			} catch (WebTalkException e) {
-				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
-						"error.feature.not.exist"));
-				AceLogger.Instance().log(
-						AceLogger.ERROR,
-						AceLogger.SYSTEM_LOG,
-						"FeatureManagementAction.execute()/Find/by-"
-								+ request.getUserPrincipal().getName() + ": " + e.getMessage());
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.feature.not.exist"));
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"FeatureManagementAction.execute()/Find/by-" + request.getUserPrincipal().getName() + ": "
+								+ e.getMessage());
 			}
 
 		} else if (fform.getSubmit().equals("Modify")) {
@@ -145,45 +203,36 @@ public class FeatureManagementAction extends Action {
 			try {
 				featureBean.modifyFeature(e);
 
-				AceLogger.Instance().log(
-						AceLogger.INFORMATIONAL,
-						AceLogger.USER_LOG,
-						"User " + request.getUserPrincipal().getName() + " modified feature "
-								+ fform.getName());
-				
-				messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage(
-						"message.feature.modified"));
+				AceLogger.Instance().log(AceLogger.INFORMATIONAL, AceLogger.USER_LOG,
+						"User " + request.getUserPrincipal().getName() + " modified feature " + fform.getName());
+
+				messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage("message.feature.modified"));
 
 				// notify app server via RMI
 				if (featureBean.isFeatureActive(e.getName())) {
 					if (notifyAppServer(request, e.getName(), "synch", errors,
-							"Modify/by-" + request.getUserPrincipal().getName()) == true) {
+							"Modify/by-" + request.getUserPrincipal().getName())) {
 						messages.add(ActionMessages.GLOBAL_MESSAGE,
-								new ActionMessage(
-										"message.feature.appserver.updated"));
+								new ActionMessage("message.feature.appserver.updated"));
 					}
-				}				
+				}
 			} catch (WebTalkException ex) {
-				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
-						"error.feature.not.exist"));
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.feature.not.exist"));
 			} catch (Exception ex) {
-				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
-						"error.db.failure"));
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.db.failure"));
 
-				AceLogger.Instance().log(
-						AceLogger.ERROR,
-						AceLogger.SYSTEM_LOG,
-						"FeatureManagementAction.execute()/Modify/by-"
-								+ request.getUserPrincipal().getName() + ": " + ex.getMessage());
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"FeatureManagementAction.execute()/Modify/by-" + request.getUserPrincipal().getName() + ": "
+								+ ex.getMessage());
 			}
-			
+
 			// forward control to the webtalk main menu
 			if (!errors.isEmpty()) {
 				saveErrors(request, errors);
 			}
-			
+
 			saveMessages(request, messages);
-			return mapping.findForward("webtalk_main_menu");			
+			return mapping.findForward("webtalk_main_menu");
 
 		} else if (fform.getSubmit().equals("Create")) {
 			Feature e = new Feature();
@@ -195,69 +244,50 @@ public class FeatureManagementAction extends Action {
 			for (Entry<String, String> i : fform.getParamsList().entrySet()) {
 				e.getParams().add(new FeatureParam(i.getKey(), i.getValue()));
 			}
-			
+
 			try {
 				featureBean.createFeature(e);
 
-				AceLogger.Instance().log(
-						AceLogger.INFORMATIONAL,
-						AceLogger.USER_LOG,
-						"User " + request.getUserPrincipal().getName() + " created feature "
-								+ fform.getName());
+				AceLogger.Instance().log(AceLogger.INFORMATIONAL, AceLogger.USER_LOG,
+						"User " + request.getUserPrincipal().getName() + " created feature " + fform.getName());
 			} catch (Exception ex) {
 
-				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
-						"error.feature.create.failure"));
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.feature.create.failure"));
 
-				AceLogger.Instance().log(
-						AceLogger.ERROR,
-						AceLogger.SYSTEM_LOG,
-						"FeatureManagementAction.execute()/Create/by-"
-								+ request.getUserPrincipal().getName() + ": "
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"FeatureManagementAction.execute()/Create/by-" + request.getUserPrincipal().getName() + ": "
 								+ ex.getMessage());
 			}
-			
+
 			// forward control to the webtalk main menu
-			messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage(
-					"message.feature.created"));
+			messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage("message.feature.created"));
 			saveMessages(request, messages);
 			return mapping.findForward("webtalk_main_menu");
-			
-		} else if (fform.getSubmit().equals("Delete")) {			
+
+		} else if (fform.getSubmit().equals("Delete")) {
 			try {
 				featureBean.deleteFeature(fform.getName());
 
-				AceLogger.Instance().log(
-						AceLogger.INFORMATIONAL,
-						AceLogger.USER_LOG,
-						"User " + request.getUserPrincipal().getName() + " deleted feature "
-								+ fform.getName());
+				AceLogger.Instance().log(AceLogger.INFORMATIONAL, AceLogger.USER_LOG,
+						"User " + request.getUserPrincipal().getName() + " deleted feature " + fform.getName());
 
-				messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage(
-						"message.feature.deleted"));
+				messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage("message.feature.deleted"));
 
 				// notify app server via RMI
-				if (notifyAppServer(request, fform.getName(), "deactivate",
-						errors, "Delete/by-" + request.getUserPrincipal().getName())) {
-					messages.add(ActionMessages.GLOBAL_MESSAGE,
-							new ActionMessage(
-									"message.feature.appserver.updated"));
+				if (notifyAppServer(request, fform.getName(), "deactivate", errors,
+						"Delete/by-" + request.getUserPrincipal().getName())) {
+					messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage("message.feature.appserver.updated"));
 				}
 			} catch (WebTalkException e) {
-				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
-				"error.feature.not.exist"));
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.feature.not.exist"));
 			} catch (Exception e) {
-				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
-						"error.db.failure"));
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.db.failure"));
 
-				AceLogger.Instance().log(
-						AceLogger.ERROR,
-						AceLogger.SYSTEM_LOG,
-						"FeatureManagementAction.execute()/Delete/by-"
-								+ request.getUserPrincipal().getName() + ": "
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"FeatureManagementAction.execute()/Delete/by-" + request.getUserPrincipal().getName() + ": "
 								+ e.getMessage());
 			}
-			
+
 			// forward control to the webtalk main menu
 			if (!errors.isEmpty()) {
 				saveErrors(request, errors);
@@ -269,79 +299,57 @@ public class FeatureManagementAction extends Action {
 			try {
 				featureBean.setActive(fform.getName(), true);
 
-				AceLogger.Instance().log(
-						AceLogger.INFORMATIONAL,
-						AceLogger.USER_LOG,
-						"User " + request.getUserPrincipal().getName() + " activated feature "
-								+ fform.getName());
+				AceLogger.Instance().log(AceLogger.INFORMATIONAL, AceLogger.USER_LOG,
+						"User " + request.getUserPrincipal().getName() + " activated feature " + fform.getName());
 
-				messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage(
-						"message.feature.modified"));
+				messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage("message.feature.modified"));
 
 				// notify app server via RMI
-				if (notifyAppServer(request, fform.getName(), "activate",
-						errors, "Activate/by-" + request.getUserPrincipal().getName())) {
-					messages.add(ActionMessages.GLOBAL_MESSAGE,
-							new ActionMessage(
-									"message.feature.appserver.updated"));
+				if (notifyAppServer(request, fform.getName(), "activate", errors,
+						"Activate/by-" + request.getUserPrincipal().getName())) {
+					messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage("message.feature.appserver.updated"));
 				}
 			} catch (WebTalkException e) {
-				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
-				"error.feature.not.exist"));
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.feature.not.exist"));
 			} catch (Exception e) {
-				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
-						"error.db.failure"));
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.db.failure"));
 
-				AceLogger.Instance().log(
-						AceLogger.ERROR,
-						AceLogger.SYSTEM_LOG,
-						"FeatureManagementAction.execute()/Activate/by-"
-								+ request.getUserPrincipal().getName() + ": "
-								+ e.getMessage());			
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"FeatureManagementAction.execute()/Activate/by-" + request.getUserPrincipal().getName() + ": "
+								+ e.getMessage());
 			}
-			
+
 			// forward control to the webtalk main menu
 			if (!errors.isEmpty()) {
 				saveErrors(request, errors);
 			}
 			saveMessages(request, messages);
 			return mapping.findForward("webtalk_main_menu");
-			
+
 		} else if (fform.getSubmit().equals("Deactivate")) {
 			try {
 				featureBean.setActive(fform.getName(), false);
 
-				AceLogger.Instance().log(
-						AceLogger.INFORMATIONAL,
-						AceLogger.USER_LOG,
-						"User " + request.getUserPrincipal().getName() + " deactivated feature "
-								+ fform.getName());
+				AceLogger.Instance().log(AceLogger.INFORMATIONAL, AceLogger.USER_LOG,
+						"User " + request.getUserPrincipal().getName() + " deactivated feature " + fform.getName());
 
-				messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage(
-						"message.feature.modified"));
+				messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage("message.feature.modified"));
 
 				// notify app server via RMI
-				if (notifyAppServer(request, fform.getName(), "deactivate",
-						errors, "Deactivate/by-" + request.getUserPrincipal().getName())) {
-					messages.add(ActionMessages.GLOBAL_MESSAGE,
-							new ActionMessage(
-									"message.feature.appserver.updated"));
+				if (notifyAppServer(request, fform.getName(), "deactivate", errors,
+						"Deactivate/by-" + request.getUserPrincipal().getName())) {
+					messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage("message.feature.appserver.updated"));
 				}
 			} catch (WebTalkException e) {
-				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
-				"error.feature.not.exist"));
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.feature.not.exist"));
 			} catch (Exception e) {
-				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
-						"error.db.failure"));
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.db.failure"));
 
-				AceLogger.Instance().log(
-						AceLogger.ERROR,
-						AceLogger.SYSTEM_LOG,
-						"FeatureManagementAction.execute()/Deactivate/by-"
-								+ request.getUserPrincipal().getName() + ": "
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"FeatureManagementAction.execute()/Deactivate/by-" + request.getUserPrincipal().getName() + ": "
 								+ e.getMessage());
 			}
-			
+
 			// forward control to the webtalk main menu
 			if (!errors.isEmpty()) {
 				saveErrors(request, errors);
@@ -357,8 +365,7 @@ public class FeatureManagementAction extends Action {
 		// add related tasks to the navigation bar
 		WebTalkRelatedTasks menu = new WebTalkRelatedTasks();
 		menu.addLink(new LinkAttribute("Search users", "display_user_search"));
-		menu.addLink(new LinkAttribute("Administer users",
-				"display_user_management"));
+		menu.addLink(new LinkAttribute("Administer users", "display_user_management"));
 		menu.addLink(new LinkAttribute("List all features", "list_features"));
 		request.setAttribute("menu", menu);
 

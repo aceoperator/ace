@@ -39,6 +39,8 @@ public class FeatureOperatorManagementForm extends ActionForm {
 
 	private String domain;
 
+	private boolean displayWaitTimeEstimation;
+
 	public FeatureOperatorManagementForm() {
 	}
 
@@ -72,7 +74,7 @@ public class FeatureOperatorManagementForm extends ActionForm {
 		map.put("max-sessions", String.valueOf(getMaxSessions()));
 		map.put("max-queue-size", String.valueOf(getMaxQueueSize()));
 		map.put("max-operators", String.valueOf(getMaxOperators()));
-
+		map.put("display-wait-time", String.valueOf(isDisplayWaitTimeEstimation()));
 		return map;
 	}
 
@@ -81,7 +83,7 @@ public class FeatureOperatorManagementForm extends ActionForm {
 	}
 
 	public boolean isActive() {
-		return this.active;
+		return active;
 	}
 
 	public void reset() {
@@ -92,6 +94,8 @@ public class FeatureOperatorManagementForm extends ActionForm {
 		maxOperators = 0;
 		maxSessions = 0;
 		maxQueueSize = 0;
+
+		displayWaitTimeEstimation = false;
 	}
 
 	public void setActive(boolean active) {
@@ -122,11 +126,8 @@ public class FeatureOperatorManagementForm extends ActionForm {
 			try {
 				setMaxSessions(Integer.parseInt(value));
 			} catch (NumberFormatException ex) {
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								"FeatureOperatorManagementForm.setParamsList() -- Non-numeric parm encountered : max-sessions");
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"FeatureOperatorManagementForm.setParamsList() -- Non-numeric parm encountered : max-sessions");
 			}
 		}
 
@@ -135,11 +136,8 @@ public class FeatureOperatorManagementForm extends ActionForm {
 			try {
 				setMaxQueueSize(Integer.parseInt(value));
 			} catch (NumberFormatException ex) {
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								"FeatureOperatorManagementForm.setParamsList() -- Non-numeric parm encountered : max-queue-size");
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"FeatureOperatorManagementForm.setParamsList() -- Non-numeric parm encountered : max-queue-size");
 			}
 		}
 
@@ -148,12 +146,14 @@ public class FeatureOperatorManagementForm extends ActionForm {
 			try {
 				setMaxOperators(Integer.parseInt(value));
 			} catch (NumberFormatException ex) {
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								"FeatureOperatorManagementForm.setParamsList() -- Non-numeric parm encountered : max-operators");
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"FeatureOperatorManagementForm.setParamsList() -- Non-numeric parm encountered : max-operators");
 			}
+		}
+
+		value = (String) map.get("display-wait-time");
+		if (value != null) {
+			setDisplayWaitTimeEstimation(Boolean.parseBoolean(value));
 		}
 	}
 
@@ -161,8 +161,7 @@ public class FeatureOperatorManagementForm extends ActionForm {
 		this.submit = submit;
 	}
 
-	public ActionErrors validate(ActionMapping mapping,
-			HttpServletRequest request) {
+	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		// Check for mandatory data
 		ActionErrors errors = new ActionErrors();
 
@@ -181,16 +180,22 @@ public class FeatureOperatorManagementForm extends ActionForm {
 		// general checks for create/modify
 		if (submit.equals("Create") || submit.equals("Modify")) {
 			if (maxOperators <= 0) {
-				errors.add("maxOperators", new ActionError(
-						"error.feature.operator.maxoperators"));
+				errors.add("maxOperators", new ActionError("error.feature.operator.maxoperators"));
 			}
 
 			if (maxSessions <= 0) {
-				errors.add("maxSessions", new ActionError(
-						"error.feature.operator.maxsessions"));
+				errors.add("maxSessions", new ActionError("error.feature.operator.maxsessions"));
 			}
 		}
 
 		return errors;
+	}
+
+	public boolean isDisplayWaitTimeEstimation() {
+		return displayWaitTimeEstimation;
+	}
+
+	public void setDisplayWaitTimeEstimation(boolean displayWaitTimeEstimation) {
+		this.displayWaitTimeEstimation = displayWaitTimeEstimation;
 	}
 }

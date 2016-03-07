@@ -55,8 +55,8 @@ import com.quikj.server.framework.AceTimerMessage;
  * 
  * @author amit
  */
-public class Operator extends AceThread implements FeatureInterface, EndPointInterface, RemoteServiceInterface,
-		GatekeeperInterface, OperatorMBean {
+public class Operator extends AceThread
+		implements FeatureInterface, EndPointInterface, RemoteServiceInterface, GatekeeperInterface, OperatorMBean {
 	private static final int CALL_Q_MESSAGE_TIMER = 0; // timer parm
 
 	private static final int OPM_TIMER = 1; // timer parm
@@ -113,6 +113,15 @@ public class Operator extends AceThread implements FeatureInterface, EndPointInt
 
 	private OPMUtil measurements;
 
+	private Date pausedUntil = new Date();
+
+	private boolean displayWaitTime;
+
+	// sum of all wait times in seconds
+	private long sumWaitTime;
+
+	private long waitTimeCount;
+
 	public Operator() throws IOException {
 		super("TalkFeatureOperator");
 	}
@@ -144,7 +153,7 @@ public class Operator extends AceThread implements FeatureInterface, EndPointInt
 		}
 	}
 
-	private void adjustQueueEntry(GroupMemberElement operator) {
+	private void adjustQueue(GroupMemberElement operator) {
 		String name = operator.getUser();
 		ListIterator<OperatorElement> i = operatorQueue.listIterator(0);
 		while (i.hasNext()) {
@@ -187,7 +196,6 @@ public class Operator extends AceThread implements FeatureInterface, EndPointInt
 	@Override
 	public boolean allow(EndPointInterface ep, EndPointInfo info) {
 		if (operatorQueue.size() >= maxOperators) {
-
 			for (OperatorElement e : operatorQueue) {
 				if (e.getOperatorInfo().getUser().equals(info.getUserData().getName())) {
 					// The same user is logging in again, the service controller
@@ -233,9 +241,14 @@ public class Operator extends AceThread implements FeatureInterface, EndPointInt
 			// add operator back to queue with re-adjusted count
 			addToQueue(operator.getOperatorInfo());
 
-			// peg wait time opm
-			int wait_time = (int) (new Date().getTime() - subscriber.getStartWaitTime()) / 1000;
-			measurements.collectOPM(OPM_USER_WAIT_TIME, wait_time);
+			// peg wait time OPM
+			int waitTime = (int) (new Date().getTime() - subscriber.getStartWaitTime()) / 1000;
+
+			// Save wait time information
+			sumWaitTime += waitTime;
+			waitTimeCount++;
+
+			measurements.collectOPM(OPM_USER_WAIT_TIME, waitTime);
 		} else { // call transfer failed
 			operatorQueue.addFirst(operator); // add him back
 			visitorQueue.addFirst(subscriber);
@@ -254,7 +267,7 @@ public class Operator extends AceThread implements FeatureInterface, EndPointInt
 		dropAllSubscribers();
 
 		if (registered) {
-			// send unregistration message
+			// send logout message
 			if (ServiceController.Instance() != null) {
 				if (ServiceController.Instance().sendMessage(new UnregistrationEvent(userName)) == false) {
 					// print error message
@@ -331,15 +344,17 @@ public class Operator extends AceThread implements FeatureInterface, EndPointInt
 
 	public synchronized String getRMIParam(String key) {
 		if (key.equals("operator-queue-size")) {
-			return new Integer(operatorQueue.size()).toString();
+			return Integer.toString(operatorQueue.size());
 		} else if (key.equals("all-operators-busy")) {
 			return Boolean.toString(allOperatorsBusy());
 		} else if (key.equals("subscriber-queue-size")) {
-			return new Integer(visitorQueue.size()).toString();
+			return Integer.toString(visitorQueue.size());
 		} else if (key.equals("operators-with-dnd-count")) {
-			return new Integer(dndList.size()).toString();
-		} else if (key.equals("average-wait-time")) {
-			return new Integer(0).toString();
+			return Integer.toString(dndList.size());
+		} else if (key.equals("paused-until")) {
+			return Long.toString(pausedUntil.getTime());
+		} else if (key.equals("estimated-wait-time")) {
+			return computeEstimatedWaitTime(1);
 		}
 
 		return null;
@@ -422,6 +437,11 @@ public class Operator extends AceThread implements FeatureInterface, EndPointInt
 			}
 		}
 
+		String displayWaitTimeString = (String) params.get("display-wait-time");
+		if (displayWaitTimeString != null) {
+			displayWaitTime = Boolean.parseBoolean(displayWaitTimeString);
+		}
+
 		return true;
 	}
 
@@ -447,28 +467,41 @@ public class Operator extends AceThread implements FeatureInterface, EndPointInt
 
 	private boolean processCallQMessageTimerEvent(AceTimerMessage event) {
 		// the CALL Q timer must have expired
-		ListIterator<SubscriberElement> iter = visitorQueue.listIterator();
 
-		while (iter.hasNext() == true) {
-			SubscriberElement subs = iter.next();
+		ListIterator<SubscriberElement> i = visitorQueue.listIterator();
+		int index = 0;
+		while (i.hasNext()) {
+			index++;
+			SubscriberElement subs = i.next();
 
-			// send a progress message to the guy
+			// send a progress message to the visitor
 			SetupResponseMessage response = new SetupResponseMessage();
 			response.setSessionId(subs.getSessionId());
 
 			MediaElements media = new MediaElements();
 			HtmlElement helem = new HtmlElement();
-			helem.setHtml(
+			StringBuilder builder = new StringBuilder(
 					java.util.ResourceBundle
 							.getBundle("com.quikj.application.web.talk.feature.operator.language",
-									ServiceController.getLocale((String) subs.getEndpoint().getParam("language")))
-							.getString(
-									"Operator_Services:_All_operators_are_currently_busy_assisting_other_customers,_please_hold_for_the_next_available_representative")
-					+ '\n');
+									ServiceController.getLocale(
+											(String) subs.getEndpoint().getParam("language")))
+					.getString(
+							"Operator_Services:_All_operators_are_currently_busy_assisting_other_customers,_please_hold_for_the_next_available_representative"));
+			if (displayWaitTime) {
+				builder.append("<br/>");
+				builder.append(java.util.ResourceBundle
+						.getBundle("com.quikj.application.web.talk.feature.operator.language",
+								ServiceController.getLocale((String) subs.getEndpoint().getParam("language")))
+						.getString("Operator_Services:_estimated_wait_time_is"));
+				builder.append(" ");
+				builder.append(computeEstimatedWaitTime(index));
+			}
+			helem.setHtml(builder.toString());
+
 			media.getElements().add(helem);
 			response.setMediaElements(media);
 
-			if (subs.getEndpoint()
+			if (!subs.getEndpoint()
 					.sendEvent(
 							new MessageEvent(MessageEvent.SETUP_RESPONSE, this, SetupResponseMessage.PROG,
 									java.util.ResourceBundle
@@ -476,7 +509,7 @@ public class Operator extends AceThread implements FeatureInterface, EndPointInt
 													ServiceController.getLocale(
 															(String) subs.getEndpoint().getParam("language")))
 									.getString("Operator_Services:_Please_hold_while_we_transfer_you_to_an_operator"),
-							response, null)) == false) {
+							response, null))) {
 				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
 						+ "- Operator.processCallQMessageTimerEvent() -- Error sending progress event to the calling party");
 
@@ -489,6 +522,46 @@ public class Operator extends AceThread implements FeatureInterface, EndPointInt
 		return true;
 	}
 
+	private String computeEstimatedWaitTime(int index) {
+		long waitTime = 0L;
+		if (waitTimeCount == 0) {
+			if (!visitorQueue.isEmpty()) {
+				waitTime = (new Date().getTime() - visitorQueue.getFirst().getStartWaitTime()) / 1000;
+			}
+		} else {
+			waitTime = sumWaitTime / waitTimeCount;
+		}
+
+		long total = index * waitTime;
+		StringBuilder builder = new StringBuilder();
+
+		long hour = total / 3600;
+		if (hour > 0) {
+			builder.append(pad(hour));
+		}
+
+		long minute = (total - (hour * 3600)) / 60;
+		if (builder.length() > 0) {
+			builder.append(":");
+		}
+		builder.append(pad(minute));
+
+		long seconds = total - (hour * 3600) - (minute * 60);
+		builder.append(":");
+		builder.append(pad(seconds));
+
+		return builder.toString();
+	}
+
+	String pad(long value) {
+		StringBuilder ret = new StringBuilder();
+		if (value >= 0 && value <= 9) {
+			ret.append("0");
+		}
+		ret.append(value);
+		return ret.toString();
+	}
+
 	private boolean processClientRequestMessage(MessageEvent event) {
 		if (event.getMessage() instanceof GroupActivityMessage) {
 			GroupActivityMessage gam = (GroupActivityMessage) event.getMessage();
@@ -499,28 +572,25 @@ public class Operator extends AceThread implements FeatureInterface, EndPointInt
 				switch (operation) {
 				case GroupMemberElement.OPERATION_ADD_LIST:
 					if (isMyOperator(ge)) {
-						if (maxOperators > 0) {
-							// if a size has been specified
-							if (operatorQueue.size() >= maxOperators) {
-								AceLogger.Instance().log(AceLogger.INFORMATIONAL, AceLogger.SYSTEM_LOG,
-										Thread.currentThread().getName()
-												+ "- Operator.processClientRequestMessage() -- " + "Operator queue "
-												+ userName + " has reached its capacity, unable to add new user");
-								return true;
-							}
+						if (maxOperators > 0 && operatorQueue.size() >= maxOperators) {
+							AceLogger.Instance().log(AceLogger.INFORMATIONAL, AceLogger.SYSTEM_LOG,
+									Thread.currentThread().getName() + "- Operator.processClientRequestMessage() -- "
+											+ "Operator queue " + userName
+											+ " has reached its capacity, unable to add new user");
+						} else {
+							addToQueue(ge);
+
+							// check if anyone is waiting in the subscriber
+							// queue. If, yes, maybe an operator is available
+							// for a call
+							checkQueueStatus();
 						}
-
-						addToQueue(ge);
-
-						// check if anyone is waiting in the subscriber queue
-						// if, yes, maybe an operator is available for a call
-						checkQueueStatus();
 					}
 					break;
 
 				case GroupMemberElement.OPERATION_MOD_LIST:
 					if (isMyOperator(ge)) {
-						adjustQueueEntry(ge);
+						adjustQueue(ge);
 
 						// check if anyone is waiting in the subscriber queue
 						// if, yes, maybe an operator is available for a call
@@ -531,7 +601,7 @@ public class Operator extends AceThread implements FeatureInterface, EndPointInt
 				case GroupMemberElement.OPERATION_REM_LIST:
 					removeFromQueue(ge);
 
-					if (allOperatorsBusy()) {
+					if (operatorQueue.isEmpty() && dndList.isEmpty() && !visitorQueue.isEmpty()) {
 						dropAllSubscribers();
 					}
 					break;
@@ -692,8 +762,8 @@ public class Operator extends AceThread implements FeatureInterface, EndPointInt
 		}
 
 		if (ApplicationServer.getInstance() != null) {
-			ApplicationServer.getInstance().registerMbean(
-					OperatorMBean.MBEAN_SUFFIX + resp_message.getCallPartyInfo().getName(), this);
+			ApplicationServer.getInstance()
+					.registerMbean(OperatorMBean.MBEAN_SUFFIX + resp_message.getCallPartyInfo().getName(), this);
 		}
 
 		registered = true;
@@ -708,11 +778,8 @@ public class Operator extends AceThread implements FeatureInterface, EndPointInt
 			subs.setSessionId(setup.getSessionId());
 			subs.setEndpoint(event.getFrom());
 
-			boolean sendBusy = allOperatorsBusy();
-			if (sendBusy) {
-				dropAllSubscribers();
-
-				// send a BUSY message
+			boolean busy = allOperatorsBusy();
+			if (busy) {
 				SetupResponseMessage resp = new SetupResponseMessage();
 				resp.setSessionId(setup.getSessionId());
 
@@ -751,7 +818,7 @@ public class Operator extends AceThread implements FeatureInterface, EndPointInt
 			media.getElements().add(helem);
 			response.setMediaElements(media);
 
-			if (event.getFrom()
+			if (!event.getFrom()
 					.sendEvent(
 							new MessageEvent(MessageEvent.SETUP_RESPONSE, this, SetupResponseMessage.PROG,
 									java.util.ResourceBundle
@@ -760,7 +827,7 @@ public class Operator extends AceThread implements FeatureInterface, EndPointInt
 															.getLocale((String) event.getFrom().getParam("language")))
 											.getString(
 													"Operator_Services:_Please_hold,_while_the_call_is_being_transferred_to_an_operator"),
-					response, null)) == false) {
+					response, null))) {
 				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
 						+ "- Operator.processSetupRequestEvent() -- Error sending progress event to the calling party");
 
@@ -787,26 +854,32 @@ public class Operator extends AceThread implements FeatureInterface, EndPointInt
 	private boolean allOperatorsBusy() {
 		boolean busy = true;
 		if (maxQSize == 0) {
-			// queue size = 0 means no queueing is allowed.
+			// queue size = 0 means no queuing is allowed.
 			// If operators are immediately available, then
 			// transfer to an operator, else send busy
-			for (OperatorElement operator : operatorQueue) {
-				if (!operatorBusy(operator)) {
-					busy = false;
-					break;
-				}
-			}
+			busy = !operatorsAvailableImmediately();
 		} else if (maxQSize > 0) {
 			// if a queue size has been specified
-			if ((!operatorQueue.isEmpty() || !dndList.isEmpty()) && (visitorQueue.size() < maxQSize)) {
+			if ((!operatorQueue.isEmpty() || !dndList.isEmpty()) && (visitorQueue.size() < maxQSize)
+					&& new Date().after(pausedUntil)) {
 				// If there is capacity available in the queue
 				busy = false;
 			}
-		} else if (!operatorQueue.isEmpty() || !dndList.isEmpty()) {
+		} else if (!operatorQueue.isEmpty() || !dndList.isEmpty() && new Date().after(pausedUntil)) {
 			// unlimited queue size and operators available
 			busy = false;
 		}
 		return busy;
+	}
+
+	private boolean operatorsAvailableImmediately() {
+		for (OperatorElement operator : operatorQueue) {
+			if (!operatorBusy(operator)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private boolean operatorBusy(OperatorElement operator) {
@@ -846,6 +919,7 @@ public class Operator extends AceThread implements FeatureInterface, EndPointInt
 		maxSessionsPerOperator = 1;
 		maxOperators = -1;
 		maxQSize = -1;
+		displayWaitTime = false;
 		initParams(params);
 	}
 
@@ -865,7 +939,6 @@ public class Operator extends AceThread implements FeatureInterface, EndPointInt
 			if (message instanceof AceSignalMessage) {
 				// A signal message is received
 
-				// print informational message
 				AceLogger.Instance().log(AceLogger.INFORMATIONAL, AceLogger.SYSTEM_LOG,
 						getName() + " - Operator.run() --  A signal " + ((AceSignalMessage) message).getSignalId()
 								+ " is received : " + ((AceSignalMessage) message).getMessage());
@@ -916,7 +989,18 @@ public class Operator extends AceThread implements FeatureInterface, EndPointInt
 		}
 	}
 
-	public boolean setRMIParam(String key, String value) {
+	public synchronized boolean setRMIParam(String key, String value) {
+		if (key.equals("pause-for")) {
+			try {
+				long duration = Long.valueOf(value);
+				pausedUntil = new Date(System.currentTimeMillis() + duration * 60 * 1000L);
+				return true;
+			} catch (NumberFormatException e) {
+				AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
+						getName() + "- Operator.setRMIParam() -- Invalid pause duration specified");
+			}
+		}
+
 		return false;
 	}
 
@@ -928,12 +1012,9 @@ public class Operator extends AceThread implements FeatureInterface, EndPointInt
 		// start the periodic timer
 		callQMessageTimerId = AceTimer.Instance().startTimer(CALL_Q_MESSAGE_INTERVAL, CALL_Q_MESSAGE_TIMER);
 		if (callQMessageTimerId == -1) {
-			// print error message
 			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
 					getName() + "- Operator.startCallQMessageTimer() -- Could not start the call queue message timer - "
 							+ getErrorMessage());
-
-			// and continue
 		}
 	}
 
@@ -975,7 +1056,6 @@ public class Operator extends AceThread implements FeatureInterface, EndPointInt
 														(String) subscriber.getEndpoint().getParam("language")))
 								.getString("You_are_being_connected_to_operator_") + ' ' + operator.getUser(), resp,
 						null))) {
-			// print error message
 			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
 					+ "- Operator.transferCallToSubscriber() -- Error sending TRANSFER message to the service controller");
 			return false;

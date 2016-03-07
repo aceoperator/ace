@@ -4,6 +4,7 @@
 package com.quikj.server.framework;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -71,12 +72,16 @@ public class CaptchaService {
 		
 		BackgroundGenerator background;
 		FontGenerator fontGenerator;
+		
+		Font font = Font.decode("Monospaced");
+		Font[] fonts = {font};
+		
 		if (captchType == CaptchaType.LARGE) {
-			fontGenerator = new RandomFontGenerator(40, 50);
+			fontGenerator = new RandomFontGenerator(40, 50, fonts);
 			background = new UniColorBackgroundGenerator(300,
 					100, bgColor);
 		} else {
-			fontGenerator = new RandomFontGenerator(20, 26);
+			fontGenerator = new RandomFontGenerator(20, 26, fonts);
 			background = new UniColorBackgroundGenerator(150,
 					50, bgColor);
 		}
