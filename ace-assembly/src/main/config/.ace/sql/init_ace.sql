@@ -15,8 +15,6 @@ CREATE TABLE `account_tbl` (
   PRIMARY KEY (userid)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-INSERT INTO account_tbl (userid, password, addnl_info) VALUES ('ace', PASSWORD('a1b2c3d4'), 'Ace Super User');
-
 CREATE TABLE  log_tbl
    (dated   TIMESTAMP NOT NULL,
     level   VARCHAR(10) NOT NULL,
@@ -94,14 +92,6 @@ CREATE TABLE `blacklist_tbl` (
   KEY `user_id` (`user_id`),
   CONSTRAINT `blacklist_tbl_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user_tbl` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
-
-
-INSERT INTO group_tbl VALUES ('operator-group','ace',0,3,3,0,0);
-INSERT INTO user_tbl (userid, password, domain, flags, fullname, address, addnl_info, unavail_xferto, gatekeeper, password_updated)
-	VALUES ('operator',password('a1b2c3d4'),'ace',0,'Ace Operator group owner','','Owner of operator group','messagebox', '', NOW());
-INSERT INTO group_owner_tbl values ('operator','operator-group');
-INSERT INTO user_tbl (userid, password, domain, flags, fullname, address, addnl_info, unavail_xferto, gatekeeper, password_updated) 
-	VALUES ('messagebox',password('a1b2c3d4'),'ace',0,'Message service feature','','Message service feature - handles offline messaging','', '', NOW());
 
 CREATE TABLE  cdr_logout_tbl (
   loginid varchar(255) binary NOT NULL default '',
@@ -212,18 +202,6 @@ CREATE TABLE canned_message_tbl
 	CONSTRAINT `cannedmsgtbl_fk_1` FOREIGN KEY (grp) REFERENCES group_tbl (groupid) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-insert into canned_message_tbl (grp, description, message)
-	values ('operator-group', 'QUIK Computing greetings message',
-		'Welcome to QUIK Computing operator services demo. How may I help you?');
-
-insert into canned_message_tbl (grp, description, message)
-	values ('operator-group', 'QUIK Computing web page',
-		'<a href=http://www.quik-computing.com target=blank_>Click here to visit our web site</href>');
-
-insert into canned_message_tbl (grp, description, message)
-	values ('operator-group', 'QUIK Computing e-mail feedback',
-		'<a href=mailto:info@quik-j.com?subject=Feedback target=_blank>Click here to send us a feedback by email</a>');
-
 CREATE TABLE  feature_tbl (
   id int unsigned NOT NULL AUTO_INCREMENT,
   fname varchar(40) binary NOT NULL,
@@ -244,14 +222,6 @@ CREATE TABLE `feature_params_tbl` (
   	ON DELETE CASCADE ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-insert into feature_tbl values (NULL, 'operator', 'ace', 'com.quikj.application.web.talk.feature.operator.Operator', 1);
-insert into feature_params_tbl values (LAST_INSERT_ID(), 'max-sessions', '1');
-insert into feature_params_tbl values (LAST_INSERT_ID(), 'max-operators', '10');
-insert into feature_params_tbl values (LAST_INSERT_ID(), 'max-queue-size', '20');
-
-insert into feature_tbl values (NULL, 'messagebox', 'ace', 'com.quikj.application.web.talk.feature.messagebox.server.MessageBox', 1);
-insert into feature_params_tbl values (LAST_INSERT_ID(), 'from', 'messagebox@mydomain.com');
-
 CREATE TABLE  user_security_questions_tbl (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
   question_id TINYINT(4) NOT NULL ,
@@ -262,3 +232,34 @@ CREATE TABLE  user_security_questions_tbl (
   UNIQUE KEY (question_id, user_id),
   FOREIGN KEY (user_id) REFERENCES user_tbl(id) ON DELETE CASCADE 
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = latin1;
+
+
+INSERT INTO account_tbl (userid, password, addnl_info) VALUES ('ace', PASSWORD('a1b2c3d4'), 'Ace Super User');
+
+INSERT INTO group_tbl VALUES ('operator-group','ace',0,3,3,0,0);
+INSERT INTO user_tbl (userid, password, domain, flags, fullname, address, addnl_info, unavail_xferto, gatekeeper, password_updated)
+	VALUES ('operator',password('a1b2c3d4'),'ace',0,'Ace Operator group owner','','Owner of operator group','messagebox', '', NOW());
+INSERT INTO group_owner_tbl values ('operator','operator-group');
+INSERT INTO user_tbl (userid, password, domain, flags, fullname, address, addnl_info, unavail_xferto, gatekeeper, password_updated) 
+	VALUES ('messagebox',password('a1b2c3d4'),'ace',0,'Message service feature','','Message service feature - handles offline messaging','', '', NOW());
+
+insert into canned_message_tbl (grp, description, message)
+	values ('operator-group', 'QUIK Computing greetings message',
+		'Welcome to QUIK Computing operator services demo. How may I help you?');
+
+insert into canned_message_tbl (grp, description, message)
+	values ('operator-group', 'QUIK Computing web page',
+		'<a href=http://www.quik-computing.com target=blank_>Click here to visit our web site</href>');
+
+insert into canned_message_tbl (grp, description, message)
+	values ('operator-group', 'QUIK Computing e-mail feedback',
+		'<a href=mailto:info@quik-j.com?subject=Feedback target=_blank>Click here to send us a feedback by email</a>');
+
+insert into feature_tbl values (NULL, 'operator', 'ace', 'com.quikj.application.web.talk.feature.operator.Operator', 1);
+insert into feature_params_tbl values (LAST_INSERT_ID(), 'max-sessions', '1');
+insert into feature_params_tbl values (LAST_INSERT_ID(), 'max-operators', '10');
+insert into feature_params_tbl values (LAST_INSERT_ID(), 'max-queue-size', '20');
+insert into feature_params_tbl values (LAST_INSERT_ID(), 'display-wait-time', 'true');
+
+insert into feature_tbl values (NULL, 'messagebox', 'ace', 'com.quikj.application.web.talk.feature.messagebox.server.MessageBox', 1);
+insert into feature_params_tbl values (LAST_INSERT_ID(), 'from', 'messagebox@mydomain.com');
