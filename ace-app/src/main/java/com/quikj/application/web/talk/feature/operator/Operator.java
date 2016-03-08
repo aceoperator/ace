@@ -523,16 +523,31 @@ public class Operator extends AceThread
 	}
 
 	private String computeEstimatedWaitTime(int index) {
-		long waitTime = 0L;
+		long alreadyWaitedFor = 0L;
+		if (!visitorQueue.isEmpty()) {
+			alreadyWaitedFor = (new Date().getTime() - visitorQueue.getFirst().getStartWaitTime()) / 1000;
+		}
+
+		long waitTime = 120L; // an arbitrary value for the inital wait time
 		if (waitTimeCount == 0) {
+			// If there is no estimation time available (because this is a new
+			// group) or the server was restarted
 			if (!visitorQueue.isEmpty()) {
-				waitTime = (new Date().getTime() - visitorQueue.getFirst().getStartWaitTime()) / 1000;
+				waitTime = alreadyWaitedFor;
 			}
 		} else {
 			waitTime = sumWaitTime / waitTimeCount;
 		}
 
-		long total = index * waitTime;
+		long total = (index * waitTime) - alreadyWaitedFor;
+		if (total <= 0) {
+			total = 120L;
+		}
+		
+		return formatTime(total);
+	}
+
+	private String formatTime(long total) {
 		StringBuilder builder = new StringBuilder();
 
 		long hour = total / 3600;
