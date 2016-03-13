@@ -302,34 +302,35 @@ public class Operator extends AceThread
 
 	private void dropAllSubscribers() {
 		ListIterator<SubscriberElement> iter = visitorQueue.listIterator();
-		long curr_time = new Date().getTime();
+		long currentTime = new Date().getTime();
 
 		while (iter.hasNext()) {
-			SubscriberElement element = iter.next();
-			// send a BUSY message
-			SetupResponseMessage resp = new SetupResponseMessage();
-			resp.setSessionId(element.getSessionId());
-
-			// send the message
-			if (ServiceController.Instance()
-					.sendMessage(
-							new MessageEvent(MessageEvent.SETUP_RESPONSE, this, SetupResponseMessage.UNAVAILABLE,
-									java.util.ResourceBundle
-											.getBundle("com.quikj.application.web.talk.feature.operator.language",
-													ServiceController.getLocale(
-															(String) element.getEndpoint().getParam("language")))
-									.getString("No_operators_are_currently_available,_please_try_again_later"), resp,
-							null)) == false) {
-				// print error message
-				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
-						+ "- Operator.dropAllSubscribers() -- Error sending UNAVAILABLE message to the service controller");
-			}
-
-			// peg wait time opm
-			int wait_time = (int) (curr_time - element.getStartWaitTime()) / 1000;
-			measurements.collectOPM(OPM_USER_WAIT_TIME, wait_time);
+			dropSubscriber(iter.next(), currentTime);
 		}
 		visitorQueue.clear();
+	}
+
+	private void dropSubscriber(SubscriberElement element, long currentTime) {
+		// send a BUSY message
+		SetupResponseMessage resp = new SetupResponseMessage();
+		resp.setSessionId(element.getSessionId());
+
+		// send the message
+		if (ServiceController.Instance()
+				.sendMessage(new MessageEvent(MessageEvent.SETUP_RESPONSE, this, SetupResponseMessage.UNAVAILABLE,
+						java.util.ResourceBundle
+								.getBundle("com.quikj.application.web.talk.feature.operator.language",
+										ServiceController
+												.getLocale((String) element.getEndpoint().getParam("language")))
+								.getString("No_operators_are_currently_available,_please_try_again_later"),
+						resp, null)) == false) {
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- Operator.dropAllSubscribers() -- Error sending UNAVAILABLE message to the service controller");
+		}
+
+		// peg wait time opm
+		int wait_time = (int) (currentTime - element.getStartWaitTime()) / 1000;
+		measurements.collectOPM(OPM_USER_WAIT_TIME, wait_time);
 	}
 
 	public String getIdentifier() {
@@ -354,7 +355,7 @@ public class Operator extends AceThread
 		} else if (key.equals("paused-until")) {
 			return Long.toString(pausedUntil.getTime());
 		} else if (key.equals("estimated-wait-time")) {
-			return computeEstimatedWaitTime(1);
+			return getEstimatedWaitTime(1);
 		}
 
 		return null;
@@ -494,7 +495,7 @@ public class Operator extends AceThread
 								ServiceController.getLocale((String) subs.getEndpoint().getParam("language")))
 						.getString("Operator_Services:_estimated_wait_time_is"));
 				builder.append(" ");
-				builder.append(computeEstimatedWaitTime(index));
+				builder.append(getEstimatedWaitTime(index));
 			}
 			helem.setHtml(builder.toString());
 
@@ -522,46 +523,46 @@ public class Operator extends AceThread
 		return true;
 	}
 
-	private String computeEstimatedWaitTime(int index) {
+	private String getEstimatedWaitTime(int index) {
+		long total = computeWaitTime(index);
+		return formatTime(total);
+	}
+
+	private long computeWaitTime(int index) {
 		long alreadyWaitedFor = 0L;
 		if (!visitorQueue.isEmpty()) {
 			alreadyWaitedFor = (new Date().getTime() - visitorQueue.getFirst().getStartWaitTime()) / 1000;
 		}
 
-		long waitTime = 120L; // an arbitrary value for the inital wait time
-		if (waitTimeCount == 0) {
-			// If there is no estimation time available (because this is a new
-			// group) or the server was restarted
-			if (!visitorQueue.isEmpty()) {
-				waitTime = alreadyWaitedFor;
-			}
-		} else {
+		long waitTime = 300L; // an arbitrary value for the inital wait time
+		if (waitTimeCount > 0) {
+			// If wait time statistics is available
 			waitTime = sumWaitTime / waitTimeCount;
 		}
 
 		long total = (index * waitTime) - alreadyWaitedFor;
 		if (total <= 0) {
-			total = 120L;
+			// If the visitor has waited longer than the estimated wait time
+			total = 300L * index;
 		}
-		
-		return formatTime(total);
+		return total;
 	}
 
-	private String formatTime(long total) {
+	private String formatTime(long time) {
 		StringBuilder builder = new StringBuilder();
 
-		long hour = total / 3600;
+		long hour = time / 3600;
 		if (hour > 0) {
 			builder.append(pad(hour));
 		}
 
-		long minute = (total - (hour * 3600)) / 60;
+		long minute = (time - (hour * 3600)) / 60;
 		if (builder.length() > 0) {
 			builder.append(":");
 		}
 		builder.append(pad(minute));
 
-		long seconds = total - (hour * 3600) - (minute * 60);
+		long seconds = time - (hour * 3600) - (minute * 60);
 		builder.append(":");
 		builder.append(pad(seconds));
 
@@ -930,16 +931,37 @@ public class Operator extends AceThread
 	}
 
 	public void resynchParam(Map<?, ?> params) {
-		// set default values
+		setDefaultValue();
+
+		initParams(params);
+
+		long currentTime = System.currentTimeMillis();
+
+		// If the queue size was reduced from the management interface, remove
+		// visitor waiting in the queue
+		if (maxQSize >= 0) {
+			int diff = visitorQueue.size() - maxQSize;
+			Iterator<SubscriberElement> iter = visitorQueue.descendingIterator();
+			for (int i = 0; i < diff; i++) {
+				SubscriberElement element = iter.next();
+				dropSubscriber(element, currentTime);
+				iter.remove();
+			}
+		}
+
+		// Because of the changes, it is possible that some more operators
+		// became available
+		checkQueueStatus();
+	}
+
+	private void setDefaultValue() {
 		maxSessionsPerOperator = 1;
 		maxOperators = -1;
 		maxQSize = -1;
 		displayWaitTime = false;
-		initParams(params);
 	}
 
 	public void run() {
-
 		while (true) {
 			AceMessageInterface message = waitMessage();
 			if (message == null) {
@@ -1092,6 +1114,11 @@ public class Operator extends AceThread
 	@Override
 	public synchronized int getSubscriberQueueSize() {
 		return visitorQueue.size();
+	}
+
+	@Override
+	public synchronized Date getPausedUntil() {
+		return pausedUntil;
 	}
 
 	@Override
