@@ -785,6 +785,15 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 			conferenceButton.setEnabled(enabled);
 			contactList.setEnabled(enabled);
 		}
+
+		if (enabled) {
+			Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+				@Override
+				public void execute() {
+					chatEditTextArea.setFocus(true);
+				}
+			});
+		}
 	}
 
 	@Override
