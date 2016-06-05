@@ -508,6 +508,20 @@ public class ChatSessionPresenter {
 			Notifier.cancelAlert();
 			acceptTimer.cancel();
 			answerChat(reqId, contentType, msg);
+
+			Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+				@Override
+				public void execute() {
+					ConfirmationDialogPresenter.getInstance().hide();
+
+					Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+						@Override
+						public void execute() {
+							view.chatEnabled();
+						}
+					});
+				}
+			});
 		}
 
 		@Override
@@ -1079,14 +1093,14 @@ public class ChatSessionPresenter {
 			processMedia(msg.getMedia(), systemUserCallPartyElement());
 		}
 
-		view.chatEnabled();
-
 		if (UserChatsPresenter.getCurrentInstance().getActiveChatCount() == 1) {
 			showChat();
 		} else {
 			UserPanelPresenter.getCurrentInstance().highlightChatEvent(
 					chatInfo.getSessionId(), "new");
 		}
+		
+		view.chatEnabled();
 	}
 
 	private CallPartyElement systemUserCallPartyElement() {

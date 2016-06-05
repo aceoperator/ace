@@ -75,16 +75,18 @@ public class ViewUtils {
 			buffer.append(party.getEmail());
 		}
 
-		if (party.isCookiesEnabled() && party.getEndUserCookie() != null) {
-			buffer.append(lineSeparator);
-			buffer.append(ApplicationController.getMessages()
-					.ViewUtils_cookie() + ": ");
-			buffer.append(party.getEndUserCookie());
-		} else if (party.getIpAddress() != null) {
-			buffer.append(lineSeparator);
-			buffer.append(ApplicationController.getMessages()
-					.ViewUtils_ipAddress() + ": ");
-			buffer.append(party.getIpAddress());
+		boolean hideCookieIpAddress = ClientProperties.getInstance()
+				.getBooleanValue(ClientProperties.HIDE_OTHER_PARTY_COOKIE_IPADDRESS, false);
+		if (!hideCookieIpAddress) {
+			if (party.isCookiesEnabled() && party.getEndUserCookie() != null) {
+				buffer.append(lineSeparator);
+				buffer.append(ApplicationController.getMessages().ViewUtils_cookie() + ": ");
+				buffer.append(party.getEndUserCookie());
+			} else if (party.getIpAddress() != null) {
+				buffer.append(lineSeparator);
+				buffer.append(ApplicationController.getMessages().ViewUtils_ipAddress() + ": ");
+				buffer.append(party.getIpAddress());
+			}
 		}
 
 		if (party.getComment() != null) {
