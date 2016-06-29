@@ -57,6 +57,8 @@ public class ClientProperties extends HashMap<String, List<String>> {
 	public static final String VISITOR_CHAT_ENDED_HTML = "visitorChatEndedHtml";
 
 	public static final String SHOW_OTHER_PARTY_DETAILS = "showOtherPartyDetails";
+	
+	public static final String HIDE_OTHER_PARTY_COOKIE_IPADDRESS = "hideOtherPartyCookieIpAddress";
 
 	public static final String HIDE_LOGIN_IDS = "hideLoginIds";
 
