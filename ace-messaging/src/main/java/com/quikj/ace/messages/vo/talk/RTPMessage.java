@@ -16,7 +16,7 @@ public class RTPMessage implements TalkMessageInterface {
 	}
 
 	public RTPMessage(RTPMessage rtpMessageToClone) {
-		this(new MediaElements(rtpMessageToClone.getMediaElements()),
+		this(new MediaElements(new MediaElements(rtpMessageToClone.getMediaElements())),
 				rtpMessageToClone.getSessionId(), rtpMessageToClone.isParse(),
 				new CallPartyElement(rtpMessageToClone.getFrom()));
 	}
