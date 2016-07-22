@@ -5,7 +5,10 @@ package com.quikj.ace.custom.server;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -162,12 +165,16 @@ public class FormMailerServlet extends HttpServlet {
 
 	private String formatBody(String form, HttpServletRequest request) {
 
-		StringBuffer buffer = new StringBuffer();
-		buffer.append("The following information was submitted\n\n");
-
 		Enumeration<String> params = request.getParameterNames();
+		List<String> sortedList = new ArrayList<String>();
 		while (params.hasMoreElements()) {
-			String param = params.nextElement();
+			sortedList.add(params.nextElement());
+		}
+		Collections.sort(sortedList);
+		
+		StringBuilder buffer = new StringBuilder();
+		buffer.append("The following information was submitted\n\n");
+		for (String param: sortedList) {
 			String value = request.getParameter(param);
 			if (value != null && value.trim().length() > 0) {
 				buffer.append(param);
@@ -176,7 +183,6 @@ public class FormMailerServlet extends HttpServlet {
 				buffer.append("\n");
 			}
 		}
-
 		return buffer.toString();
 	}
 

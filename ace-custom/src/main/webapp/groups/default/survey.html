@@ -10,13 +10,33 @@
 <!-- Setup for mobile -->
 <meta name="HandheldFriendly" content="true" />
 <meta name="MobileOptimized" content="width" />
-<meta name="viewport" content="width=device-width; user-scalable=no; initial-scale=1.0; maximum-scale=1.0;" />
+<meta name="viewport"
+	content="width=device-width; user-scalable=no; initial-scale=1.0; maximum-scale=1.0;" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 
 <link type="text/css" rel="stylesheet"
 	href="/ace-contactcenter/Ace_web.css">
 
-<script type="text/javascript">
+<script>
+	function copyUrlParamsToForm(formId) {
+		var url = decodeURIComponent(window.location.href);
+		var tokens = url.split("?")
+		if (tokens.length > 1) {
+			tokens = tokens[1].split("&");
+			for (var i = 0; i < tokens.length; i++) {
+				var token = tokens[i];
+				var kv = token.split("=");
+				if (kv.length > 1) {
+					var input = document.createElement("input");
+					input.setAttribute("type", "hidden");
+					input.setAttribute("name", kv[0]);
+					input.setAttribute("value", kv[1]);
+					document.forms["messageForm"].appendChild(input);
+				}
+			}
+		}		
+	}
+
 	function refreshCaptcha() {
 		dt = new Date();
 		spice = dt.getTime();
@@ -52,11 +72,11 @@
 	<div id=header
 		style="width: 100%; font-size: medium; padding: 2px 2px 2px 2px; background-color: white;">
 		<img src="logo.gif" align="middle">&nbsp;&nbsp;<big><b>Ace
-				Operator Contact Center</b>
-		</big>
+				Operator Contact Center</b> </big>
 	</div>
 
-	<form name="messageForm" action="/ace-custom/formMailer" method="post"
+	<form name="messageForm"
+		action="/ace-custom/formMailer" method="post"
 		onsubmit="return validateForm()">
 
 		<input type="hidden" name="group" value="default" /> <input
@@ -77,6 +97,10 @@
 		<input type="submit" name="submit" value="Submit" /> &nbsp;&nbsp; <input
 			type="reset" name="reset" value="Reset" />
 	</form>
+
+	<script>
+		copyUrlParamsToForm("messageForm");		
+	</script>
 
 	<div id="footer"
 		style="width: 100%; background-color: white; border-top: 1px solid red; padding: 2px 2px 2px 2px;">
