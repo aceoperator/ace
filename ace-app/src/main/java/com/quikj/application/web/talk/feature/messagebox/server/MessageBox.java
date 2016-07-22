@@ -218,8 +218,6 @@ public class MessageBox extends AceThread implements FeatureInterface,
 	}
 
 	private void answerCall(CallInfo call) {
-		// todo - specify messagebox terminal screen
-
 		SetupResponseMessage response = new SetupResponseMessage();
 		response.setSessionId(call.getSessionId());
 

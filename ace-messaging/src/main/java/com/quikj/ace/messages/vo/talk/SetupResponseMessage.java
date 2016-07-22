@@ -26,6 +26,8 @@ public class SetupResponseMessage implements TalkMessageInterface {
 	private CallPartyElement transferredFrom;
 
 	private long newSessionId = -1L;
+	
+	private String callingCookie;
 
 	public SetupResponseMessage() {
 	}
@@ -33,17 +35,18 @@ public class SetupResponseMessage implements TalkMessageInterface {
 	public SetupResponseMessage(SetupResponseMessage toClone) {
 		this(toClone.getMediaElements(), toClone.getSessionId(), new CalledNameElement(toClone
 				.getCalledParty()), new CallPartyElement(toClone.getTransferredFrom()), toClone
-				.getSessionId());
+				.getSessionId(), toClone.getCallingCookie());
 	}
 
 	public SetupResponseMessage(MediaElements media, long sessionId,
 			CalledNameElement called, CallPartyElement transferredFrom,
-			long newSessionId) {
+			long newSessionId, String callingCookie) {
 		this.media = media;
 		this.sessionId = sessionId;
 		this.called = called;
 		this.transferredFrom = transferredFrom;
 		this.newSessionId = newSessionId;
+		this.callingCookie = callingCookie;
 	}
 
 	public long getNewSessionId() {
@@ -84,5 +87,13 @@ public class SetupResponseMessage implements TalkMessageInterface {
 
 	public void setSessionId(long session) {
 		sessionId = session;
+	}
+
+	public String getCallingCookie() {
+		return callingCookie;
+	}
+
+	public void setCallingCookie(String callingCookie) {
+		this.callingCookie = callingCookie;
 	}
 }

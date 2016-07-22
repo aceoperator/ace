@@ -75,8 +75,7 @@ public class ChatSessionPresenter {
 	private long xferredFromId = -1L;
 	private Date lastTypingTime = null;
 	private Timer typingTimer = null;
-	private String systemUser = ApplicationController.getMessages()
-			.ChatSessionPresenter_systemUser();
+	private String systemUser = ApplicationController.getMessages().ChatSessionPresenter_systemUser();
 	private boolean disconnectChat = false;
 
 	public ChatSessionPresenter() {
@@ -87,14 +86,11 @@ public class ChatSessionPresenter {
 		if (ApplicationController.getInstance().isOperator()) {
 			// before changing out the old chat, dispose of it if
 			// it's not in the conversation list anymore
-			ChatSessionPresenter presenter = UserPanelPresenter
-					.getCurrentInstance().getCurrentChatPresenter();
+			ChatSessionPresenter presenter = UserPanelPresenter.getCurrentInstance().getCurrentChatPresenter();
 			if (presenter != null) {
 				long oldSessionId = presenter.getSessionId();
-				if (!UserChatsPresenter.getCurrentInstance().chatExists(
-						oldSessionId)) {
-					presenter.dispose(
-							DisconnectReasonElement.NORMAL_DISCONNECT, null);
+				if (!UserChatsPresenter.getCurrentInstance().chatExists(oldSessionId)) {
+					presenter.dispose(DisconnectReasonElement.NORMAL_DISCONNECT, null);
 				}
 			}
 
@@ -129,8 +125,7 @@ public class ChatSessionPresenter {
 			userDisconnected(reasonCode, reasonText);
 		}
 
-		Map<Long, ChatSessionInfo> chats = SessionInfo.getInstance()
-				.getChatList();
+		Map<Long, ChatSessionInfo> chats = SessionInfo.getInstance().getChatList();
 		chats.remove(chatInfo.getSessionId());
 		if (typingTimer != null) {
 			cancelTyping();
@@ -138,10 +133,8 @@ public class ChatSessionPresenter {
 
 		if (view != null) {
 			if (ApplicationController.getInstance().isOperator()) {
-				UserPanelPresenter.getCurrentInstance().removeChat(
-						(Widget) view);
-				UserChatsPresenter.getCurrentInstance().removeChat(
-						chatInfo.getSessionId());
+				UserPanelPresenter.getCurrentInstance().removeChat((Widget) view);
+				UserChatsPresenter.getCurrentInstance().removeChat(chatInfo.getSessionId());
 			}
 
 			view.dispose();
@@ -153,37 +146,31 @@ public class ChatSessionPresenter {
 
 		CannedMessageElement[] cannedMessages = null;
 		if (ApplicationController.getInstance().isOperator()) {
-			cannedMessages = (CannedMessageElement[]) SessionInfo.getInstance()
-					.get(SessionInfo.CANNED_MESSAGES);
+			cannedMessages = (CannedMessageElement[]) SessionInfo.getInstance().get(SessionInfo.CANNED_MESSAGES);
 		}
 
-		boolean showDetails = ClientProperties.getInstance().getBooleanValue(
-				ClientProperties.SHOW_OTHER_PARTY_DETAILS, true);
+		boolean showDetails = ClientProperties.getInstance().getBooleanValue(ClientProperties.SHOW_OTHER_PARTY_DETAILS,
+				true);
 
-		boolean hideLoginIds = ClientProperties.getInstance().getBooleanValue(
-				ClientProperties.HIDE_LOGIN_IDS, false);
+		boolean hideLoginIds = ClientProperties.getInstance().getBooleanValue(ClientProperties.HIDE_LOGIN_IDS, false);
 
-		CallPartyElement me = (CallPartyElement) SessionInfo.getInstance().get(
-				SessionInfo.USER_INFO);
+		CallPartyElement me = (CallPartyElement) SessionInfo.getInstance().get(SessionInfo.USER_INFO);
 
 		ChatPanel chat = GWT.create(ChatPanel.class);
 
 		chat.attach(ViewUtils.formatName(me), otherParty, cannedMessages,
-				ApplicationController.getInstance().isOperator(), showDetails,
-				hideLoginIds);
+				ApplicationController.getInstance().isOperator(), showDetails, hideLoginIds);
 		chat.setPresenter(this);
 		return chat;
 	}
 
-	public void setupOutboundChat(String called, String transferId,
-			String transferFrom, String transcript, long joinSessionId,
-			ChatPanel transferView, boolean userTransfer) {
+	public void setupOutboundChat(String called, String transferId, String transferFrom, String transcript,
+			long joinSessionId, ChatPanel transferView, boolean userTransfer) {
 
 		SetupRequestMessage message = new SetupRequestMessage();
 
 		// get the information about the calling user (this guy)
-		CallPartyElement cp = (CallPartyElement) SessionInfo.getInstance().get(
-				SessionInfo.USER_INFO);
+		CallPartyElement cp = (CallPartyElement) SessionInfo.getInstance().get(SessionInfo.USER_INFO);
 		CallingNameElement calling = new CallingNameElement();
 		calling.setCallParty(cp);
 		message.setCallingNameElement(calling);
@@ -224,16 +211,11 @@ public class ChatSessionPresenter {
 
 				HtmlElement elem = new HtmlElement();
 				elements.getElements().add(elem);
-				elem.setHtml("<hr><blockquote>" + transcript
-						+ "</blockquote><hr>");
+				elem.setHtml("<hr><blockquote>" + transcript + "</blockquote><hr>");
 			}
 		} else if (joinSessionId >= 0L) {
-			view.appendToConveration(
-					systemUser,
-					ApplicationController.getInstance().timestamp(),
-					ApplicationController
-							.getMessages()
-							.ChatSessionPresenter_addingUserToConference(called));
+			view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
+					ApplicationController.getMessages().ChatSessionPresenter_addingUserToConference(called));
 			message.setUserConference(true);
 		} else {
 			// For normal chat setup
@@ -241,43 +223,32 @@ public class ChatSessionPresenter {
 				systemUser = called;
 			}
 
-			MessageBoxPresenter
-					.getInstance()
-					.show(ApplicationController.getMessages()
-							.ChatSessionPresenter_chatSetup(),
-							ApplicationController
-									.getMessages()
-									.ChatSessionPresenter_settingUpChatWithParty(
-											called)
-									+ " ... ",
-							(String) Images.USER_CHATTING_MEDIUM, false);
+			MessageBoxPresenter.getInstance().show(ApplicationController.getMessages().ChatSessionPresenter_chatSetup(),
+					ApplicationController.getMessages().ChatSessionPresenter_settingUpChatWithParty(called) + " ... ",
+					(String) Images.USER_CHATTING_MEDIUM, false);
 		}
 
 		// send the message
-		CommunicationsFactory.getServerCommunications().sendRequest(message,
-				Message.CONTENT_TYPE_XML, true, 100000L,
+		CommunicationsFactory.getServerCommunications().sendRequest(message, Message.CONTENT_TYPE_XML, true, 100000L,
 				new ResponseListener() {
 
 					@Override
 					public void timeoutOccured(int requestId) {
 						MessageBoxPresenter.getInstance().hide();
 						requestId = -1;
-						abortOutboundChat(ApplicationController.getMessages()
-								.ChatSessionPresenter_noResponseFromServer());
+						abortOutboundChat(
+								ApplicationController.getMessages().ChatSessionPresenter_noResponseFromServer());
 					}
 
 					@Override
-					public void responseReceived(int requestId,
-							String contentType, ResponseMessage message) {
+					public void responseReceived(int requestId, String contentType, ResponseMessage message) {
 						MessageBoxPresenter.getInstance().hide();
 
 						setupRequestId = requestId;
-						SetupResponseMessage rsp = (SetupResponseMessage) message
-								.getMessage();
+						SetupResponseMessage rsp = (SetupResponseMessage) message.getMessage();
 
 						if (rsp.getCalledParty() != null) {
-							otherParties.set(0, rsp.getCalledParty()
-									.getCallParty());
+							otherParties.set(0, rsp.getCalledParty().getCallParty());
 						}
 
 						switch (message.getStatus()) {
@@ -302,23 +273,18 @@ public class ChatSessionPresenter {
 							break;
 
 						case SetupResponseMessage.BUSY:
-							handleNotConnected(requestId, ApplicationController
-									.getMessages()
-									.ChatSessionPresenter_busyResponse());
+							handleNotConnected(requestId,
+									ApplicationController.getMessages().ChatSessionPresenter_busyResponse());
 							break;
 
 						case SetupResponseMessage.NOANS:
-							handleNotConnected(requestId, ApplicationController
-									.getMessages()
-									.ChatSessionPresenter_noAnswerResponse());
+							handleNotConnected(requestId,
+									ApplicationController.getMessages().ChatSessionPresenter_noAnswerResponse());
 							break;
 
 						case SetupResponseMessage.UNAVAILABLE:
-							handleNotConnected(
-									requestId,
-									ApplicationController
-											.getMessages()
-											.ChatSessionPresenter_notAvailableResponse());
+							handleNotConnected(requestId,
+									ApplicationController.getMessages().ChatSessionPresenter_notAvailableResponse());
 							break;
 
 						case SetupResponseMessage.FORBIDDEN:
@@ -326,17 +292,13 @@ public class ChatSessionPresenter {
 							break;
 
 						case SetupResponseMessage.UNKNOWN:
-							handleNotConnected(requestId, ApplicationController
-									.getMessages()
-									.ChatSessionPresenter_notOnlineResponse());
+							handleNotConnected(requestId,
+									ApplicationController.getMessages().ChatSessionPresenter_notOnlineResponse());
 							break;
 
 						default:
-							CommunicationsFactory.getServerCommunications()
-									.cancelRequest(requestId);
-							abortOutboundChat(ApplicationController
-									.getMessages()
-									.ChatSessionPresenter_chatSetupFailed()
+							CommunicationsFactory.getServerCommunications().cancelRequest(requestId);
+							abortOutboundChat(ApplicationController.getMessages().ChatSessionPresenter_chatSetupFailed()
 									+ ": " + message.getReason());
 							break;
 						}
@@ -345,16 +307,13 @@ public class ChatSessionPresenter {
 	}
 
 	private void startNewChat() {
-		Map<Long, ChatSessionInfo> chats = SessionInfo.getInstance()
-				.getChatList();
+		Map<Long, ChatSessionInfo> chats = SessionInfo.getInstance().getChatList();
 		chats.put(chatInfo.getSessionId(), chatInfo);
 
 		if (xferredFromId >= 0L) {
 			if (ApplicationController.getInstance().isOperator()) {
-				UserChatsPresenter.getCurrentInstance().replaceSession(
-						xferredFromId, chatInfo.getSessionId());
-				UserChatsPresenter.getCurrentInstance().chatInformationChanged(
-						chatInfo.getSessionId());
+				UserChatsPresenter.getCurrentInstance().replaceSession(xferredFromId, chatInfo.getSessionId());
+				UserChatsPresenter.getCurrentInstance().chatInformationChanged(chatInfo.getSessionId());
 			}
 		} else {
 			// Normal chat setup
@@ -370,13 +329,10 @@ public class ChatSessionPresenter {
 
 	private void abortOutboundChat(String msg) {
 		if (view != null) {
-			view.appendToConveration(systemUser, ApplicationController
-					.getInstance().timestamp(), msg);
+			view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(), msg);
 		} else {
-			MessageBoxPresenter.getInstance().show(
-					ApplicationController.getMessages()
-							.ChatSessionPresenter_chatSetup(), msg,
-					(String) Images.DISCONNECTED_MEDIUM, true);
+			MessageBoxPresenter.getInstance().show(ApplicationController.getMessages().ChatSessionPresenter_chatSetup(),
+					msg, (String) Images.DISCONNECTED_MEDIUM, true);
 		}
 		conversationDisc = new Date();
 
@@ -384,10 +340,9 @@ public class ChatSessionPresenter {
 			disposeJoinSession();
 		} else {
 			chatInfo.setStatus(ChatStatus.DISCONNECTED);
-			String url = ClientProperties.getInstance().getStringValue(
-					ClientProperties.VISITOR_CHAT_DECLINED_URL, null);
-			if (!ApplicationController.getInstance().isOperator()
-					&& url != null) {
+			String url = ClientProperties.getInstance().getStringValue(ClientProperties.VISITOR_CHAT_DECLINED_URL,
+					null);
+			if (!ApplicationController.getInstance().isOperator() && url != null) {
 				ApplicationController.getInstance().disconnectExpected();
 				Window.Location.assign(url);
 				return;
@@ -403,28 +358,24 @@ public class ChatSessionPresenter {
 			});
 
 			if (ApplicationController.getInstance().isOperator()) {
-				UserChatsPresenter.getCurrentInstance().chatDisconnected(
-						chatInfo.getSessionId(), true);
+				UserChatsPresenter.getCurrentInstance().chatDisconnected(chatInfo.getSessionId(), true);
 			} else {
 				ApplicationController.getInstance().disconnectExpected();
 			}
 		}
 	}
 
-	public void processChatRequest(int reqId, String contentType,
-			SetupRequestMessage msg) {
+	public void processChatRequest(int reqId, String contentType, SetupRequestMessage msg) {
 
 		// create new chat session information
-		chatInfo = new ChatSessionInfo(
-				ChatSessionInfo.ChatStatus.SETUP_IN_PROGRESS);
+		chatInfo = new ChatSessionInfo(ChatSessionInfo.ChatStatus.SETUP_IN_PROGRESS);
 		chatInfo.setChat(this);
 		chatInfo.setSessionId(msg.getSessionId());
 
 		// get the calling party info
 		otherParties.add(msg.getCallingNameElement().getCallParty());
 
-		ChatSettings chatSettings = (ChatSettings) SessionInfo.getInstance()
-				.get(SessionInfo.CHAT_SETTINGS);
+		ChatSettings chatSettings = (ChatSettings) SessionInfo.getInstance().get(SessionInfo.CHAT_SETTINGS);
 
 		if (chatSettings.isAutoAnswer()) {
 			AudioUtils.getInstance().play(AudioUtils.RING);
@@ -435,27 +386,18 @@ public class ChatSessionPresenter {
 
 			String image = Images.USER_CHATTING_MEDIUM;
 			if (otherParties.get(0).getAvatar() != null
-					&& !ClientProperties.getInstance().getBooleanValue(
-							ClientProperties.HIDE_LOGIN_IDS, false)) {
+					&& !ClientProperties.getInstance().getBooleanValue(ClientProperties.HIDE_LOGIN_IDS, false)) {
 				image = otherParties.get(0).getAvatar();
 			}
 
 			// alert the user to the new chat
-			ConfirmationDialogPresenter.getInstance().show(
-					ApplicationController.getMessages()
-							.ChatSessionPresenter_incomingChat(),
-					ApplicationController.getMessages()
-							.ChatSessionPresenter_incomingChatFromParty(
-									ViewUtils.formatUserInfo(otherParties
-											.get(0)))
-							+ "<p>"
-							+ ApplicationController.getMessages()
-									.ChatSessionPresenter_doYouWantToAnswer(),
-					image,
-					new AcceptCallListener(chatInfo, reqId, contentType, msg,
-							acceptTimer), false);
-			Notifier.alert(ApplicationController.getMessages()
-					.ChatSessionPresenter_incomingChat());
+			ConfirmationDialogPresenter.getInstance()
+					.show(ApplicationController.getMessages().ChatSessionPresenter_incomingChat(),
+							ApplicationController.getMessages().ChatSessionPresenter_incomingChatFromParty(
+									ViewUtils.formatUserInfo(otherParties.get(0))) + "<p>"
+							+ ApplicationController.getMessages().ChatSessionPresenter_doYouWantToAnswer(), image,
+					new AcceptCallListener(chatInfo, reqId, contentType, msg, acceptTimer), false);
+			Notifier.alert(ApplicationController.getMessages().ChatSessionPresenter_incomingChat());
 		}
 	}
 
@@ -475,12 +417,9 @@ public class ChatSessionPresenter {
 			Notifier.cancelAlert();
 			SetupResponseMessage response = new SetupResponseMessage();
 			response.setSessionId(chatInfo.getSessionId());
-			CommunicationsFactory.getServerCommunications().sendResponse(
-					requestId,
-					SetupResponseMessage.NOANS,
-					ApplicationController.getMessages()
-							.ChatSessionPresenter_noResponseFromUser(),
-					contentType, response);
+			CommunicationsFactory.getServerCommunications().sendResponse(requestId, SetupResponseMessage.NOANS,
+					ApplicationController.getMessages().ChatSessionPresenter_noResponseFromUser(), contentType,
+					response);
 
 			addMissedChat(Images.TIMER_TINY);
 		}
@@ -493,8 +432,7 @@ public class ChatSessionPresenter {
 		private SetupRequestMessage msg;
 		private AcceptTimer acceptTimer;
 
-		public AcceptCallListener(ChatSessionInfo chatInfo, int reqId,
-				String contentType, SetupRequestMessage msg,
+		public AcceptCallListener(ChatSessionInfo chatInfo, int reqId, String contentType, SetupRequestMessage msg,
 				AcceptTimer acceptTimer) {
 			this.chatInfo = chatInfo;
 			this.reqId = reqId;
@@ -532,12 +470,8 @@ public class ChatSessionPresenter {
 			// send a busy response to the caller
 			SetupResponseMessage response = new SetupResponseMessage();
 			response.setSessionId(chatInfo.getSessionId());
-			CommunicationsFactory.getServerCommunications().sendResponse(
-					reqId,
-					SetupResponseMessage.BUSY,
-					ApplicationController.getMessages()
-							.ChatSessionPresenter_callerBusy(), contentType,
-					response);
+			CommunicationsFactory.getServerCommunications().sendResponse(reqId, SetupResponseMessage.BUSY,
+					ApplicationController.getMessages().ChatSessionPresenter_callerBusy(), contentType, response);
 
 			addMissedChat(Images.REJECT_CALL_TINY);
 		}
@@ -550,8 +484,7 @@ public class ChatSessionPresenter {
 
 	private void addMissedChat(String image) {
 		CallPartyElement caller = otherParties.get(0);
-		UserChatsPresenter.getCurrentInstance().addMissedChat(image,
-				ViewUtils.formatName(caller), caller.getEmail());
+		UserChatsPresenter.getCurrentInstance().addMissedChat(image, ViewUtils.formatName(caller), caller.getEmail());
 	}
 
 	public void processRTPMessage(RTPMessage msg) {
@@ -564,8 +497,7 @@ public class ChatSessionPresenter {
 		String formattedName = ViewUtils.formatName(from);
 
 		if (ApplicationController.getInstance().isOperator()) {
-			UserPanelPresenter.getCurrentInstance().highlightChatEvent(
-					chatInfo.getSessionId(), "rtp");
+			UserPanelPresenter.getCurrentInstance().highlightChatEvent(chatInfo.getSessionId(), "rtp");
 		}
 
 		boolean playChime = false;
@@ -576,16 +508,15 @@ public class ChatSessionPresenter {
 				HtmlElement text = (HtmlElement) element;
 				cancelTyping();
 
-				view.appendToConveration(formattedName, ApplicationController
-						.getInstance().timestamp(), text.getHtml());
+				view.appendToConveration(formattedName, ApplicationController.getInstance().timestamp(),
+						text.getHtml());
 				playChime = true;
 			} else if (element instanceof TypingElement) {
 				if (typingTimer != null) {
 					cancelTyping();
 				}
 
-				view.showTyping(formattedName, ApplicationController
-						.getInstance().timestamp());
+				view.showTyping(formattedName, ApplicationController.getInstance().timestamp());
 
 				typingTimer = new Timer() {
 					@Override
@@ -596,8 +527,7 @@ public class ChatSessionPresenter {
 				typingTimer.schedule(TYPING_TIMEOUT);
 
 			} else {
-				logger.warning("Media element of type "
-						+ element.getClass().getName() + " is not supported");
+				logger.warning("Media element of type " + element.getClass().getName() + " is not supported");
 			}
 		}
 
@@ -607,13 +537,12 @@ public class ChatSessionPresenter {
 	}
 
 	public static void rtpReceived(RTPMessage msg) {
-		Map<Long, ChatSessionInfo> chats = SessionInfo.getInstance()
-				.getChatList();
+		Map<Long, ChatSessionInfo> chats = SessionInfo.getInstance().getChatList();
 		ChatSessionInfo chat = (ChatSessionInfo) chats.get(msg.getSessionId());
 		if (chat == null) {
 			// The user must have disconnected the session
-			Logger.getLogger(ChatSessionPresenter.class.getName()).warning(
-					"Received a RTP message for a session that does not exist");
+			Logger.getLogger(ChatSessionPresenter.class.getName())
+					.warning("Received a RTP message for a session that does not exist");
 			return;
 		}
 
@@ -631,18 +560,15 @@ public class ChatSessionPresenter {
 		HtmlElement element = new HtmlElement();
 		elements.getElements().add(element);
 		element.setHtml(text);
-		CallPartyElement cp = (CallPartyElement) SessionInfo.getInstance().get(
-				SessionInfo.USER_INFO);
+		CallPartyElement cp = (CallPartyElement) SessionInfo.getInstance().get(SessionInfo.USER_INFO);
 		rtp.setFrom(cloneCallPartyElement(cp));
 
-		CommunicationsFactory.getServerCommunications().sendRequest(rtp,
-				Message.CONTENT_TYPE_XML, false, 0L, null);
+		CommunicationsFactory.getServerCommunications().sendRequest(rtp, Message.CONTENT_TYPE_XML, false, 0L, null);
 	}
 
 	public void userDisconnected(int reasonCode, String reasonText) {
-		view.appendToConveration(systemUser, ApplicationController
-				.getInstance().timestamp(), ApplicationController.getMessages()
-				.ChatSessionPresenter_chatHasEnded());
+		view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
+				ApplicationController.getMessages().ChatSessionPresenter_chatHasEnded());
 
 		displayChatEndedMessage();
 
@@ -661,20 +587,18 @@ public class ChatSessionPresenter {
 	private void displayChatEndedMessage() {
 		String chatEndedMessage = ClientProperties.getInstance()
 				.getStringValue(ClientProperties.VISITOR_CHAT_ENDED_HTML, null);
-		if (chatEndedMessage != null
-				&& !ApplicationController.getInstance().isOperator()) {
-			view.appendToConveration(systemUser, ApplicationController
-					.getInstance().timestamp(), chatEndedMessage);
+		if (chatEndedMessage != null && !ApplicationController.getInstance().isOperator()) {
+			view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(), chatEndedMessage);
 		}
 	}
 
-	private void disconnectOrTransfer(String transferTo,
-			boolean transferTranscript, int reasonCode, String reasonText) {
+	private void disconnectOrTransfer(String transferTo, boolean transferTranscript, int reasonCode,
+			String reasonText) {
 		conversationDisc = new Date();
 
 		if (ApplicationController.getInstance().isOperator()) {
-			EmailTranscriptInfo emailTrInfo = (EmailTranscriptInfo) SessionInfo
-					.getInstance().get(SessionInfo.EMAIL_TRANSCRIPT_INFO);
+			EmailTranscriptInfo emailTrInfo = (EmailTranscriptInfo) SessionInfo.getInstance()
+					.get(SessionInfo.EMAIL_TRANSCRIPT_INFO);
 			if (emailTrInfo != null && emailTrInfo.isEmailTranscript()) {
 				emailTranscript(reasonCode, reasonText);
 			}
@@ -682,8 +606,7 @@ public class ChatSessionPresenter {
 
 		DisconnectMessage disc = new DisconnectMessage();
 		disc.setSessionId(chatInfo.getSessionId());
-		CallPartyElement cp = (CallPartyElement) SessionInfo.getInstance().get(
-				SessionInfo.USER_INFO);
+		CallPartyElement cp = (CallPartyElement) SessionInfo.getInstance().get(SessionInfo.USER_INFO);
 		disc.setFrom(cloneCallPartyElement(cp));
 		DisconnectReasonElement reason = new DisconnectReasonElement();
 		disc.setDisconnectReason(reason);
@@ -702,35 +625,30 @@ public class ChatSessionPresenter {
 			}
 		}
 
-		CommunicationsFactory.getServerCommunications().sendRequest(disc,
-				Message.CONTENT_TYPE_XML, false, 0L, null);
+		CommunicationsFactory.getServerCommunications().sendRequest(disc, Message.CONTENT_TYPE_XML, false, 0L, null);
 
 		chatInfo.setStatus(ChatStatus.DISCONNECTED);
-		Map<Long, ChatSessionInfo> chats = SessionInfo.getInstance()
-				.getChatList();
-		ChatSessionInfo chat = (ChatSessionInfo) chats.get(chatInfo
-				.getSessionId());
+		Map<Long, ChatSessionInfo> chats = SessionInfo.getInstance().getChatList();
+		ChatSessionInfo chat = (ChatSessionInfo) chats.get(chatInfo.getSessionId());
 		chat.setStatus(ChatStatus.DISCONNECTED);
 
 		if (ApplicationController.getInstance().isOperator()) {
-			UserChatsPresenter.getCurrentInstance().chatDisconnected(
-					chatInfo.getSessionId(), false);
+			UserChatsPresenter.getCurrentInstance().chatDisconnected(chatInfo.getSessionId(), false);
 		} else {
 			ApplicationController.getInstance().disconnectExpected();
 		}
 	}
 
 	private void emailTranscript(int reasonCode, String reasonText) {
-		EmailTranscriptInfo info = (EmailTranscriptInfo) SessionInfo
-				.getInstance().get(SessionInfo.EMAIL_TRANSCRIPT_INFO);
+		EmailTranscriptInfo info = (EmailTranscriptInfo) SessionInfo.getInstance()
+				.get(SessionInfo.EMAIL_TRANSCRIPT_INFO);
 
 		SendMailRequestMessage message = new SendMailRequestMessage();
 		message.setReplyRequired(false);
 		MailElement melement = new MailElement();
 		message.setMailElement(melement);
 
-		CallPartyElement cpElement = (CallPartyElement) SessionInfo
-				.getInstance().get(SessionInfo.USER_INFO);
+		CallPartyElement cpElement = (CallPartyElement) SessionInfo.getInstance().get(SessionInfo.USER_INFO);
 
 		Vector<String> replyToList = null;
 		if (info.isFrom()) {
@@ -776,8 +694,7 @@ public class ChatSessionPresenter {
 
 		melement.setSubype("html");
 
-		if (ClientProperties.getInstance().getBooleanValue(
-				ClientProperties.COOKIE_IN_TRANSCRIPT_SUBJECT,
+		if (ClientProperties.getInstance().getBooleanValue(ClientProperties.COOKIE_IN_TRANSCRIPT_SUBJECT,
 				DEFAULT_COOKIE_IN_SUBJECT)) {
 
 			String visitorId = null;
@@ -794,32 +711,24 @@ public class ChatSessionPresenter {
 
 			String subjectPrefix = visitorId != null ? (visitorId + " - ") : "";
 			melement.setSubject(subjectPrefix
-					+ ApplicationController.getMessages()
-							.ChatSessionPresenter_aceOperatorChatTranscript());
+					+ ApplicationController.getMessages().ChatSessionPresenter_aceOperatorChatTranscript());
 		} else {
-			melement.setSubject(ApplicationController.getMessages()
-					.ChatSessionPresenter_aceOperatorChatTranscript());
+			melement.setSubject(ApplicationController.getMessages().ChatSessionPresenter_aceOperatorChatTranscript());
 		}
 
 		StringBuffer buffer = new StringBuffer();
-		buffer.append(ApplicationController.getMessages()
-				.ChatSessionPresenter_conversationStartTime()
-				+ " "
-				+ DateTimeFormat.getFormat(
-						ClientProperties.getInstance().getStringValue(
-								ClientProperties.DATE_TIME_FORMAT,
-								ClientProperties.DEFAULT_DATE_TIME_FORMAT))
+		buffer.append(ApplicationController.getMessages().ChatSessionPresenter_conversationStartTime() + " "
+				+ DateTimeFormat.getFormat(ClientProperties.getInstance()
+						.getStringValue(ClientProperties.DATE_TIME_FORMAT, ClientProperties.DEFAULT_DATE_TIME_FORMAT))
 						.format(conversationStart));
 		buffer.append("<br>");
 
-		buffer.append(ApplicationController.getMessages()
-				.ChatSessionPresenter_conversationEndTime()
-				+ " "
-				+ (conversationDisc == null ? "--" : DateTimeFormat.getFormat(
-						ClientProperties.getInstance().getStringValue(
-								ClientProperties.DATE_TIME_FORMAT,
-								ClientProperties.DEFAULT_DATE_TIME_FORMAT))
-						.format(conversationDisc)));
+		buffer.append(ApplicationController.getMessages().ChatSessionPresenter_conversationEndTime() + " "
+				+ (conversationDisc == null ? "--"
+						: DateTimeFormat
+								.getFormat(ClientProperties.getInstance().getStringValue(
+										ClientProperties.DATE_TIME_FORMAT, ClientProperties.DEFAULT_DATE_TIME_FORMAT))
+								.format(conversationDisc)));
 		buffer.append("<br>");
 
 		String thisParty = ViewUtils.formatName(cpElement);
@@ -833,9 +742,8 @@ public class ChatSessionPresenter {
 			otherParty.append(ViewUtils.formatName(other));
 		}
 
-		buffer.append(ApplicationController.getMessages()
-				.ChatSessionPresenter_conversationUsers(thisParty,
-						otherParty.toString()));
+		buffer.append(ApplicationController.getMessages().ChatSessionPresenter_conversationUsers(thisParty,
+				otherParty.toString()));
 
 		buffer.append("<br>");
 
@@ -848,28 +756,24 @@ public class ChatSessionPresenter {
 		buffer.append(DisconnectReasonElement.DISCONNECT_CODE_DESCRIPTIONS[reasonCode]);
 
 		buffer.append("<hr>");
-		buffer.append(ApplicationController.getMessages()
-				.ChatSessionPresenter_chatTranscript());
+		buffer.append(ApplicationController.getMessages().ChatSessionPresenter_chatTranscript());
 		buffer.append(":<br>");
 		buffer.append(view.getTranscript());
 
 		melement.setBody(buffer.toString());
 
-		CommunicationsFactory.getServerCommunications().sendRequest(message,
-				Message.CONTENT_TYPE_XML, false, 0L, null);
+		CommunicationsFactory.getServerCommunications().sendRequest(message, Message.CONTENT_TYPE_XML, false, 0L, null);
 	}
 
 	public void serverDisconnected() {
 		if (chatInfo.getStatus() == ChatSessionInfo.ChatStatus.SETUP_IN_PROGRESS) {
-			CommunicationsFactory.getServerCommunications().cancelRequest(
-					setupRequestId);
+			CommunicationsFactory.getServerCommunications().cancelRequest(setupRequestId);
 		}
 
 		conversationDisc = new Date();
 		if (view != null) {
-			view.appendToConveration(systemUser, ApplicationController
-					.getInstance().timestamp(), ApplicationController
-					.getMessages().ChatSessionPresenter_chatEnded());
+			view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
+					ApplicationController.getMessages().ChatSessionPresenter_chatEnded());
 			view.makeReadOnly();
 		}
 
@@ -880,22 +784,19 @@ public class ChatSessionPresenter {
 	}
 
 	public static void disconnectReceived(DisconnectMessage msg) {
-		Map<Long, ChatSessionInfo> chats = SessionInfo.getInstance()
-				.getChatList();
+		Map<Long, ChatSessionInfo> chats = SessionInfo.getInstance().getChatList();
 		ChatSessionInfo chat = (ChatSessionInfo) chats.get(msg.getSessionId());
 		if (chat == null) {
 			// The chat must have already been disconnected
 			Logger.getLogger(ChatSessionPresenter.class.getName())
-					.warning(
-							"Received a disconnect/transfer message for a session that does not exist");
+					.warning("Received a disconnect/transfer message for a session that does not exist");
 			return;
 		}
 
 		ChatSessionPresenter presenter = chat.getChat();
 
 		if (chat.getStatus() == ChatSessionInfo.ChatStatus.SETUP_IN_PROGRESS) {
-			CommunicationsFactory.getServerCommunications().cancelRequest(
-					presenter.getSetupRequestId());
+			CommunicationsFactory.getServerCommunications().cancelRequest(presenter.getSetupRequestId());
 		}
 
 		CallPartyElement from = msg.getFrom();
@@ -907,8 +808,7 @@ public class ChatSessionPresenter {
 			presenter.processDisconnect(msg, from, chat);
 
 			if (ApplicationController.getInstance().isOperator()) {
-				UserChatsPresenter.getCurrentInstance().chatDisconnected(
-						msg.getSessionId(), true);
+				UserChatsPresenter.getCurrentInstance().chatDisconnected(msg.getSessionId(), true);
 			}
 		}
 	}
@@ -916,28 +816,18 @@ public class ChatSessionPresenter {
 	private void processTransfer(DisconnectMessage msg, CallPartyElement from) {
 
 		boolean userTransfer = true;
-		if (msg.getFrom().equals(
-				ClientProperties.getInstance().getStringValue(
-						ClientProperties.GROUP, ""))) {
+		if (msg.getFrom().equals(ClientProperties.getInstance().getStringValue(ClientProperties.GROUP, ""))) {
 			userTransfer = false;
 		}
 
 		if (userTransfer) {
-			view.appendToConveration(
-					systemUser,
-					ApplicationController.getInstance().timestamp(),
-					ApplicationController.getMessages()
-							.ChatSessionPresenter_chatTransferred(
-									ViewUtils.formatName(from)));
+			view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(), ApplicationController
+					.getMessages().ChatSessionPresenter_chatTransferred(ViewUtils.formatName(from)));
 		}
 
-		view.appendToConveration(
-				systemUser,
-				ApplicationController.getInstance().timestamp(),
-				ApplicationController.getMessages()
-						.ChatSessionPresenter_transferringToParty(
-								ViewUtils.formatName(msg.getCalledInfo()
-										.getCallParty())));
+		view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
+				ApplicationController.getMessages().ChatSessionPresenter_transferringToParty(
+						ViewUtils.formatName(msg.getCalledInfo().getCallParty())));
 
 		view.chatDisabled();
 
@@ -951,13 +841,11 @@ public class ChatSessionPresenter {
 		}
 
 		// Cleanup
-		Map<Long, ChatSessionInfo> chats = SessionInfo.getInstance()
-				.getChatList();
+		Map<Long, ChatSessionInfo> chats = SessionInfo.getInstance().getChatList();
 		chats.remove(chatInfo.getSessionId());
 		xferredFromId = chatInfo.getSessionId();
-		setupOutboundChat(msg.getCalledInfo().getCallParty().getName(),
-				msg.getTransferId(), msg.getFrom().getName(), transcript, -1,
-				null, userTransfer);
+		setupOutboundChat(msg.getCalledInfo().getCallParty().getName(), msg.getTransferId(), msg.getFrom().getName(),
+				transcript, -1, null, userTransfer);
 	}
 
 	public void cancelTyping() {
@@ -971,17 +859,12 @@ public class ChatSessionPresenter {
 		}
 	}
 
-	private void processDisconnect(DisconnectMessage msg,
-			CallPartyElement from, ChatSessionInfo chatSession) {
+	private void processDisconnect(DisconnectMessage msg, CallPartyElement from, ChatSessionInfo chatSession) {
 		conversationDisc = new Date();
 
-		view.appendToConveration(
-				systemUser,
-				ApplicationController.getInstance().timestamp(),
+		view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
 				ApplicationController.getMessages()
-						.ChatSessionPresenter_chatDisconnected(
-								from == null ? "Server" : ViewUtils
-										.formatName(from)));
+						.ChatSessionPresenter_chatDisconnected(from == null ? "Server" : ViewUtils.formatName(from)));
 		displayChatEndedMessage();
 
 		view.makeReadOnly();
@@ -989,11 +872,10 @@ public class ChatSessionPresenter {
 		chatSession.setStatus(ChatStatus.DISCONNECTED);
 
 		if (ApplicationController.getInstance().isOperator()) {
-			EmailTranscriptInfo emailTrInfo = (EmailTranscriptInfo) SessionInfo
-					.getInstance().get(SessionInfo.EMAIL_TRANSCRIPT_INFO);
+			EmailTranscriptInfo emailTrInfo = (EmailTranscriptInfo) SessionInfo.getInstance()
+					.get(SessionInfo.EMAIL_TRANSCRIPT_INFO);
 			if (emailTrInfo != null && emailTrInfo.isEmailTranscript()) {
-				emailTranscript(msg.getDisconnectReason().getReasonCode(), msg
-						.getDisconnectReason().getReasonText());
+				emailTranscript(msg.getDisconnectReason().getReasonCode(), msg.getDisconnectReason().getReasonText());
 			}
 		} else {
 			ApplicationController.getInstance().disconnectExpected();
@@ -1005,18 +887,13 @@ public class ChatSessionPresenter {
 	}
 
 	public void cannedMessageSelected(int cannedElementIndex) {
-		CannedMessageElement element = ((CannedMessageElement[]) SessionInfo
-				.getInstance().get(SessionInfo.CANNED_MESSAGES))[cannedElementIndex];
-		if (ClientProperties.getInstance().getBooleanValue(
-				ClientProperties.GET_CANNED_MESSAGE_CONTENT, false)) {
-			view.appendToConveration(null, ApplicationController.getInstance()
-					.timestamp(), element.getMessage());
+		CannedMessageElement element = ((CannedMessageElement[]) SessionInfo.getInstance()
+				.get(SessionInfo.CANNED_MESSAGES))[cannedElementIndex];
+		if (ClientProperties.getInstance().getBooleanValue(ClientProperties.GET_CANNED_MESSAGE_CONTENT, false)) {
+			view.appendToConveration(null, ApplicationController.getInstance().timestamp(), element.getMessage());
 		} else {
-			view.appendToConveration(null, ApplicationController.getInstance()
-					.timestamp(),
-					ApplicationController.getMessages()
-							.ChatSessionPresenter_sentCannedMessage()
-							+ " - "
+			view.appendToConveration(null, ApplicationController.getInstance().timestamp(),
+					ApplicationController.getMessages().ChatSessionPresenter_sentCannedMessage() + " - "
 							+ element.getDescription());
 		}
 
@@ -1025,68 +902,46 @@ public class ChatSessionPresenter {
 		MediaElements elements = new MediaElements();
 		rtp.setMediaElements(elements);
 		elements.getElements().add(element);
-		CallPartyElement cp = (CallPartyElement) SessionInfo.getInstance().get(
-				SessionInfo.USER_INFO);
+		CallPartyElement cp = (CallPartyElement) SessionInfo.getInstance().get(SessionInfo.USER_INFO);
 		rtp.setFrom(cloneCallPartyElement(cp));
 
-		CommunicationsFactory.getServerCommunications().sendRequest(rtp,
-				Message.CONTENT_TYPE_XML, false, 0L, null);
+		CommunicationsFactory.getServerCommunications().sendRequest(rtp, Message.CONTENT_TYPE_XML, false, 0L, null);
 	}
 
-	private void answerChat(int reqId, String contentType,
-			SetupRequestMessage msg) {
+	private void answerChat(int reqId, String contentType, SetupRequestMessage msg) {
 		// send an answer response to the caller
 		SetupResponseMessage response = new SetupResponseMessage();
 		response.setSessionId(chatInfo.getSessionId());
-		CommunicationsFactory.getServerCommunications()
-				.sendResponse(
-						reqId,
-						SetupResponseMessage.CONNECT,
-						ApplicationController.getMessages()
-								.ChatSessionPresenter_answered(), contentType,
-						response);
+		CommunicationsFactory.getServerCommunications().sendResponse(reqId, SetupResponseMessage.CONNECT,
+				ApplicationController.getMessages().ChatSessionPresenter_answered(), contentType, response);
 
 		chatInfo.setStatus(ChatSessionInfo.ChatStatus.CONNECTED);
 
 		startNewChat();
-		view.appendToConveration(systemUser, ApplicationController
-				.getInstance().timestamp(),
-				ApplicationController.getMessages()
-						.ChatSessionPresenter_chatInformation()
-						+ ":<br/>"
+		view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
+				ApplicationController.getMessages().ChatSessionPresenter_chatInformation() + ":<br/>"
 						+ ViewUtils.formatUserInfo(otherParties.get(0), false));
 
-		view.appendToConveration(
-				systemUser,
-				ApplicationController.getInstance().timestamp(),
-				ApplicationController.getMessages()
-						.ChatSessionPresenter_connectedToParty(
-								ViewUtils.formatName(otherParties.get(0))));
+		view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(), ApplicationController
+				.getMessages().ChatSessionPresenter_connectedToParty(ViewUtils.formatName(otherParties.get(0))));
 
 		if (msg.isUserTransfer()) {
 			String fromParty = msg.getTransferFrom();
 			if (fromParty == null) {
-				fromParty = ApplicationController.getMessages()
-						.ChatSessionPresenter_privateParty();
+				fromParty = ApplicationController.getMessages().ChatSessionPresenter_privateParty();
 			}
 
-			view.appendToConveration(systemUser, ApplicationController
-					.getInstance().timestamp(),
-					ApplicationController.getMessages()
-							.ChatSessionPresenter_transferringFrom(fromParty)
-							+ ". ");
+			view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
+					ApplicationController.getMessages().ChatSessionPresenter_transferringFrom(fromParty) + ". ");
 
 			if (msg.getMedia() != null) {
-				view.appendToConveration(systemUser, ApplicationController
-						.getInstance().timestamp(), ApplicationController
-						.getMessages().ChatSessionPresenter_transcriptFollows()
-						+ ": ");
+				view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
+						ApplicationController.getMessages().ChatSessionPresenter_transcriptFollows() + ": ");
 			}
 
 		} else if (msg.isUserConference()) {
-			view.appendToConveration(systemUser, ApplicationController
-					.getInstance().timestamp(), ApplicationController
-					.getMessages().ChatSessionPresenter_addingYouToConference());
+			view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
+					ApplicationController.getMessages().ChatSessionPresenter_addingYouToConference());
 		}
 
 		if (msg.getMedia() != null) {
@@ -1096,10 +951,9 @@ public class ChatSessionPresenter {
 		if (UserChatsPresenter.getCurrentInstance().getActiveChatCount() == 1) {
 			showChat();
 		} else {
-			UserPanelPresenter.getCurrentInstance().highlightChatEvent(
-					chatInfo.getSessionId(), "new");
+			UserPanelPresenter.getCurrentInstance().highlightChatEvent(chatInfo.getSessionId(), "new");
 		}
-		
+
 		view.chatEnabled();
 	}
 
@@ -1112,29 +966,26 @@ public class ChatSessionPresenter {
 	}
 
 	public List<String> getContactsList() {
-		List<UserContact> contacts = UserContactsPresenter.getCurrentInstance()
-				.getOnlineContacts();
+		List<UserContact> contacts = UserContactsPresenter.getCurrentInstance().getOnlineContacts();
 		List<String> ret = new ArrayList<String>();
 
 		nextContact: for (UserContact contact : contacts) {
 			// Do not add the contact to the list if he/she is already
 			// participating in the chat
 			for (CallPartyElement other : otherParties) {
-				if (other.getName() != null
-						&& other.getName().equals(contact.getUser())) {
+				if (other.getName() != null && other.getName().equals(contact.getUser())) {
 					continue nextContact;
 				}
 			}
 
-			ret.add(ViewUtils.formatName(contact.getUser(),
-					contact.getFullName()));
+			ret.add(ViewUtils.formatName(contact.getUser(), contact.getFullName()));
 		}
 		return ret;
 	}
 
 	public void addToConference(String user) {
-		new ChatSessionPresenter().setupOutboundChat(ViewUtils.parseName(user),
-				null, null, null, chatInfo.getSessionId(), view, false);
+		new ChatSessionPresenter().setupOutboundChat(ViewUtils.parseName(user), null, null, null,
+				chatInfo.getSessionId(), view, false);
 	}
 
 	class TransferListener implements ConfirmationListener {
@@ -1147,28 +998,20 @@ public class ChatSessionPresenter {
 
 		@Override
 		public void yes() {
-			view.appendToConveration(
-					systemUser,
-					new Date().getTime(),
-					ApplicationController
-							.getMessages()
-							.ChatSessionPresenter_transferringChatTo(transferTo));
+			view.appendToConveration(systemUser, new Date().getTime(),
+					ApplicationController.getMessages().ChatSessionPresenter_transferringChatTo(transferTo));
 			view.makeReadOnly();
-			disconnectOrTransfer(ViewUtils.parseName(transferTo), true,
-					DisconnectReasonElement.NORMAL_DISCONNECT, null);
+			disconnectOrTransfer(ViewUtils.parseName(transferTo), true, DisconnectReasonElement.NORMAL_DISCONNECT,
+					null);
 		}
 
 		@Override
 		public void no() {
-			view.appendToConveration(
-					systemUser,
-					new Date().getTime(),
-					ApplicationController
-							.getMessages()
-							.ChatSessionPresenter_transferringChatTo(transferTo));
+			view.appendToConveration(systemUser, new Date().getTime(),
+					ApplicationController.getMessages().ChatSessionPresenter_transferringChatTo(transferTo));
 			view.makeReadOnly();
-			disconnectOrTransfer(ViewUtils.parseName(transferTo), false,
-					DisconnectReasonElement.NORMAL_DISCONNECT, null);
+			disconnectOrTransfer(ViewUtils.parseName(transferTo), false, DisconnectReasonElement.NORMAL_DISCONNECT,
+					null);
 		}
 
 		@Override
@@ -1179,11 +1022,9 @@ public class ChatSessionPresenter {
 
 	public void transferTo(String user) {
 		ConfirmationDialogPresenter.getInstance().show(
-				ApplicationController.getMessages()
-						.ChatSessionPresenter_chatTransfer(),
-				ApplicationController.getMessages()
-						.ChatSessionPresenter_shouldIncludeTranscript(),
-				Images.INFO_MEDIUM, new TransferListener(user), true);
+				ApplicationController.getMessages().ChatSessionPresenter_chatTransfer(),
+				ApplicationController.getMessages().ChatSessionPresenter_shouldIncludeTranscript(), Images.INFO_MEDIUM,
+				new TransferListener(user), true);
 	}
 
 	private void joinSessions(String contentType) {
@@ -1191,51 +1032,46 @@ public class ChatSessionPresenter {
 		join.getSessionList().add(joinSessionId);
 		join.getSessionList().add(getSessionId());
 
-		CommunicationsFactory.getServerCommunications().sendRequest(join,
-				contentType, false, 100000L, new ResponseListener() {
+		CommunicationsFactory.getServerCommunications().sendRequest(join, contentType, false, 100000L,
+				new ResponseListener() {
 
 					@Override
 					public void timeoutOccured(int requestId) {
-						MessageBoxPresenter
-								.getInstance()
-								.show(ApplicationController.getMessages()
-										.ChatSessionPresenter_error(),
-										ApplicationController
-												.getMessages()
-												.ChatSessionPresenter_failedToAddUser(),
-										MessageBoxPresenter.Severity.SEVERE,
-										true);
+						MessageBoxPresenter.getInstance().show(
+								ApplicationController.getMessages().ChatSessionPresenter_error(),
+								ApplicationController.getMessages().ChatSessionPresenter_failedToAddUser(),
+								MessageBoxPresenter.Severity.SEVERE, true);
 						disposeJoinSession();
 					}
 
 					@Override
-					public void responseReceived(int requestId,
-							String contentType, ResponseMessage message) {
+					public void responseReceived(int requestId, String contentType, ResponseMessage message) {
 						disposeJoinSession();
 					}
 				});
 	}
 
 	public void replaceSession(long oldSessionId, long newSessionId) {
-		Map<Long, ChatSessionInfo> chats = SessionInfo.getInstance()
-				.getChatList();
+		Map<Long, ChatSessionInfo> chats = SessionInfo.getInstance().getChatList();
 		ChatSessionInfo session = chats.get(oldSessionId);
 		session.setSessionId(newSessionId);
 		chats.remove(oldSessionId);
 		chats.put(newSessionId, session);
 
 		if (ApplicationController.getInstance().isOperator()) {
-			UserChatsPresenter.getCurrentInstance().replaceSession(
-					oldSessionId, newSessionId);
+			UserChatsPresenter.getCurrentInstance().replaceSession(oldSessionId, newSessionId);
 		}
 	}
 
 	private void handleReceivedAck(SetupResponseMessage rsp) {
 		try {
-			chatInfo = new ChatSessionInfo(
-					ChatSessionInfo.ChatStatus.SETUP_IN_PROGRESS);
+			chatInfo = new ChatSessionInfo(ChatSessionInfo.ChatStatus.SETUP_IN_PROGRESS);
 			chatInfo.setChat(this);
 			chatInfo.setSessionId(rsp.getSessionId());
+			if (rsp.getCallingCookie() != null) {
+				CallPartyElement cp = (CallPartyElement) SessionInfo.getInstance().get(SessionInfo.USER_INFO);
+				cp.setEndUserCookie(rsp.getCallingCookie());
+			}
 
 			if (joinSessionId < 0L) {
 				startNewChat();
@@ -1243,28 +1079,20 @@ public class ChatSessionPresenter {
 			}
 
 			if (disconnectChat) {
-				disconnectOrTransfer(null, false,
-						DisconnectReasonElement.NORMAL_DISCONNECT, null);
+				disconnectOrTransfer(null, false, DisconnectReasonElement.NORMAL_DISCONNECT, null);
 				return;
 			}
 
-			if (ClientProperties.getInstance()
-					.getBooleanValue(ClientProperties.VERBOSE_MESSAGES,
-							DEFAULT_VERBOSE_MESSAGES)) {
-				view.appendToConveration(
-						systemUser,
-						ApplicationController.getInstance().timestamp(),
-						ApplicationController.getMessages()
-								.ChatSessionPresenter_initiatedChatWith(
-										ViewUtils.formatName(otherParties
-												.get(0)))
-								+ "...");
+			if (ClientProperties.getInstance().getBooleanValue(ClientProperties.VERBOSE_MESSAGES,
+					DEFAULT_VERBOSE_MESSAGES)) {
+				view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
+						ApplicationController.getMessages().ChatSessionPresenter_initiatedChatWith(
+								ViewUtils.formatName(otherParties.get(0))) + "...");
 			}
 
 			// process media elements
 			if (rsp.getMediaElements() != null) {
-				processMedia(rsp.getMediaElements(),
-						systemUserCallPartyElement());
+				processMedia(rsp.getMediaElements(), systemUserCallPartyElement());
 			}
 		} finally {
 			// At this point treat it as a normal call setup
@@ -1274,26 +1102,19 @@ public class ChatSessionPresenter {
 	}
 
 	private void handleReceivedTransfer(SetupResponseMessage rsp) {
-		view.appendToConveration(
-				systemUser,
-				ApplicationController.getInstance().timestamp(),
-				ApplicationController.getMessages()
-						.ChatSessionPresenter_transferringToParty(
-								ViewUtils.formatName(rsp.getCalledParty()
-										.getCallParty())));
+		view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
+				ApplicationController.getMessages().ChatSessionPresenter_transferringToParty(
+						ViewUtils.formatName(rsp.getCalledParty().getCallParty())));
 
 		// process media elements
 		if (rsp.getMediaElements() != null) {
 			processMedia(rsp.getMediaElements(), systemUserCallPartyElement());
 		}
 
-		Map<Long, ChatSessionInfo> chats = SessionInfo.getInstance()
-				.getChatList();
-		ChatSessionInfo chat = (ChatSessionInfo) chats.get(chatInfo
-				.getSessionId());
+		Map<Long, ChatSessionInfo> chats = SessionInfo.getInstance().getChatList();
+		ChatSessionInfo chat = (ChatSessionInfo) chats.get(chatInfo.getSessionId());
 		if (chat == null) {
-			logger.log(Level.SEVERE,
-					"During a transfer, the old session was not found in the list of chats");
+			logger.log(Level.SEVERE, "During a transfer, the old session was not found in the list of chats");
 			return;
 		}
 
@@ -1303,33 +1124,27 @@ public class ChatSessionPresenter {
 		chatInfo.setSessionId(chat.getSessionId());
 
 		if (ApplicationController.getInstance().isOperator()) {
-			UserChatsPresenter.getCurrentInstance().replaceSession(
-					rsp.getSessionId(), rsp.getNewSessionId());
-			UserChatsPresenter.getCurrentInstance().chatInformationChanged(
-					chatInfo.getSessionId());
+			UserChatsPresenter.getCurrentInstance().replaceSession(rsp.getSessionId(), rsp.getNewSessionId());
+			UserChatsPresenter.getCurrentInstance().chatInformationChanged(chatInfo.getSessionId());
 		}
 
 		// TODO look into handling timeouts
 	}
 
 	private void handleReceivedAlerting(SetupResponseMessage rsp) {
-		if (ClientProperties.getInstance().getBooleanValue(
-				ClientProperties.VERBOSE_MESSAGES, DEFAULT_VERBOSE_MESSAGES)) {
-			view.appendToConveration(systemUser, ApplicationController
-					.getInstance().timestamp(), ApplicationController
-					.getMessages().ChatSessionPresenter_notifyingUser()
-					+ " "
-					+ ViewUtils.formatName(otherParties.get(0)));
+		if (ClientProperties.getInstance().getBooleanValue(ClientProperties.VERBOSE_MESSAGES,
+				DEFAULT_VERBOSE_MESSAGES)) {
+			view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
+					ApplicationController.getMessages().ChatSessionPresenter_notifyingUser() + " "
+							+ ViewUtils.formatName(otherParties.get(0)));
 		}
 
 		if (joinSessionId < 0L) {
 			view.setOtherPartyInfo(otherParties);
 		}
 
-		if (ChatSessionPresenter.this.joinSessionId < 0L
-				&& ApplicationController.getInstance().isOperator()) {
-			UserChatsPresenter.getCurrentInstance().chatInformationChanged(
-					chatInfo.getSessionId());
+		if (ChatSessionPresenter.this.joinSessionId < 0L && ApplicationController.getInstance().isOperator()) {
+			UserChatsPresenter.getCurrentInstance().chatInformationChanged(chatInfo.getSessionId());
 		}
 
 		// process media elements
@@ -1339,41 +1154,31 @@ public class ChatSessionPresenter {
 	}
 
 	private void handleReceivedProgress(int requestId, SetupResponseMessage rsp) {
-		CommunicationsFactory.getServerCommunications().changeTimeout(
-				requestId, 120000L);
+		CommunicationsFactory.getServerCommunications().changeTimeout(requestId, 120000L);
 
 		// process media elements
 		if (rsp.getMediaElements() != null) {
 			processMedia(rsp.getMediaElements(), systemUserCallPartyElement());
 		} else {
-			view.appendToConveration(systemUser, ApplicationController
-					.getInstance().timestamp(), ApplicationController
-					.getMessages().ChatSessionPresenter_setupInProgress()
-					+ " ... ");
+			view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
+					ApplicationController.getMessages().ChatSessionPresenter_setupInProgress() + " ... ");
 		}
 	}
 
-	private void handleConnected(int requestId, String contentType,
-			SetupResponseMessage rsp) {
+	private void handleConnected(int requestId, String contentType, SetupResponseMessage rsp) {
 		chatInfo.setStatus(ChatStatus.CONNECTED);
 
-		view.appendToConveration(
-				systemUser,
-				ApplicationController.getInstance().timestamp(),
-				ApplicationController.getMessages()
-						.ChatSessionPresenter_connectedToParty(
-								ViewUtils.formatName(otherParties.get(0))));
+		view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(), ApplicationController
+				.getMessages().ChatSessionPresenter_connectedToParty(ViewUtils.formatName(otherParties.get(0))));
 
 		if (joinSessionId < 0L) {
 			view.chatEnabled();
 		}
 
-		CommunicationsFactory.getServerCommunications()
-				.cancelRequest(requestId);
+		CommunicationsFactory.getServerCommunications().cancelRequest(requestId);
 
 		if (ApplicationController.getInstance().isOperator()) {
-			UserChatsPresenter.getCurrentInstance().chatConnected(
-					rsp.getSessionId(), true);
+			UserChatsPresenter.getCurrentInstance().chatConnected(rsp.getSessionId(), true);
 		}
 
 		// process media elements
@@ -1387,8 +1192,7 @@ public class ChatSessionPresenter {
 	}
 
 	private void handleNotConnected(int requestId, String msg) {
-		CommunicationsFactory.getServerCommunications()
-				.cancelRequest(requestId);
+		CommunicationsFactory.getServerCommunications().cancelRequest(requestId);
 		abortOutboundChat(msg);
 	}
 
@@ -1401,32 +1205,27 @@ public class ChatSessionPresenter {
 			ConferencePartyInfo party = conf.getEndpointList().get(i);
 
 			CallPartyElement other = party.getParticipantInfo();
-			CallPartyElement me = (CallPartyElement) SessionInfo.getInstance()
-					.get(SessionInfo.USER_INFO);
+			CallPartyElement me = (CallPartyElement) SessionInfo.getInstance().get(SessionInfo.USER_INFO);
 
 			if (ApplicationController.getInstance().isOperator()) {
-				if (other.getName() != null
-						&& me.getName().equals(other.getName())) {
+				if (other.getName() != null && me.getName().equals(other.getName())) {
 					continue;
 				}
 			} else {
 				// Visitor
-				if (other.getName() == null
-						&& me.getFullName().equals(other.getFullName())) {
+				if (other.getName() == null && me.getFullName().equals(other.getFullName())) {
 					continue;
 				}
 			}
 
 			switch (party.getStatus()) {
 			case ConferencePartyInfo.STATUS_ADDED:
-				partiesChanged(other, ApplicationController.getMessages()
-						.ChatSessionPresenter_joinedChat());
+				partiesChanged(other, ApplicationController.getMessages().ChatSessionPresenter_joinedChat());
 				newOtherParties.add(other);
 				break;
 
 			case ConferencePartyInfo.STATUS_REMOVED:
-				partiesChanged(other, ApplicationController.getMessages()
-						.ChatSessionPresenter_leftChat());
+				partiesChanged(other, ApplicationController.getMessages().ChatSessionPresenter_leftChat());
 				break;
 
 			default:
@@ -1448,22 +1247,19 @@ public class ChatSessionPresenter {
 		view.setOtherPartyInfo(otherParties);
 
 		if (ApplicationController.getInstance().isOperator()) {
-			UserChatsPresenter.getCurrentInstance().chatInformationChanged(
-					chatInfo.getSessionId());
+			UserChatsPresenter.getCurrentInstance().chatInformationChanged(chatInfo.getSessionId());
 		}
 	}
 
 	private void partiesChanged(CallPartyElement element, String message) {
 		StringBuffer buffer = new StringBuffer();
-		buffer.append(ApplicationController.getMessages()
-				.ChatSessionPresenter_user());
+		buffer.append(ApplicationController.getMessages().ChatSessionPresenter_user());
 		buffer.append(" ");
 		buffer.append(ViewUtils.formatName(element));
 		buffer.append(" ");
 		buffer.append(message);
 
-		view.appendToConveration(systemUser, ApplicationController
-				.getInstance().timestamp(), buffer.toString());
+		view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(), buffer.toString());
 	}
 
 	private void disposeJoinSession() {
@@ -1480,8 +1276,7 @@ public class ChatSessionPresenter {
 		boolean sendTyping = false;
 		if (lastTypingTime == null) {
 			sendTyping = true;
-		} else if (new Date().getTime() - TYPING_SEND_DELAY > lastTypingTime
-				.getTime()) {
+		} else if (new Date().getTime() - TYPING_SEND_DELAY > lastTypingTime.getTime()) {
 			sendTyping = true;
 		}
 
@@ -1496,19 +1291,18 @@ public class ChatSessionPresenter {
 			elements.getElements().add(tyelem);
 			message.setMediaElements(elements);
 
-			CallPartyElement cp = (CallPartyElement) SessionInfo.getInstance()
-					.get(SessionInfo.USER_INFO);
+			CallPartyElement cp = (CallPartyElement) SessionInfo.getInstance().get(SessionInfo.USER_INFO);
 			message.setFrom(cloneCallPartyElement(cp));
 
-			CommunicationsFactory.getServerCommunications().sendRequest(
-					message, Message.CONTENT_TYPE_XML, false, 0L, null);
+			CommunicationsFactory.getServerCommunications().sendRequest(message, Message.CONTENT_TYPE_XML, false, 0L,
+					null);
 		}
 	}
 
 	public void chatTerminated(String reasonText) {
 		if (ApplicationController.getInstance().isOperator()) {
-			EmailTranscriptInfo emailTrInfo = (EmailTranscriptInfo) SessionInfo
-					.getInstance().get(SessionInfo.EMAIL_TRANSCRIPT_INFO);
+			EmailTranscriptInfo emailTrInfo = (EmailTranscriptInfo) SessionInfo.getInstance()
+					.get(SessionInfo.EMAIL_TRANSCRIPT_INFO);
 			if (emailTrInfo != null && emailTrInfo.isEmailTranscript()) {
 				int reasonCode = DisconnectReasonElement.NORMAL_DISCONNECT;
 				if (reasonText != null) {
@@ -1520,8 +1314,7 @@ public class ChatSessionPresenter {
 
 		DisconnectMessage disc = new DisconnectMessage();
 		disc.setSessionId(chatInfo.getSessionId());
-		CallPartyElement cp = (CallPartyElement) SessionInfo.getInstance().get(
-				SessionInfo.USER_INFO);
+		CallPartyElement cp = (CallPartyElement) SessionInfo.getInstance().get(SessionInfo.USER_INFO);
 		disc.setFrom(cloneCallPartyElement(cp));
 		DisconnectReasonElement reason = new DisconnectReasonElement();
 		disc.setDisconnectReason(reason);
@@ -1532,8 +1325,7 @@ public class ChatSessionPresenter {
 			reason.setReasonText(reasonText);
 		}
 
-		CommunicationsFactory.getServerCommunications().sendRequest(disc,
-				Message.CONTENT_TYPE_XML, false, 0L, null);
+		CommunicationsFactory.getServerCommunications().sendRequest(disc, Message.CONTENT_TYPE_XML, false, 0L, null);
 
 		if (!ApplicationController.getInstance().isOperator()) {
 			ApplicationController.getInstance().disconnectExpected();
@@ -1559,19 +1351,13 @@ public class ChatSessionPresenter {
 		rtp.setMediaElements(elements);
 		HtmlElement element = new HtmlElement();
 		elements.getElements().add(element);
-		String fileUrl = GWT.getModuleBaseURL() + "../fileDownload?file="
-				+ fileName;
-		String href = "<a href='"
-				+ fileUrl
-				+ "' target='_blank'>"
-				+ ApplicationController.getMessages()
-						.ChatSessionPresenter_fileShared();
+		String fileUrl = GWT.getModuleBaseURL() + "../fileDownload?file=" + fileName;
+		String href = "<a href='" + fileUrl + "' target='_blank'>"
+				+ ApplicationController.getMessages().ChatSessionPresenter_fileShared();
 		element.setHtml(href);
-		CallPartyElement cp = (CallPartyElement) SessionInfo.getInstance().get(
-				SessionInfo.USER_INFO);
+		CallPartyElement cp = (CallPartyElement) SessionInfo.getInstance().get(SessionInfo.USER_INFO);
 		rtp.setFrom(cloneCallPartyElement(cp));
 
-		CommunicationsFactory.getServerCommunications().sendRequest(rtp,
-				Message.CONTENT_TYPE_XML, false, 0L, null);
+		CommunicationsFactory.getServerCommunications().sendRequest(rtp, Message.CONTENT_TYPE_XML, false, 0L, null);
 	}
 }

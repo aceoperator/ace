@@ -572,6 +572,18 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			return true;
 		}
 
+		CallPartyElement selfInfo = (CallPartyElement) parent.getParam(EndPointInterface.PARAM_SELF_INFO);
+		if (selfInfo != null) {
+			Map<String, String> variables = new HashMap<String, String>();
+			variables.put("cookie", selfInfo.getEndUserCookie());
+			variables.put("email", selfInfo.getEmail() != null ? selfInfo.getEmail() : "");
+			variables.put("name", selfInfo.getName() != null ? selfInfo.getName() : "");
+			variables.put("fullName", selfInfo.getFullName() != null ? selfInfo.getFullName() : "");
+			variables.put("ip", selfInfo.getIpAddress() != null ? selfInfo.getIpAddress() : "");
+			variables.put("message", selfInfo.getComment() != null ? selfInfo.getComment() : "");
+			message = resolvePlaceholders(message, variables);
+		}
+
 		// send the message to the client
 		if (!parent.sendRequestMessageToClient(0, Message.CONTENT_TYPE_XML, message)) {
 			// print error message
@@ -661,16 +673,6 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			if (toInfo != null && toInfo.getName() == null) {
 				rtp = fromPrivateRTPMessage;
 			}
-
-			Map<String, String> variables = new HashMap<String, String>();
-			variables.put("cookie", toInfo.getEndUserCookie());
-			variables.put("email", toInfo.getEmail() != null ? toInfo.getEmail() : "");
-			variables.put("name", toInfo.getName() != null ? toInfo.getName() : "");
-			variables.put("fullName", toInfo.getFullName() != null ? toInfo.getFullName() : "");
-			variables.put("ip", toInfo.getIpAddress() != null ? toInfo.getIpAddress() : "");
-			variables.put("message", toInfo.getComment() != null ? toInfo.getComment() : "");
-
-			rtp = resolvePlaceholders(rtp, variables);
 
 			if (!endpoint.sendEvent(new MessageEvent(MessageEvent.RTP_MESSAGE, parent, rtp, null))) {
 				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
@@ -828,17 +830,17 @@ public class TalkEndpoint implements PluginAppClientInterface {
 
 		SetupRequestMessage incomingMessage = (SetupRequestMessage) event.getMessage();
 
-		long session_id = incomingMessage.getSessionId();
+		long sessionId = incomingMessage.getSessionId();
 
 		// send an ALTERTING message to the calling party
 		SetupResponseMessage resp = new SetupResponseMessage();
-		resp.setSessionId(session_id);
+		resp.setSessionId(sessionId);
 
 		CallPartyElement selfInfo = (CallPartyElement) parent.getParam(EndPointInterface.PARAM_SELF_INFO);
 		if (selfInfo != null) {
-			CalledNameElement cp_element = new CalledNameElement();
-			cp_element.setCallParty(selfInfo);
-			resp.setCalledParty(cp_element);
+			CalledNameElement cpElement = new CalledNameElement();
+			cpElement.setCallParty(selfInfo);
+			resp.setCalledParty(cpElement);
 		}
 
 		// send the message
@@ -865,15 +867,15 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			cookie = cp.getEndUserCookie();
 		}
 
-		String transFile = saveTranscript(session_id, cookie, incomingMessage, MessageDirection.Outgoing, null, null);
+		String transFile = saveTranscript(sessionId, cookie, incomingMessage, MessageDirection.Outgoing, null, null);
 
 		// create a session
-		SessionInfo session = new SessionInfo(session_id, callingParty);
+		SessionInfo session = new SessionInfo(sessionId, callingParty);
 		session.addEndPoint(parent);
 		session.setTranscriptFile(transFile);
 
 		// add it to the session list
-		addToCallList(session_id, session);
+		addToCallList(sessionId, session);
 
 		return true;
 	}
@@ -896,14 +898,18 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		}
 
 		// get a unique session id
-		long session_id = ServiceController.Instance().getNewSessionId();
-		message.setSessionId(session_id); // save the session id
+		long sessionId = ServiceController.Instance().getNewSessionId();
+		message.setSessionId(sessionId); // save the session id
 
-		String transFile = saveTranscript(session_id, null, message, MessageDirection.Incoming, null, null);
+		String transFile = saveTranscript(sessionId, null, message, MessageDirection.Incoming, null, null);
 
 		// send an ACK response
 		SetupResponseMessage rsp = new SetupResponseMessage();
-		rsp.setSessionId(session_id);
+		if (!registered) {
+			rsp.setCallingCookie(endUserCookie);
+		}
+		rsp.setSessionId(sessionId);
+
 		if (!parent.sendResponseMessageToClient(request_id, SetupResponseMessage.ACK, "Acknowledgement",
 				Message.CONTENT_TYPE_XML, rsp)) {
 			// print error message
@@ -953,21 +959,18 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		}
 
 		// create a session info
-		SessionInfo session = new SessionInfo(session_id, parent);
+		SessionInfo session = new SessionInfo(sessionId, parent);
 		session.setRequestId(request_id);
 		session.setTranscriptFile(transFile);
 
 		// and add it to the list of sessions
-		addToCallList(session_id, session);
+		addToCallList(sessionId, session);
 
 		lastSession = session;
 		return true;
 	}
 
 	private boolean processSetupResponseEvent(MessageEvent event) {
-		// System.out.println(Thread.currentThread().getName()
-		// + " In processSetupResponseEvent");
-
 		// get the call information from the call list
 		SetupResponseMessage message = (SetupResponseMessage) event.getMessage();
 		long sessionId = message.getSessionId();
