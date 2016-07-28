@@ -6,6 +6,8 @@ package com.quikj.ace.web.client;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.google.gwt.http.client.URL;
+
 /**
  * @author amit
  *
@@ -17,7 +19,7 @@ public class PlaceHolderResolver {
 		String ret = input;
 		for (Entry<String, String> e : variables.entrySet()) {
 			String key = PREFIX_SUFFIX + e.getKey() + PREFIX_SUFFIX;
-			ret = ret.replaceAll(key, e.getValue());
+			ret = ret.replaceAll(key, URL.encode(e.getValue()));
 		}
 
 		return ret;
