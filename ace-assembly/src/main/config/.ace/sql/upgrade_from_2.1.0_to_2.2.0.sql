@@ -92,7 +92,3 @@ ALTER TABLE `blacklist_tbl`
 -- Change on 05/29/2014
 ALTER TABLE `user_tbl` ADD COLUMN `password_updated` DATETIME NULL  AFTER `private`;
 UPDATE user_tbl SET password_updated = NOW();
-
--- Change on 3/8/2016
--- do it for all groups
-insert into feature_params_tbl values (XX, 'display-wait-time', 'false');
