@@ -31,8 +31,6 @@ public class AceOperatorServiceImpl extends RemoteServiceServlet implements
 	private static final long serialVersionUID = -911958659581871687L;
 
 	private static final int ACE_ENDUSER_COOKIE_AGE = 365 * 24 * 3600;
-	public static final String ACE_ENDUSER_COOKIE_NAME = "com.quikj.ace.endUserIdentifier";
-
 	private Long cookieSeed = 0L;
 
 	@Override
@@ -92,7 +90,7 @@ public class AceOperatorServiceImpl extends RemoteServiceServlet implements
 		Cookie[] cookies = getThreadLocalRequest().getCookies();
 		if (cookies != null) {
 			for (Cookie c : cookies) {
-				if (c.getName().equals(ACE_ENDUSER_COOKIE_NAME)) {
+				if (c.getName().equals(AceOperatorService.ACE_ENDUSER_COOKIE_NAME)) {
 					cookie = c;
 					break;
 				}
@@ -100,7 +98,7 @@ public class AceOperatorServiceImpl extends RemoteServiceServlet implements
 		}
 
 		if (cookie == null) {
-			cookie = new Cookie(ACE_ENDUSER_COOKIE_NAME, generateCookieValue());
+			cookie = new Cookie(AceOperatorService.ACE_ENDUSER_COOKIE_NAME, generateCookieValue());
 			cookie.setMaxAge(ACE_ENDUSER_COOKIE_AGE);
 			getThreadLocalResponse().addCookie(cookie);
 		}

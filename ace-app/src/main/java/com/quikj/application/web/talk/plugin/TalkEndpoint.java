@@ -3,9 +3,11 @@ package com.quikj.application.web.talk.plugin;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
 import com.quikj.ace.messages.vo.app.Message;
 import com.quikj.ace.messages.vo.app.ResponseMessage;
@@ -69,16 +71,14 @@ public class TalkEndpoint implements PluginAppClientInterface {
 	ContentFilter contentFilter;
 
 	public TalkEndpoint() {
-		contentFilter = ApplicationServer.getInstance().getBean(
-				ContentFilter.class);
+		contentFilter = ApplicationServer.getInstance().getBean(ContentFilter.class);
 	}
 
 	private void addToCallList(long session_id, SessionInfo session) {
 		chatList.put(new Long(session_id), session);
 
 		if (registered) {
-			RegisteredEndPointList.Instance().setCallCount(parent,
-					chatList.size());
+			RegisteredEndPointList.Instance().setCallCount(parent, chatList.size());
 			ServiceController.Instance().groupNotifyOfCallCountChange(parent);
 		}
 	}
@@ -93,8 +93,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			// is no cookie information. In the scenario where V calls A and A
 			// adds B to the chat, B's transcript will not have V's cookie
 			// information. This is the correct behavior.
-			String transFile = renameTranscript(session.getTranscriptFile(),
-					to_session_id, null);
+			String transFile = renameTranscript(session.getTranscriptFile(), to_session_id, null);
 			session.setTranscriptFile(transFile);
 
 			chatList.put(new Long(to_session_id), session);
@@ -104,23 +103,15 @@ public class TalkEndpoint implements PluginAppClientInterface {
 	private boolean checkRequestMessage(String content_type, WebMessage body) {
 		if (body == null) {
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.WARNING,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.checkRequestMessage() -- Request message does not have a body");
+			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.checkRequestMessage() -- Request message does not have a body");
 			return false;
 		}
 
 		if (!content_type.equalsIgnoreCase(Message.CONTENT_TYPE_XML)) {
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.WARNING,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.checkRequestMessage() -- Content type of a request message is not application/xml");
+			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.checkRequestMessage() -- Content type of a request message is not application/xml");
 			return false;
 		}
 		return true;
@@ -130,12 +121,8 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		if (body != null) {
 			if (!content_type.equalsIgnoreCase(Message.CONTENT_TYPE_XML)) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.WARNING,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ "- TalkEndoint.checkResponseMessage() -- Content type of a response message is not application/xml");
+				AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+						+ "- TalkEndoint.checkResponseMessage() -- Content type of a response message is not application/xml");
 				return false;
 			}
 		}
@@ -155,36 +142,27 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			message.setSessionId(session_info.getSessionId());
 			DisconnectReasonElement disc_element = new DisconnectReasonElement();
 
-			CallPartyElement selfInfo = (CallPartyElement) parent
-					.getParam(EndPointInterface.PARAM_SELF_INFO);
+			CallPartyElement selfInfo = (CallPartyElement) parent.getParam(EndPointInterface.PARAM_SELF_INFO);
 			if (selfInfo != null) {
-				message.setFrom(new CallPartyElement(selfInfo.getName(),
-						selfInfo.getFullName()));
+				message.setFrom(new CallPartyElement(selfInfo.getName(), selfInfo.getFullName()));
 			}
 
-			disc_element
-					.setReasonCode(DisconnectReasonElement.SERVER_DISCONNECT);
+			disc_element.setReasonCode(DisconnectReasonElement.SERVER_DISCONNECT);
 			if (reasonText == null) {
-				disc_element.setReasonText(java.util.ResourceBundle.getBundle(
-						"com.quikj.application.web.talk.plugin.language",
-						ServiceController.getLocale((String) parent
-								.getParam("language"))).getString(
-						"end_point_disconnected"));
+				disc_element.setReasonText(java.util.ResourceBundle
+						.getBundle("com.quikj.application.web.talk.plugin.language",
+								ServiceController.getLocale((String) parent.getParam("language")))
+						.getString("end_point_disconnected"));
 			} else {
 				disc_element.setReasonText(reasonText);
 			}
 			message.setDisconnectReason(disc_element);
 
-			if (!ServiceController.Instance().sendMessage(
-					new MessageEvent(MessageEvent.DISCONNECT_MESSAGE, parent,
-							message, null))) {
+			if (!ServiceController.Instance()
+					.sendMessage(new MessageEvent(MessageEvent.DISCONNECT_MESSAGE, parent, message, null))) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ "- TalkEndoint.connectionClosed() -- Error sending disconnect message to the service controller");
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+						+ "- TalkEndoint.connectionClosed() -- Error sending disconnect message to the service controller");
 			}
 		}
 
@@ -192,15 +170,10 @@ public class TalkEndpoint implements PluginAppClientInterface {
 
 		if (registered) {
 			if (!unregistrationComplete) {
-				if (!ServiceController.Instance().sendMessage(
-						new UnregistrationEvent(registeredUserName))) {
+				if (!ServiceController.Instance().sendMessage(new UnregistrationEvent(registeredUserName))) {
 					// print error message
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									Thread.currentThread().getName()
-											+ "- TalkEndoint.connectionClosed() -- Error sending unregistration message to the service controller");
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+							+ "- TalkEndoint.connectionClosed() -- Error sending unregistration message to the service controller");
 				}
 			}
 		}
@@ -235,55 +208,38 @@ public class TalkEndpoint implements PluginAppClientInterface {
 					long sessionId = 0L;
 					boolean save = false;
 					if (event_rcvd.getMessage() instanceof JoinResponseMessage) {
-						JoinResponseMessage join = (JoinResponseMessage) event_rcvd
-								.getMessage();
+						JoinResponseMessage join = (JoinResponseMessage) event_rcvd.getMessage();
 						sessionId = join.getSessionList().get(0);
 						save = true;
 					} else if (event_rcvd.getMessage() instanceof ConferenceInformationMessage) {
-						ConferenceInformationMessage conf = (ConferenceInformationMessage) event_rcvd
-								.getMessage();
+						ConferenceInformationMessage conf = (ConferenceInformationMessage) event_rcvd.getMessage();
 						sessionId = conf.getSessionId();
 						save = true;
 					}
 
 					if (save) {
 						SessionInfo sessionInfo = getSessionInfo(sessionId);
-						saveTranscript(sessionInfo.getTranscriptFile(),
-								event_rcvd.getMessage(),
-								MessageDirection.Outgoing,
-								event_rcvd.getResponseStatus(),
-								event_rcvd.getReason());
+						saveTranscript(sessionInfo.getTranscriptFile(), event_rcvd.getMessage(),
+								MessageDirection.Outgoing, event_rcvd.getResponseStatus(), event_rcvd.getReason());
 					}
 				}
 
 				if (event_rcvd.isRequest()) {
 					// request message
-					if (!parent.sendRequestMessageToClient(
-							event_rcvd.getRequestId(),
-							Message.CONTENT_TYPE_XML, event_rcvd.getMessage())) {
+					if (!parent.sendRequestMessageToClient(event_rcvd.getRequestId(), Message.CONTENT_TYPE_XML,
+							event_rcvd.getMessage())) {
 						// print error message
-						AceLogger
-								.Instance()
-								.log(AceLogger.ERROR,
-										AceLogger.SYSTEM_LOG,
-										Thread.currentThread().getName()
-												+ "- TalkEndoint.eventReceived() -- Error sending server request message to the endpoint");
+						AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+								+ "- TalkEndoint.eventReceived() -- Error sending server request message to the endpoint");
 						return false;
 					}
 				} else {
 					// response message
-					if (!parent.sendResponseMessageToClient(
-							event_rcvd.getRequestId(),
-							event_rcvd.getResponseStatus(),
-							event_rcvd.getReason(), Message.CONTENT_TYPE_XML,
-							event_rcvd.getMessage())) {
+					if (!parent.sendResponseMessageToClient(event_rcvd.getRequestId(), event_rcvd.getResponseStatus(),
+							event_rcvd.getReason(), Message.CONTENT_TYPE_XML, event_rcvd.getMessage())) {
 						// print an error message
-						AceLogger
-								.Instance()
-								.log(AceLogger.ERROR,
-										AceLogger.SYSTEM_LOG,
-										Thread.currentThread().getName()
-												+ "- TalkEndoint.eventReceived() -- Error sending server response message to the endpoint");
+						AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+								+ "- TalkEndoint.eventReceived() -- Error sending server response message to the endpoint");
 						return false;
 					}
 				}
@@ -297,13 +253,8 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			// unexpected event
 
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.eventReceived() --  Unknown type of event received: "
-									+ event.messageType());
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.eventReceived() --  Unknown type of event received: " + event.messageType());
 			return false;
 		}
 	}
@@ -312,8 +263,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		return chatList.get(session_id);
 	}
 
-	public boolean newConnection(String host, String endUserCookie,
-			RemoteEndPoint parent) {
+	public boolean newConnection(String host, String endUserCookie, RemoteEndPoint parent) {
 		this.host = host;
 		this.parent = parent;
 		this.endUserCookie = endUserCookie;
@@ -351,8 +301,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 
 				removeFromCallList(sessionId);
 
-				saveTranscript(session.getTranscriptFile(), remove,
-						MessageDirection.Outgoing, null, null);
+				saveTranscript(session.getTranscriptFile(), remove, MessageDirection.Outgoing, null, null);
 
 				closeTranscript(session.getTranscriptFile());
 
@@ -379,27 +328,23 @@ public class TalkEndpoint implements PluginAppClientInterface {
 						String key = replace.getNewKey();
 						message.setEncryptedKey(key);
 
-						if (!parent.sendRequestMessageToClient(0,
-								Message.CONTENT_TYPE_XML, message)) {
+						if (!parent.sendRequestMessageToClient(0, Message.CONTENT_TYPE_XML, message)) {
 							// print error message
-							AceLogger
-									.Instance()
-									.log(AceLogger.ERROR,
-											AceLogger.SYSTEM_LOG,
-											Thread.currentThread().getName()
-													+ "- TalkEndoint.processActionEvent() -- Error sending replace session message to the endpoint");
+							AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread()
+									.getName()
+									+ "- TalkEndoint.processActionEvent() -- Error sending replace session message to the endpoint");
 						}
 
-						saveTranscript(old_session_info.getTranscriptFile(),
-								message, MessageDirection.Outgoing, null, null);
+						saveTranscript(old_session_info.getTranscriptFile(), message, MessageDirection.Outgoing, null,
+								null);
 						changeSessionId(old_session_id, new_session_id);
 					}
 					// else, ignore
 				} else if (old_session_info != null) {
 					// the service controller is telling me to get rid of
 					// the old session
-					saveTranscript(old_session_info.getTranscriptFile(),
-							replace, MessageDirection.Outgoing, null, null);
+					saveTranscript(old_session_info.getTranscriptFile(), replace, MessageDirection.Outgoing, null,
+							null);
 					removeFromCallList(old_session_id);
 					closeTranscript(old_session_info.getTranscriptFile());
 				}
@@ -424,36 +369,26 @@ public class TalkEndpoint implements PluginAppClientInterface {
 
 		removeFromCallList(session_id);
 
-		if (message.getCalledInfo() != null
-				&& message.getCalledInfo().getCallParty() != null
+		if (message.getCalledInfo() != null && message.getCalledInfo().getCallParty() != null
 				&& message.getCalledInfo().getCallParty().getName() != null) {
 
 			EndPointInfo info = RegisteredEndPointList.Instance()
-					.findRegisteredEndPointInfo(
-							message.getCalledInfo().getCallParty().getName());
+					.findRegisteredEndPointInfo(message.getCalledInfo().getCallParty().getName());
 			if (info != null && info.getUserData().isPrivateInfo()) {
-				message.getCalledInfo().setCallParty(
-						new CallPartyElement(message.getCalledInfo()
-								.getCallParty()));
+				message.getCalledInfo().setCallParty(new CallPartyElement(message.getCalledInfo().getCallParty()));
 
 				setPrivate(message.getCalledInfo().getCallParty());
 			}
 		}
 
 		// send the disconnect message to the client
-		if (!parent.sendRequestMessageToClient(0, Message.CONTENT_TYPE_XML,
-				message)) {
+		if (!parent.sendRequestMessageToClient(0, Message.CONTENT_TYPE_XML, message)) {
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.processDisconnectEvent() -- Error sending disconnect message to the endpoint");
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.processDisconnectEvent() -- Error sending disconnect message to the endpoint");
 		}
 
-		saveTranscript(session.getTranscriptFile(), message,
-				MessageDirection.Outgoing, null, null);
+		saveTranscript(session.getTranscriptFile(), message, MessageDirection.Outgoing, null, null);
 		closeTranscript(session.getTranscriptFile());
 
 		if (!registered && message.getCalledInfo() == null) {
@@ -493,30 +428,23 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			return true;
 		}
 
-		saveTranscript(session_info.getTranscriptFile(), message,
-				MessageDirection.Incoming, null, null);
+		saveTranscript(session_info.getTranscriptFile(), message, MessageDirection.Incoming, null, null);
 
 		removeFromCallList(session_id);
 
 		if (registered) {
-			CallPartyElement selfInfo = (CallPartyElement) parent
-					.getParam(EndPointInterface.PARAM_SELF_INFO);
+			CallPartyElement selfInfo = (CallPartyElement) parent.getParam(EndPointInterface.PARAM_SELF_INFO);
 			if (selfInfo != null && selfInfo.isPrivateInfo()) {
 				message.setFrom(new CallPartyElement(selfInfo.getName(), null));
 			}
 		}
 
 		// propagate the message to the service controller
-		if (!ServiceController.Instance().sendMessage(
-				new MessageEvent(MessageEvent.DISCONNECT_MESSAGE, parent,
-						message, null))) {
+		if (!ServiceController.Instance()
+				.sendMessage(new MessageEvent(MessageEvent.DISCONNECT_MESSAGE, parent, message, null))) {
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.processDisconnectMessage() -- Error sending message to the service controller");
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.processDisconnectMessage() -- Error sending message to the service controller");
 
 			return false;
 		}
@@ -536,41 +464,26 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		return false;
 	}
 
-	private boolean processRegistrationRequestMessage(int request_id,
-			RegistrationRequestMessage message) {
+	private boolean processRegistrationRequestMessage(int request_id, RegistrationRequestMessage message) {
 		AceNetworkAccess access = TalkPluginApp.Instance().getAccessInfo();
 		if (access != null) // specified in the config file
 		{
 			if (!access.match(host)) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.WARNING,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ "- TalkEndoint.processRegistrationRequestMessage() -- Unauthorized registered user access from host "
-										+ host);
+				AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
+						Thread.currentThread().getName()
+								+ "- TalkEndoint.processRegistrationRequestMessage() -- Unauthorized registered user access from host "
+								+ host);
 
-				if (!parent
-						.sendResponseMessageToClient(
-								request_id,
-								ResponseMessage.FORBIDDEN,
-								java.util.ResourceBundle
-										.getBundle(
-												"com.quikj.application.web.talk.plugin.language",
-												ServiceController
-														.getLocale((String) parent
-																.getParam("language")))
-										.getString(
-												"You_are_not_allowed_to_login_from_this_location"),
-								Message.CONTENT_TYPE_XML, null)) {
+				if (!parent.sendResponseMessageToClient(request_id, ResponseMessage.FORBIDDEN,
+						java.util.ResourceBundle
+								.getBundle("com.quikj.application.web.talk.plugin.language",
+										ServiceController.getLocale((String) parent.getParam("language")))
+								.getString("You_are_not_allowed_to_login_from_this_location"),
+						Message.CONTENT_TYPE_XML, null)) {
 					// print error message
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									Thread.currentThread().getName()
-											+ "- TalkEndoint.processRegistrationRequestMessage() -- Error sending registration response message to the endpoint");
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+							+ "- TalkEndoint.processRegistrationRequestMessage() -- Error sending registration response message to the endpoint");
 				}
 
 				return false; // no point continuing
@@ -581,45 +494,29 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			registeredUserName = message.getUserName();
 
 			// send the message to the ServiceController
-			if (!ServiceController.Instance().sendMessage(
-					new MessageEvent(MessageEvent.REGISTRATION_REQUEST, parent,
-							message, null))) {
+			if (!ServiceController.Instance()
+					.sendMessage(new MessageEvent(MessageEvent.REGISTRATION_REQUEST, parent, message, null))) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ "- TalkEndoint.processRegistrationRequestMessage() -- Error sending registration request message to the service controller");
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+						+ "- TalkEndoint.processRegistrationRequestMessage() -- Error sending registration request message to the service controller");
 				return false;
 			}
 			registrationRequestId = request_id;
 		} else {
 			// already registered
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.WARNING,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.processRegistrationRequestMessage() -- A registration message is received for a client that is already registered");
+			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.processRegistrationRequestMessage() -- A registration message is received for a client that is already registered");
 
-			if (!parent.sendResponseMessageToClient(
-					request_id,
-					ResponseMessage.FORBIDDEN,
-					java.util.ResourceBundle.getBundle(
-							"com.quikj.application.web.talk.plugin.language",
-							ServiceController.getLocale((String) parent
-									.getParam("language"))).getString(
-							"Already_registered"), Message.CONTENT_TYPE_XML,
-					null)) {
+			if (!parent.sendResponseMessageToClient(request_id, ResponseMessage.FORBIDDEN,
+					java.util.ResourceBundle
+							.getBundle("com.quikj.application.web.talk.plugin.language",
+									ServiceController.getLocale((String) parent.getParam("language")))
+							.getString("Already_registered"),
+					Message.CONTENT_TYPE_XML, null)) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ "- TalkEndoint.processRegistrationRequestMessage() -- Error sending registration response message to the endpoint");
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+						+ "- TalkEndoint.processRegistrationRequestMessage() -- Error sending registration response message to the endpoint");
 				return false;
 			}
 			return true;
@@ -630,36 +527,25 @@ public class TalkEndpoint implements PluginAppClientInterface {
 	private boolean processRegistrationResponseEvent(MessageEvent event) {
 		if (registered) {
 			// if already registered
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.processRegistrationResponseEvent() -- A registration response event is received for a client that is already registered");
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.processRegistrationResponseEvent() -- A registration response event is received for a client that is already registered");
 			return false;
 		}
 
-		RegistrationResponseMessage resp_message = (RegistrationResponseMessage) event
-				.getMessage();
+		RegistrationResponseMessage resp_message = (RegistrationResponseMessage) event.getMessage();
 
 		// send the response to the client
-		if (!parent.sendResponseMessageToClient(registrationRequestId,
-				event.getResponseStatus(), event.getReason(),
+		if (!parent.sendResponseMessageToClient(registrationRequestId, event.getResponseStatus(), event.getReason(),
 				Message.CONTENT_TYPE_XML, resp_message)) {
 			// print an error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.processRegistrationResponseEvent() -- Error sending registration response message to the endpoint");
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.processRegistrationResponseEvent() -- Error sending registration response message to the endpoint");
 			return false;
 		}
 
 		if (event.getResponseStatus() == ResponseMessage.OK) {
 			registered = true;
-			parent.setParam(EndPointInterface.PARAM_SELF_INFO,
-					resp_message.getCallPartyInfo());
+			parent.setParam(EndPointInterface.PARAM_SELF_INFO, resp_message.getCallPartyInfo());
 		} else {
 			return false;
 		}
@@ -680,37 +566,38 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			// we do not expect any setup response
 
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.WARNING,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.processRTPEvent() -- An RTP message is received for a call that is not connected");
+			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.processRTPEvent() -- An RTP message is received for a call that is not connected");
 			// and ignore
 			return true;
 		}
 
+		CallPartyElement selfInfo = (CallPartyElement) parent.getParam(EndPointInterface.PARAM_SELF_INFO);
+		if (selfInfo != null) {
+			Map<String, String> variables = new HashMap<String, String>();
+			variables.put("cookie", selfInfo.getEndUserCookie());
+			variables.put("email", selfInfo.getEmail() != null ? selfInfo.getEmail() : "");
+			variables.put("name", selfInfo.getName() != null ? selfInfo.getName() : "");
+			variables.put("fullName", selfInfo.getFullName() != null ? selfInfo.getFullName() : "");
+			variables.put("ip", selfInfo.getIpAddress() != null ? selfInfo.getIpAddress() : "");
+			variables.put("message", selfInfo.getComment() != null ? selfInfo.getComment() : "");
+			message = resolvePlaceholders(message, variables);
+		}
+
 		// send the message to the client
-		if (!parent.sendRequestMessageToClient(0, Message.CONTENT_TYPE_XML,
-				message)) {
+		if (!parent.sendRequestMessageToClient(0, Message.CONTENT_TYPE_XML, message)) {
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.processRTPEvent() -- Error sending RTP message to the endpoint");
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.processRTPEvent() -- Error sending RTP message to the endpoint");
 			return false;
 		}
 
-		saveTranscript(session_info.getTranscriptFile(), message,
-				MessageDirection.Outgoing, null, null);
+		saveTranscript(session_info.getTranscriptFile(), message, MessageDirection.Outgoing, null, null);
 
 		return true;
 	}
 
-	private String formatTranscriptMessage(Object message,
-			MessageDirection direction, Integer status, String reason) {
+	private String formatTranscriptMessage(Object message, MessageDirection direction, Integer status, String reason) {
 		StringBuffer buffer = new StringBuffer("<element>\n");
 		buffer.append("<timestamp>");
 		buffer.append(new Date().getTime());
@@ -750,12 +637,8 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			// we do not expect any setup response
 
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.WARNING,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.processRTPMessage() -- An RTP message is received for a call that is not connected");
+			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.processRTPMessage() -- An RTP message is received for a call that is not connected");
 			// and ignore
 			return true;
 		}
@@ -768,8 +651,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 
 		RTPMessage fromPrivateRTPMessage = message;
 		if (registered) {
-			CallPartyElement selfInfo = (CallPartyElement) parent
-					.getParam(EndPointInterface.PARAM_SELF_INFO);
+			CallPartyElement selfInfo = (CallPartyElement) parent.getParam(EndPointInterface.PARAM_SELF_INFO);
 			if (selfInfo != null && selfInfo.isPrivateInfo()) {
 				fromPrivateRTPMessage = new RTPMessage(message);
 				setPrivate(fromPrivateRTPMessage.getFrom());
@@ -787,37 +669,52 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			}
 
 			RTPMessage rtp = message;
-			CallPartyElement toInfo = (CallPartyElement) endpoint
-					.getParam(EndPointInterface.PARAM_SELF_INFO);
+			CallPartyElement toInfo = (CallPartyElement) endpoint.getParam(EndPointInterface.PARAM_SELF_INFO);
 			if (toInfo != null && toInfo.getName() == null) {
 				rtp = fromPrivateRTPMessage;
 			}
 
-			if (!endpoint.sendEvent(new MessageEvent(MessageEvent.RTP_MESSAGE,
-					parent, rtp, null))) {
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ "- TalkEndoint.processRTPMessage() -- Could not send RTP message to the endpoint "
-										+ endpoint);
+			if (!endpoint.sendEvent(new MessageEvent(MessageEvent.RTP_MESSAGE, parent, rtp, null))) {
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						Thread.currentThread().getName()
+								+ "- TalkEndoint.processRTPMessage() -- Could not send RTP message to the endpoint "
+								+ endpoint);
 				// and ignore
 			}
 		}
 
-		saveTranscript(sessionInfo.getTranscriptFile(), message,
-				MessageDirection.Incoming, null, null);
+		saveTranscript(sessionInfo.getTranscriptFile(), message, MessageDirection.Incoming, null, null);
 
 		return true;
+
+	}
+
+	private RTPMessage resolvePlaceholders(RTPMessage message, Map<String, String> variables) {
+		boolean cloned = false;
+		RTPMessage output = message;
+		for (int i = 0; i < output.getMediaElements().getElements().size(); i++) {
+			MediaElementInterface medium = output.getMediaElements().getElements().get(i);
+			if (medium instanceof HtmlElement
+					&& PlaceHolderResolver.placeHoldersExist(((HtmlElement) medium).getHtml())) {
+				if (!cloned) {
+					output = new RTPMessage(message);
+					cloned = true;
+				}
+
+				HtmlElement replaced = new HtmlElement(
+						PlaceHolderResolver.replace(((HtmlElement) medium).getHtml(), variables));
+				output.getMediaElements().getElements().set(i, replaced);
+			}
+		}
+
+		return output;
 
 	}
 
 	private List<Integer> resolveCannedMediaElements(RTPMessage message) {
 		int index = 0;
 		List<Integer> cannedList = new ArrayList<Integer>();
-		ListIterator<MediaElementInterface> i = message.getMediaElements()
-				.getElements().listIterator();
+		ListIterator<MediaElementInterface> i = message.getMediaElements().getElements().listIterator();
 		while (i.hasNext()) {
 			MediaElementInterface medium = i.next();
 			if (medium instanceof CannedMessageElement) {
@@ -825,22 +722,16 @@ public class TalkEndpoint implements PluginAppClientInterface {
 
 				HtmlElement html = null;
 				if (canned.getMessage() == null) {
-					String result = SynchronousDbOperations.getInstance()
-							.queryCannedMessages(canned.getId());
+					String result = SynchronousDbOperations.getInstance().queryCannedMessages(canned.getId());
 					if (result != null) {
 						html = new HtmlElement();
 						html.setHtml(result);
 					} else {
-						AceLogger
-								.Instance()
-								.log(AceLogger.WARNING,
-										AceLogger.SYSTEM_LOG,
-										Thread.currentThread().getName()
-												+ "- TalkEndoint.processRTPMessage() -- A canned message with group = "
-												+ canned.getGroup()
-												+ " and id " + canned.getId()
-												+ " could not be found."
-												+ " Going to ignore");
+						AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
+								Thread.currentThread().getName()
+										+ "- TalkEndoint.processRTPMessage() -- A canned message with group = "
+										+ canned.getGroup() + " and id " + canned.getId() + " could not be found."
+										+ " Going to ignore");
 					}
 				} else {
 					html = new HtmlElement();
@@ -851,7 +742,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 				if (html != null) {
 					i.add(html);
 					cannedList.add(index);
-				}				
+				}
 			}
 
 			index++;
@@ -868,8 +759,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 				continue;
 			}
 
-			MediaElementInterface medium = message.getMediaElements()
-					.getElements().get(i);
+			MediaElementInterface medium = message.getMediaElements().getElements().get(i);
 			if (medium instanceof HtmlElement) {
 				HtmlElement e = (HtmlElement) medium;
 				e.setHtml(contentFilter.scrubHtml(e.getHtml()));
@@ -878,46 +768,38 @@ public class TalkEndpoint implements PluginAppClientInterface {
 
 	}
 
-	private void saveTranscript(String transcriptFile, Object message,
-			MessageDirection direction, Integer status, String reason) {
+	private void saveTranscript(String transcriptFile, Object message, MessageDirection direction, Integer status,
+			String reason) {
 		if (!registered) {
 			return;
 		}
 
 		if (transcriptFile == null) {
-			AceLogger
-					.Instance()
-					.log(AceLogger.WARNING,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.saveTranscript() -- Null transcript file specified");
+			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.saveTranscript() -- Null transcript file specified");
 			return;
 		}
 		parent.writeToFile(transcriptFile, TRANSCRIPT_PREFIX,
 				formatTranscriptMessage(message, direction, status, reason));
 	}
 
-	private String saveTranscript(long sessionId, String cookie,
-			Object message, MessageDirection direction, Integer status,
-			String reason) {
+	private String saveTranscript(long sessionId, String cookie, Object message, MessageDirection direction,
+			Integer status, String reason) {
 		if (!registered) {
 			return null;
 		}
 
 		String transFile = formatTranscriptPathName(sessionId, cookie);
-		parent.writeToFile(transFile, TRANSCRIPT_PREFIX,
-				formatTranscriptMessage(message, direction, status, reason));
+		parent.writeToFile(transFile, TRANSCRIPT_PREFIX, formatTranscriptMessage(message, direction, status, reason));
 		return transFile;
 	}
 
-	private String renameTranscript(String oldTranscriptFile,
-			long newSessionId, String cookie) {
+	private String renameTranscript(String oldTranscriptFile, long newSessionId, String cookie) {
 		if (!registered) {
 			return null;
 		}
 
-		String newTranscriptFile = formatTranscriptPathName(newSessionId,
-				cookie);
+		String newTranscriptFile = formatTranscriptPathName(newSessionId, cookie);
 		parent.renameFile(oldTranscriptFile, newTranscriptFile);
 		return newTranscriptFile;
 	}
@@ -925,8 +807,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 	private String formatTranscriptPathName(long sessionId, String cookie) {
 		try {
 			return AceConfigFileHelper.getAcePath("transcripts",
-					registeredUserName + "_" + sessionId
-							+ (cookie != null ? "_" + cookie : "") + ".xml");
+					registeredUserName + "_" + sessionId + (cookie != null ? "_" + cookie : "") + ".xml");
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -940,85 +821,66 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			// something must be wrong
 
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.processSetupRequestEvent() -- A setup request event is received for a session that is not registered");
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.processSetupRequestEvent() -- A setup request event is received for a session that is not registered");
 			return false;
 		}
 
 		EndPointInterface callingParty = event.getFrom();
 
-		SetupRequestMessage incomingMessage = (SetupRequestMessage) event
-				.getMessage();
+		SetupRequestMessage incomingMessage = (SetupRequestMessage) event.getMessage();
 
-		long session_id = incomingMessage.getSessionId();
+		long sessionId = incomingMessage.getSessionId();
 
 		// send an ALTERTING message to the calling party
 		SetupResponseMessage resp = new SetupResponseMessage();
-		resp.setSessionId(session_id);
+		resp.setSessionId(sessionId);
 
-		CallPartyElement selfInfo = (CallPartyElement) parent
-				.getParam(EndPointInterface.PARAM_SELF_INFO);
+		CallPartyElement selfInfo = (CallPartyElement) parent.getParam(EndPointInterface.PARAM_SELF_INFO);
 		if (selfInfo != null) {
-			CalledNameElement cp_element = new CalledNameElement();
-			cp_element.setCallParty(selfInfo);
-			resp.setCalledParty(cp_element);
+			CalledNameElement cpElement = new CalledNameElement();
+			cpElement.setCallParty(selfInfo);
+			resp.setCalledParty(cpElement);
 		}
 
 		// send the message
-		if (!callingParty.sendEvent(new MessageEvent(
-				MessageEvent.SETUP_RESPONSE, parent,
-				SetupResponseMessage.ALERTING, "Alterting", resp, null))) {
+		if (!callingParty.sendEvent(new MessageEvent(MessageEvent.SETUP_RESPONSE, parent, SetupResponseMessage.ALERTING,
+				"Alterting", resp, null))) {
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.processSetupRequestEvent() -- Error sending alerting event to the calling party");
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.processSetupRequestEvent() -- Error sending alerting event to the calling party");
 			return false;
 		}
 
 		// send the message to the client
-		if (!parent.sendRequestMessageToClient(0, Message.CONTENT_TYPE_XML,
-				incomingMessage)) {
+		if (!parent.sendRequestMessageToClient(0, Message.CONTENT_TYPE_XML, incomingMessage)) {
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.processSetupRequestEvent() -- Error sending setup message to the endpoint");
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.processSetupRequestEvent() -- Error sending setup message to the endpoint");
 
 			return false;
 		}
 
 		String cookie = null;
-		CallPartyElement cp = incomingMessage.getCallingNameElement()
-				.getCallParty();
+		CallPartyElement cp = incomingMessage.getCallingNameElement().getCallParty();
 		if (cp != null) {
 			cookie = cp.getEndUserCookie();
 		}
 
-		String transFile = saveTranscript(session_id, cookie, incomingMessage,
-				MessageDirection.Outgoing, null, null);
+		String transFile = saveTranscript(sessionId, cookie, incomingMessage, MessageDirection.Outgoing, null, null);
 
 		// create a session
-		SessionInfo session = new SessionInfo(session_id, callingParty);
+		SessionInfo session = new SessionInfo(sessionId, callingParty);
 		session.addEndPoint(parent);
 		session.setTranscriptFile(transFile);
 
 		// add it to the session list
-		addToCallList(session_id, session);
+		addToCallList(sessionId, session);
 
 		return true;
 	}
 
-	private boolean processSetupRequestMessage(int request_id,
-			SetupRequestMessage message) {
+	private boolean processSetupRequestMessage(int request_id, SetupRequestMessage message) {
 		// System.out.println(Thread.currentThread().getName()
 		// + " In processSetupRequestMessage");
 
@@ -1026,72 +888,57 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			// unregistered users get one call
 
 			// send a response
-			parent.sendResponseMessageToClient(
-					request_id,
-					ResponseMessage.FORBIDDEN,
-					java.util.ResourceBundle.getBundle(
-							"com.quikj.application.web.talk.plugin.language",
-							ServiceController.getLocale((String) parent
-									.getParam("language"))).getString(
-							"Only_one_call_allowed_for_unregistered_user"),
+			parent.sendResponseMessageToClient(request_id, ResponseMessage.FORBIDDEN,
+					java.util.ResourceBundle
+							.getBundle("com.quikj.application.web.talk.plugin.language",
+									ServiceController.getLocale((String) parent.getParam("language")))
+							.getString("Only_one_call_allowed_for_unregistered_user"),
 					Message.CONTENT_TYPE_XML, null);
 			return false;
 		}
 
 		// get a unique session id
-		long session_id = ServiceController.Instance().getNewSessionId();
-		message.setSessionId(session_id); // save the session id
+		long sessionId = ServiceController.Instance().getNewSessionId();
+		message.setSessionId(sessionId); // save the session id
 
-		String transFile = saveTranscript(session_id, null, message,
-				MessageDirection.Incoming, null, null);
+		String transFile = saveTranscript(sessionId, null, message, MessageDirection.Incoming, null, null);
 
 		// send an ACK response
 		SetupResponseMessage rsp = new SetupResponseMessage();
-		rsp.setSessionId(session_id);
-		if (!parent.sendResponseMessageToClient(request_id,
-				SetupResponseMessage.ACK, "Acknowledgement",
+		if (!registered) {
+			rsp.setCallingCookie(endUserCookie);
+		}
+		rsp.setSessionId(sessionId);
+
+		if (!parent.sendResponseMessageToClient(request_id, SetupResponseMessage.ACK, "Acknowledgement",
 				Message.CONTENT_TYPE_XML, rsp)) {
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.processSetupRequestMessage() -- Error sending message to the endpoint");
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.processSetupRequestMessage() -- Error sending message to the endpoint");
 			return false;
 		}
 
-		saveTranscript(transFile, rsp, MessageDirection.Outgoing,
-				SetupResponseMessage.ACK, "Acknowledgement");
+		saveTranscript(transFile, rsp, MessageDirection.Outgoing, SetupResponseMessage.ACK, "Acknowledgement");
 
 		// set unregistered caller's host address in the message before
 		// processing it
 		if (!registered) {
 			message.getCallingNameElement().getCallParty().setIpAddress(host);
-			message.getCallingNameElement().getCallParty()
-					.setEndUserCookie(endUserCookie);
+			message.getCallingNameElement().getCallParty().setEndUserCookie(endUserCookie);
 		}
 
 		// send the message to the service controller
-		if (!ServiceController.Instance().sendMessage(
-				new MessageEvent(MessageEvent.SETUP_REQUEST, parent, message,
-						null))) {
+		if (!ServiceController.Instance()
+				.sendMessage(new MessageEvent(MessageEvent.SETUP_REQUEST, parent, message, null))) {
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.processSetupRequestMessage() -- Error sending message to the service controller");
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.processSetupRequestMessage() -- Error sending message to the service controller");
 
-			parent.sendResponseMessageToClient(
-					request_id,
-					ResponseMessage.SERVICE_UNAVAILABLE,
-					java.util.ResourceBundle.getBundle(
-							"com.quikj.application.web.talk.plugin.language",
-							ServiceController.getLocale((String) parent
-									.getParam("language"))).getString(
-							"Unable_to_notify_the_service_controller"),
+			parent.sendResponseMessageToClient(request_id, ResponseMessage.SERVICE_UNAVAILABLE,
+					java.util.ResourceBundle
+							.getBundle("com.quikj.application.web.talk.plugin.language",
+									ServiceController.getLocale((String) parent.getParam("language")))
+							.getString("Unable_to_notify_the_service_controller"),
 					Message.CONTENT_TYPE_XML, null);
 
 			return false;
@@ -1100,39 +947,32 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		// if the end point is not registered. save the information about the
 		// caller
 		if (!registered) {
-			parent.setParam(EndPointInterface.PARAM_SELF_INFO, message
-					.getCallingNameElement().getCallParty());
+			parent.setParam(EndPointInterface.PARAM_SELF_INFO, message.getCallingNameElement().getCallParty());
 		} else {
 			// for registered user, save the information about the caller only
 			// if the service controller did not provide such information during
 			// the registration.
-			CallPartyElement selfInfo = (CallPartyElement) parent
-					.getParam(EndPointInterface.PARAM_SELF_INFO);
+			CallPartyElement selfInfo = (CallPartyElement) parent.getParam(EndPointInterface.PARAM_SELF_INFO);
 			if (selfInfo == null) {
-				parent.setParam(EndPointInterface.PARAM_SELF_INFO, message
-						.getCallingNameElement().getCallParty());
+				parent.setParam(EndPointInterface.PARAM_SELF_INFO, message.getCallingNameElement().getCallParty());
 			}
 		}
 
 		// create a session info
-		SessionInfo session = new SessionInfo(session_id, parent);
+		SessionInfo session = new SessionInfo(sessionId, parent);
 		session.setRequestId(request_id);
 		session.setTranscriptFile(transFile);
 
 		// and add it to the list of sessions
-		addToCallList(session_id, session);
+		addToCallList(sessionId, session);
 
 		lastSession = session;
 		return true;
 	}
 
 	private boolean processSetupResponseEvent(MessageEvent event) {
-		// System.out.println(Thread.currentThread().getName()
-		// + " In processSetupResponseEvent");
-
 		// get the call information from the call list
-		SetupResponseMessage message = (SetupResponseMessage) event
-				.getMessage();
+		SetupResponseMessage message = (SetupResponseMessage) event.getMessage();
 		long sessionId = message.getSessionId();
 		SessionInfo sessionInfo = getSessionInfo(sessionId);
 		if (sessionInfo == null) { // not found
@@ -1143,12 +983,8 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			// we do not expect any setup response
 
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.WARNING,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.processSetupResponseEvent() -- A setup response event is received for a call that is already in connected state");
+			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.processSetupResponseEvent() -- A setup response event is received for a call that is already in connected state");
 			// and ignore
 			return true;
 		}
@@ -1166,20 +1002,15 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			setupPrivateInfo(message);
 
 			// send the alerting message to the client
-			if (!parent.sendResponseMessageToClient(sessionInfo.getRequestId(),
-					status, event.getReason(), Message.CONTENT_TYPE_XML,
-					message)) {
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ "- TalkEndoint.processSetupResponseEvent() -- Error sending setup response (ALERTING) to the endpoint");
+			if (!parent.sendResponseMessageToClient(sessionInfo.getRequestId(), status, event.getReason(),
+					Message.CONTENT_TYPE_XML, message)) {
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+						+ "- TalkEndoint.processSetupResponseEvent() -- Error sending setup response (ALERTING) to the endpoint");
 				return false;
 			}
 
-			saveTranscript(sessionInfo.getTranscriptFile(), message,
-					MessageDirection.Outgoing, status, event.getReason());
+			saveTranscript(sessionInfo.getTranscriptFile(), message, MessageDirection.Outgoing, status,
+					event.getReason());
 			break;
 
 		case SetupResponseMessage.PROG:
@@ -1190,19 +1021,14 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			setupPrivateInfo(message);
 
 			// send the progress message to the client
-			if (!parent.sendResponseMessageToClient(sessionInfo.getRequestId(),
-					status, event.getReason(), Message.CONTENT_TYPE_XML,
-					message)) {
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ "- TalkEndoint.processSetupResponseEvent() -- Error sending setup response (PROG) to the endpoint");
+			if (!parent.sendResponseMessageToClient(sessionInfo.getRequestId(), status, event.getReason(),
+					Message.CONTENT_TYPE_XML, message)) {
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+						+ "- TalkEndoint.processSetupResponseEvent() -- Error sending setup response (PROG) to the endpoint");
 				return false;
 			}
-			saveTranscript(sessionInfo.getTranscriptFile(), message,
-					MessageDirection.Outgoing, status, event.getReason());
+			saveTranscript(sessionInfo.getTranscriptFile(), message, MessageDirection.Outgoing, status,
+					event.getReason());
 			break;
 
 		case SetupResponseMessage.CONNECT:
@@ -1213,20 +1039,15 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			setupPrivateInfo(message);
 
 			// send the connect message to the client
-			if (!parent.sendResponseMessageToClient(sessionInfo.getRequestId(),
-					status, event.getReason(), Message.CONTENT_TYPE_XML,
-					message)) {
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ "- TalkEndoint.processSetupResponseEvent() -- Error sending setup response (CONNECT) to the endpoint");
+			if (!parent.sendResponseMessageToClient(sessionInfo.getRequestId(), status, event.getReason(),
+					Message.CONTENT_TYPE_XML, message)) {
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+						+ "- TalkEndoint.processSetupResponseEvent() -- Error sending setup response (CONNECT) to the endpoint");
 				return false;
 			}
 
-			saveTranscript(sessionInfo.getTranscriptFile(), message,
-					MessageDirection.Outgoing, status, event.getReason());
+			saveTranscript(sessionInfo.getTranscriptFile(), message, MessageDirection.Outgoing, status,
+					event.getReason());
 			sessionInfo.setConnected(true);
 			break;
 
@@ -1235,21 +1056,17 @@ public class TalkEndpoint implements PluginAppClientInterface {
 
 			setupPrivateInfo(message);
 
-			if (!parent.sendResponseMessageToClient(sessionInfo.getRequestId(),
-					status, event.getReason(), Message.CONTENT_TYPE_XML,
-					message)) {
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ "- TalkEndoint.processSetupResponseEvent() -- Error sending setup response ("
-										+ status + ") to the endpoint");
+			if (!parent.sendResponseMessageToClient(sessionInfo.getRequestId(), status, event.getReason(),
+					Message.CONTENT_TYPE_XML, message)) {
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						Thread.currentThread().getName()
+								+ "- TalkEndoint.processSetupResponseEvent() -- Error sending setup response (" + status
+								+ ") to the endpoint");
 				return false;
 			}
 
-			saveTranscript(sessionInfo.getTranscriptFile(), message,
-					MessageDirection.Outgoing, status, event.getReason());
+			saveTranscript(sessionInfo.getTranscriptFile(), message, MessageDirection.Outgoing, status,
+					event.getReason());
 			closeTranscript(sessionInfo.getTranscriptFile());
 
 			long newSessionId = message.getNewSessionId();
@@ -1261,15 +1078,13 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			// object, not the message
 			String cookie = null;
 			if (!registered) {
-				CallPartyElement cp = (CallPartyElement) parent
-						.getParam(EndPointInterface.PARAM_SELF_INFO);
+				CallPartyElement cp = (CallPartyElement) parent.getParam(EndPointInterface.PARAM_SELF_INFO);
 				if (cp != null) {
 					cookie = cp.getEndUserCookie();
 				}
 			}
 
-			String transFile = saveTranscript(newSessionId, cookie, event,
-					MessageDirection.Incoming, null, null);
+			String transFile = saveTranscript(newSessionId, cookie, event, MessageDirection.Incoming, null, null);
 			newSessionInfo.setTranscriptFile(transFile);
 			break;
 
@@ -1283,21 +1098,17 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			setupPrivateInfo(message);
 
 			// send the message to the client
-			if (!parent.sendResponseMessageToClient(sessionInfo.getRequestId(),
-					status, event.getReason(), Message.CONTENT_TYPE_XML,
-					message)) {
+			if (!parent.sendResponseMessageToClient(sessionInfo.getRequestId(), status, event.getReason(),
+					Message.CONTENT_TYPE_XML, message)) {
 				// print an error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ "- TalkEndoint.processSetupResponseEvent() -- Error sending setup response ("
-										+ status + ") to the endpoint");
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						Thread.currentThread().getName()
+								+ "- TalkEndoint.processSetupResponseEvent() -- Error sending setup response (" + status
+								+ ") to the endpoint");
 				return false;
 			}
-			saveTranscript(sessionInfo.getTranscriptFile(), message,
-					MessageDirection.Outgoing, status, event.getReason());
+			saveTranscript(sessionInfo.getTranscriptFile(), message, MessageDirection.Outgoing, status,
+					event.getReason());
 			closeTranscript(sessionInfo.getTranscriptFile());
 
 			if (!registered) {
@@ -1324,8 +1135,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		}
 
 		EndPointInfo info = RegisteredEndPointList.Instance()
-				.findRegisteredEndPointInfo(
-						message.getCalledParty().getCallParty().getName());
+				.findRegisteredEndPointInfo(message.getCalledParty().getCallParty().getName());
 		if (info == null) {
 			return;
 		}
@@ -1334,8 +1144,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			return;
 		}
 
-		CallPartyElement party = new CallPartyElement(message.getCalledParty()
-				.getCallParty());
+		CallPartyElement party = new CallPartyElement(message.getCalledParty().getCallParty());
 		message.getCalledParty().setCallParty(party);
 
 		setPrivate(party);
@@ -1348,8 +1157,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		party.setIpAddress(null);
 	}
 
-	public boolean processSetupResponseMessage(int status, String reason,
-			SetupResponseMessage message) {
+	public boolean processSetupResponseMessage(int status, String reason, SetupResponseMessage message) {
 		// System.out.println(Thread.currentThread().getName()
 		// + " In processSetupResponseMessage");
 
@@ -1365,19 +1173,14 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			// we do not expect any setup response
 
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.WARNING,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.processSetupResponseMessage() -- A setup response message is received for a session that is already connected");
+			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.processSetupResponseMessage() -- A setup response message is received for a session that is already connected");
 
 			// and ignore
 			return true;
 		}
 
-		saveTranscript(session.getTranscriptFile(), message,
-				MessageDirection.Incoming, status, reason);
+		saveTranscript(session.getTranscriptFile(), message, MessageDirection.Incoming, status, reason);
 
 		switch (status) {
 		case SetupResponseMessage.CONNECT:
@@ -1386,15 +1189,10 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			// propagate the message to the calling party via the service
 			// controller
 			if (!ServiceController.Instance().sendMessage(
-					new MessageEvent(MessageEvent.SETUP_RESPONSE, parent,
-							status, reason, message, null))) {
+					new MessageEvent(MessageEvent.SETUP_RESPONSE, parent, status, reason, message, null))) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ "- TalkEndoint.processSetupResponseMessage() -- Error sending message (CONNECT) to the service controller");
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+						+ "- TalkEndoint.processSetupResponseMessage() -- Error sending message (CONNECT) to the service controller");
 			}
 			break;
 
@@ -1409,17 +1207,12 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			// propagate the message to the calling party via the service
 			// controller
 			if (!ServiceController.Instance().sendMessage(
-					new MessageEvent(MessageEvent.SETUP_RESPONSE, parent,
-							status, reason, message, null))) {
+					new MessageEvent(MessageEvent.SETUP_RESPONSE, parent, status, reason, message, null))) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ "- TalkEndoint.processSetupResponseMessage() -- Error sending message ("
-										+ status
-										+ ") to the service controller");
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						Thread.currentThread().getName()
+								+ "- TalkEndoint.processSetupResponseMessage() -- Error sending message (" + status
+								+ ") to the service controller");
 			}
 			break;
 		}
@@ -1427,76 +1220,52 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		return true;
 	}
 
-	private boolean processUserToUserRequestMessage(int request_id,
-			UserToUserMessage message) {
+	private boolean processUserToUserRequestMessage(int request_id, UserToUserMessage message) {
 		String name = message.getEndPointName();
 		if (name == null) {
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.processUserToUserRequestMessage() -- user to user message does not contain the end-point name parameter");
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.processUserToUserRequestMessage() -- user to user message does not contain the end-point name parameter");
 
 			return false;
 		}
 
-		EndPointInterface endpoint = RegisteredEndPointList.Instance()
-				.findRegisteredEndPoint(name);
+		EndPointInterface endpoint = RegisteredEndPointList.Instance().findRegisteredEndPoint(name);
 		if (endpoint == null) {
 			// send a response to the client saying that the end-point is not
 			// available
-			if (!parent.sendResponseMessageToClient(
-					request_id,
-					ResponseMessage.SERVICE_UNAVAILABLE,
-					java.util.ResourceBundle.getBundle(
-							"com.quikj.application.web.talk.plugin.language",
-							ServiceController.getLocale((String) parent
-									.getParam("language"))).getString(
-							"The_end_point_is_not_available"),
+			if (!parent.sendResponseMessageToClient(request_id, ResponseMessage.SERVICE_UNAVAILABLE,
+					java.util.ResourceBundle
+							.getBundle("com.quikj.application.web.talk.plugin.language",
+									ServiceController.getLocale((String) parent.getParam("language")))
+							.getString("The_end_point_is_not_available"),
 					Message.CONTENT_TYPE_XML, null)) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ "- TalkEndoint.processRegistrationRequestMessage() -- Error sending user-to-user response message to the endpoint");
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+						+ "- TalkEndoint.processRegistrationRequestMessage() -- Error sending user-to-user response message to the endpoint");
 				return false;
 			}
 			return true;
 		}
 
-		MessageEvent me = new MessageEvent(MessageEvent.CLIENT_REQUEST_MESSAGE,
-				parent, message, null, request_id);
+		MessageEvent me = new MessageEvent(MessageEvent.CLIENT_REQUEST_MESSAGE, parent, message, null, request_id);
 		if (!endpoint.sendEvent(me)) {
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.processUserToUserRequestMessage() -- Error sending client request message to endpoint "
-									+ name);
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					Thread.currentThread().getName()
+							+ "- TalkEndoint.processUserToUserRequestMessage() -- Error sending client request message to endpoint "
+							+ name);
 
 			// send a response to the client saying that the end-point is not
 			// available
-			if (!parent.sendResponseMessageToClient(
-					request_id,
-					ResponseMessage.SERVICE_UNAVAILABLE,
-					java.util.ResourceBundle.getBundle(
-							"com.quikj.application.web.talk.plugin.language",
-							ServiceController.getLocale((String) parent
-									.getParam("language"))).getString(
-							"The_end_point_is_not_available"),
+			if (!parent.sendResponseMessageToClient(request_id, ResponseMessage.SERVICE_UNAVAILABLE,
+					java.util.ResourceBundle
+							.getBundle("com.quikj.application.web.talk.plugin.language",
+									ServiceController.getLocale((String) parent.getParam("language")))
+							.getString("The_end_point_is_not_available"),
 					Message.CONTENT_TYPE_XML, null)) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ "- TalkEndoint.processRegistrationRequestMessage() -- Error sending user-to-user response message to the endpoint");
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+						+ "- TalkEndoint.processRegistrationRequestMessage() -- Error sending user-to-user response message to the endpoint");
 				return false;
 			}
 
@@ -1506,43 +1275,28 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		return true;
 	}
 
-	private boolean processUserToUserResponseMessage(int status, String reason,
-			UserToUserMessage message) {
+	private boolean processUserToUserResponseMessage(int status, String reason, UserToUserMessage message) {
 		String name = message.getEndPointName();
 		if (name == null) {
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.processUserToUserResponseMessage() -- user to user message does not contain the end-point name parameter");
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.processUserToUserResponseMessage() -- user to user message does not contain the end-point name parameter");
 
 			return false;
 		}
 
-		EndPointInterface endpoint = RegisteredEndPointList.Instance()
-				.findRegisteredEndPoint(name);
+		EndPointInterface endpoint = RegisteredEndPointList.Instance().findRegisteredEndPoint(name);
 		if (endpoint == null) {
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.processRegistrationResponseMessage() -- Endpoint does not exist - coluld not send response event");
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.processRegistrationResponseMessage() -- Endpoint does not exist - coluld not send response event");
 			return true;
 		}
 
-		if (!endpoint.sendEvent(new MessageEvent(
-				MessageEvent.CLIENT_RESPONSE_MESSAGE, parent, status, reason,
-				message, null))) {
+		if (!endpoint.sendEvent(
+				new MessageEvent(MessageEvent.CLIENT_RESPONSE_MESSAGE, parent, status, reason, message, null))) {
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.processUserToUserResponseMessage() -- Error sending user-to-user response message to the endpoint");
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.processUserToUserResponseMessage() -- Error sending user-to-user response message to the endpoint");
 			return false;
 		}
 
@@ -1553,11 +1307,9 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		chatList.remove(new Long(session_id));
 
 		if (registered) {
-			RegisteredEndPointList.Instance().setCallCount(parent,
-					chatList.size());
+			RegisteredEndPointList.Instance().setCallCount(parent, chatList.size());
 			if (notify) {
-				ServiceController.Instance().groupNotifyOfCallCountChange(
-						parent);
+				ServiceController.Instance().groupNotifyOfCallCountChange(parent);
 			}
 		}
 	}
@@ -1566,8 +1318,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		removeFromCallList(session_id, true);
 	}
 
-	public boolean requestReceived(int request_id, String content_type,
-			WebMessage body) {
+	public boolean requestReceived(int request_id, String content_type, WebMessage body) {
 
 		if (!checkRequestMessage(content_type, body)) {
 			return true;
@@ -1581,62 +1332,42 @@ public class TalkEndpoint implements PluginAppClientInterface {
 				&& !(message instanceof RegistrationRequestMessage || message instanceof SetupRequestMessage)) {
 
 			// print error message
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ "- TalkEndoint.requestReceived() -- The first request received from the client is not a setup or a registration request");
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+					+ "- TalkEndoint.requestReceived() -- The first request received from the client is not a setup or a registration request");
 
-			if (!parent.sendResponseMessageToClient(request_id,
-					ResponseMessage.FORBIDDEN, "Bad sequence",
+			if (!parent.sendResponseMessageToClient(request_id, ResponseMessage.FORBIDDEN, "Bad sequence",
 					Message.CONTENT_TYPE_XML, null)) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ "- TalkEndoint.requestReceived() -- Error sending forbidden response message to the endpoint");
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+						+ "- TalkEndoint.requestReceived() -- Error sending forbidden response message to the endpoint");
 			}
 			return false;
 		}
 		firstReqRcvd = true;
 
 		if (message instanceof RegistrationRequestMessage) {
-			return processRegistrationRequestMessage(request_id,
-					(RegistrationRequestMessage) message);
+			return processRegistrationRequestMessage(request_id, (RegistrationRequestMessage) message);
 		} else if (message instanceof SetupRequestMessage) {
-			return processSetupRequestMessage(request_id,
-					(SetupRequestMessage) message);
+			return processSetupRequestMessage(request_id, (SetupRequestMessage) message);
 		} else if (message instanceof RTPMessage) {
 			return processRTPMessage((RTPMessage) message);
 		} else if (message instanceof DisconnectMessage) {
 			return processDisconnectMessage((DisconnectMessage) message);
 		} else if (message instanceof UserToUserMessage) {
-			return processUserToUserRequestMessage(request_id,
-					(UserToUserMessage) message);
+			return processUserToUserRequestMessage(request_id, (UserToUserMessage) message);
 		} else {
 			if (message instanceof JoinRequestMessage) {
 				JoinRequestMessage join = (JoinRequestMessage) message;
-				SessionInfo sessionInfo = chatList.get(join.getSessionList()
-						.get(0));
-				saveTranscript(sessionInfo.getTranscriptFile(), message,
-						MessageDirection.Incoming, null, null);
+				SessionInfo sessionInfo = chatList.get(join.getSessionList().get(0));
+				saveTranscript(sessionInfo.getTranscriptFile(), message, MessageDirection.Incoming, null, null);
 			}
 
 			// unknown type of message, send it to the service controller
-			MessageEvent me = new MessageEvent(
-					MessageEvent.CLIENT_REQUEST_MESSAGE, parent, message, null,
-					request_id);
+			MessageEvent me = new MessageEvent(MessageEvent.CLIENT_REQUEST_MESSAGE, parent, message, null, request_id);
 			if (!ServiceController.Instance().sendMessage(me)) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ "- TalkEndoint.requestReceived() -- Error sending client request message to the service controller");
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+						+ "- TalkEndoint.requestReceived() -- Error sending client request message to the service controller");
 				return false;
 			} else {
 				return true;
@@ -1644,8 +1375,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		}
 	}
 
-	public boolean responseReceived(int request_id, int status, String reason,
-			String content_type, WebMessage body) {
+	public boolean responseReceived(int request_id, int status, String reason, String content_type, WebMessage body) {
 		// do some error checking
 		if (!checkResponseMessage(content_type, body)) {
 			return false;
@@ -1653,22 +1383,15 @@ public class TalkEndpoint implements PluginAppClientInterface {
 
 		TalkMessageInterface message = (TalkMessageInterface) body;
 		if (message instanceof SetupResponseMessage) {
-			return processSetupResponseMessage(status, reason,
-					(SetupResponseMessage) message);
+			return processSetupResponseMessage(status, reason, (SetupResponseMessage) message);
 		} else if (message instanceof UserToUserMessage) {
-			return processUserToUserResponseMessage(status, reason,
-					(UserToUserMessage) message);
+			return processUserToUserResponseMessage(status, reason, (UserToUserMessage) message);
 		} else {
 			if (!ServiceController.Instance().sendMessage(
-					new MessageEvent(MessageEvent.CLIENT_RESPONSE_MESSAGE,
-							parent, status, reason, message, null))) {
+					new MessageEvent(MessageEvent.CLIENT_RESPONSE_MESSAGE, parent, status, reason, message, null))) {
 				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ "- TalkEndoint.responseReceived() -- Error sending client response message to the service controller");
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
+						+ "- TalkEndoint.responseReceived() -- Error sending client response message to the service controller");
 				return false;
 			} else {
 				return true;

@@ -12,63 +12,65 @@
 
 	<fileSets>
 		<fileSet>
-			<directory>ace-installation/src/main/assembly</directory>
+			<directory>src/main/config</directory>
 			<outputDirectory>/</outputDirectory>
 			<includes>
 				<include>.ace/**</include>
 				<include>README</include>
 			</includes>
 		</fileSet>
-		
-		
+
 		<fileSet>
-			<directory>ace-installation/src/main/assembly</directory>
+			<directory>src/main/config</directory>
 			<outputDirectory>bin</outputDirectory>
 			<lineEnding>unix</lineEnding>
 			<fileMode>755</fileMode>
 			<includes>
 				<include>tomcat</include>
 			</includes>
-		</fileSet>		
-		
+		</fileSet>
+
 		<fileSet>
 			<directory>ace-communicator/src/main/webapp/aceapp/license</directory>
 			<outputDirectory>license</outputDirectory>
 			<includes>
 				<include>**</include>
 			</includes>
-		</fileSet>				
+		</fileSet>
 	</fileSets>
 
 	<moduleSets>
 		<moduleSet>
+			<useAllReactorProjects>true</useAllReactorProjects>
 			<includes>
 				<include>com.quikj.ace:ace-web</include>
 			</includes>
 
-			<binaries>				
+			<binaries>
 				<outputDirectory>web</outputDirectory>
 				<outputFileNameMapping>ace-contactcenter.war</outputFileNameMapping>
-				<includeDependencies>false</includeDependencies>				
+				<includeDependencies>false</includeDependencies>
 				<unpack>false</unpack>
 			</binaries>
 		</moduleSet>
-		
+
 		<moduleSet>
+			<useAllReactorProjects>true</useAllReactorProjects>
 			<includes>
 				<include>com.quikj.ace:ace-migration</include>
 			</includes>
 
-			<binaries>				
+			<binaries>
 				<outputDirectory>web</outputDirectory>
 				<outputFileNameMapping>servlet.war</outputFileNameMapping>
-				<includeDependencies>false</includeDependencies>				
+				<includeDependencies>false</includeDependencies>
 				<unpack>false</unpack>
 			</binaries>
 		</moduleSet>
-		
-		
+
+
 		<moduleSet>
+			<useAllReactorProjects>true</useAllReactorProjects>
 			<includes>
 				<include>com.quikj.ace:ace-communicator</include>
 			</includes>
@@ -76,22 +78,23 @@
 			<binaries>
 				<outputDirectory>web</outputDirectory>
 				<outputFileNameMapping>ace-communicator.war</outputFileNameMapping>
-				<includeDependencies>false</includeDependencies>				
+				<includeDependencies>false</includeDependencies>
 				<unpack>false</unpack>
 			</binaries>
 		</moduleSet>
-		
+
 		<moduleSet>
+			<useAllReactorProjects>true</useAllReactorProjects>
 			<includes>
 				<include>com.quikj.ace:ace-custom</include>
 			</includes>
 
-			<binaries>				
+			<binaries>
 				<outputDirectory>web/ace-custom</outputDirectory>
 				<fileMode>644</fileMode>
 				<directoryMode>755</directoryMode>
 			</binaries>
-		</moduleSet>				
+		</moduleSet>
 
 	</moduleSets>
 </assembly>

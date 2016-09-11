@@ -57,6 +57,10 @@ public class AccountBeanImpl implements AccountBean {
 
 	@Override
 	public Account authenticate(String userName, String password) {
-		return accountDao.authenticate(userName, password);
+		Account auth = accountDao.authenticate(userName, password);
+		if (auth == null){
+			throw new WebTalkException("Authentication failed");
+		}
+		return auth;
 	}
 }

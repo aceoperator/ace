@@ -6,7 +6,12 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" output="target/classes" path="target/generated-sources/gwt"/>
+	<classpathentry kind="src" output="target/classes" path="target/generated-sources/gwt">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry excluding="**" kind="src" output="target/classes" path="src/main/resources">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
@@ -29,15 +34,69 @@
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jst.server.core.container/org.eclipse.jst.server.tomcat.runtimeTarget/Apache Tomcat v7.0">
-		<attributes>
-			<attribute name="owner.project.facets" value="jst.web"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7">
-		<attributes>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
+		<accessrules>
+			<accessrule kind="accessible" pattern="java/util/Set"/>
+			<accessrule kind="accessible" pattern="java/lang/Class"/>
+			<accessrule kind="accessible" pattern="java/util/Vector"/>
+			<accessrule kind="accessible" pattern="java/util/Map"/>
+			<accessrule kind="accessible" pattern="java/util/MissingResourceException"/>
+			<accessrule kind="accessible" pattern="java/lang/Comparable"/>
+			<accessrule kind="accessible" pattern="java/util/ArrayList"/>
+			<accessrule kind="accessible" pattern="java/util/AbstractList"/>
+			<accessrule kind="accessible" pattern="java/lang/String"/>
+			<accessrule kind="accessible" pattern="java/lang/StringIndexOutOfBoundsException"/>
+			<accessrule kind="accessible" pattern="java/lang/IndexOutOfBoundsException"/>
+			<accessrule kind="accessible" pattern="java/lang/Cloneable"/>
+			<accessrule kind="accessible" pattern="java/lang/Exception"/>
+			<accessrule kind="accessible" pattern="java/lang/ClassCastException"/>
+			<accessrule kind="accessible" pattern="java/lang/Error"/>
+			<accessrule kind="accessible" pattern="java/lang/RuntimeException"/>
+			<accessrule kind="accessible" pattern="java/lang/NumberFormatException"/>
+			<accessrule kind="accessible" pattern="java/util/Collections"/>
+			<accessrule kind="accessible" pattern="java/lang/NegativeArraySizeException"/>
+			<accessrule kind="accessible" pattern="java/lang/Integer"/>
+			<accessrule kind="accessible" pattern="java/lang/Byte"/>
+			<accessrule kind="accessible" pattern="java/util/Comparator"/>
+			<accessrule kind="accessible" pattern="java/lang/Float"/>
+			<accessrule kind="accessible" pattern="java/util/List"/>
+			<accessrule kind="accessible" pattern="java/util/Iterator"/>
+			<accessrule kind="accessible" pattern="java/lang/Double"/>
+			<accessrule kind="accessible" pattern="java/lang/NullPointerException"/>
+			<accessrule kind="accessible" pattern="java/lang/IllegalStateException"/>
+			<accessrule kind="accessible" pattern="java/util/TooManyListenersException"/>
+			<accessrule kind="accessible" pattern="java/util/AbstractCollection"/>
+			<accessrule kind="accessible" pattern="java/lang/AssertionError"/>
+			<accessrule kind="accessible" pattern="java/util/Collection"/>
+			<accessrule kind="accessible" pattern="java/lang/Long"/>
+			<accessrule kind="accessible" pattern="java/lang/Object"/>
+			<accessrule kind="accessible" pattern="java/lang/UnsupportedOperationException"/>
+			<accessrule kind="accessible" pattern="java/util/NoSuchElementException"/>
+			<accessrule kind="accessible" pattern="java/util/EventObject"/>
+			<accessrule kind="accessible" pattern="java/lang/Throwable"/>
+			<accessrule kind="accessible" pattern="java/lang/Math"/>
+			<accessrule kind="accessible" pattern="java/lang/Short"/>
+			<accessrule kind="accessible" pattern="java/util/EmptyStackException"/>
+			<accessrule kind="accessible" pattern="java/util/EventListener"/>
+			<accessrule kind="accessible" pattern="java/lang/Boolean"/>
+			<accessrule kind="accessible" pattern="java/util/AbstractSet"/>
+			<accessrule kind="accessible" pattern="java/util/HashSet"/>
+			<accessrule kind="accessible" pattern="java/util/Arrays"/>
+			<accessrule kind="accessible" pattern="java/lang/IllegalArgumentException"/>
+			<accessrule kind="accessible" pattern="java/lang/System"/>
+			<accessrule kind="accessible" pattern="java/util/AbstractMap"/>
+			<accessrule kind="accessible" pattern="java/util/HashMap"/>
+			<accessrule kind="accessible" pattern="java/util/RandomAccess"/>
+			<accessrule kind="accessible" pattern="java/util/Stack"/>
+			<accessrule kind="accessible" pattern="java/lang/StringBuffer"/>
+			<accessrule kind="accessible" pattern="java/lang/Number"/>
+			<accessrule kind="accessible" pattern="java/lang/Character"/>
+			<accessrule kind="accessible" pattern="java/lang/CharSequence"/>
+			<accessrule kind="accessible" pattern="java/util/Date"/>
+			<accessrule kind="accessible" pattern="java/lang/ArrayStoreException"/>
+			<accessrule ignoreifbetter="true" kind="nonaccessible" pattern="**/*"/>
+		</accessrules>
 	</classpathentry>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

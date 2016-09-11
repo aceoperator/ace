@@ -1,6 +1,6 @@
 eclipse.preferences.version=1
 jarsExcludedFromWebInfLib=
-lastWarOutDir=C\:/Users/amit/ace-workspace/ace/ace-web/target/ace-web-2.1.0
-launchConfigExternalUrlPrefix=/ace-contactcenter
+lastWarOutDir=/home/tomcat/git/ace/ace-web/target/ace-web-2.1.0
+launchConfigExternalUrlPrefix=
 warSrcDir=src/main/webapp
 warSrcDirIsOutput=false

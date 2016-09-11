@@ -26,6 +26,8 @@ public interface AceOperatorService extends RemoteService {
 		}
 	}
 
+	String ACE_ENDUSER_COOKIE_NAME = "com.quikj.ace.endUserIdentifier";
+
 	public List<Message> exchangeMessages(Message incoming)
 			throws AceServerException;
 

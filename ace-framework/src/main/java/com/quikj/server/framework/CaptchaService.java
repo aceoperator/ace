@@ -4,6 +4,7 @@
 package com.quikj.server.framework;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -68,26 +69,24 @@ public class CaptchaService {
 		TextPaster textPaster = new SimpleTextPaster(5, 8, textColor);
 
 		Color bgColor = new Color(0, 0, 0);
-		
+
+		Font font = Font.decode("Monospaced");
+		Font[] fonts = { font };
+
 		BackgroundGenerator background;
 		FontGenerator fontGenerator;
 		if (captchType == CaptchaType.LARGE) {
-			fontGenerator = new RandomFontGenerator(40, 50);
-			background = new UniColorBackgroundGenerator(300,
-					100, bgColor);
+			fontGenerator = new RandomFontGenerator(40, 50, fonts);
+			background = new UniColorBackgroundGenerator(300, 100, bgColor);
 		} else {
-			fontGenerator = new RandomFontGenerator(20, 26);
-			background = new UniColorBackgroundGenerator(150,
-					50, bgColor);
+			fontGenerator = new RandomFontGenerator(20, 26, fonts);
+			background = new UniColorBackgroundGenerator(150, 50, bgColor);
 		}
 
-		WordToImage wordToImage = new ComposedWordToImage(fontGenerator,
-				background, textPaster);
-		WordGenerator wordgen = new RandomWordGenerator(
-				"abcdefghijklmnopqrstuvwxyz0123456789");
+		WordToImage wordToImage = new ComposedWordToImage(fontGenerator, background, textPaster);
+		WordGenerator wordgen = new RandomWordGenerator("abcdefghijklmnopqrstuvwxyz0123456789");
 
-		CaptchaFactory[] factories = new CaptchaFactory[] { new GimpyFactory(
-				wordgen, wordToImage) };
+		CaptchaFactory[] factories = new CaptchaFactory[] { new GimpyFactory(wordgen, wordToImage) };
 		CaptchaEngine imageEngine = new GenericCaptchaEngine(factories);
 
 		DefaultManageableImageCaptchaService def = new DefaultManageableImageCaptchaService();

@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.google.gwt.logging.shared.RemoteLoggingService;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import com.quikj.ace.web.client.AceOperatorService;
 import com.quikj.server.framework.AceLogger;
 
 /**
@@ -23,7 +24,7 @@ public class ClientLoggingServlet extends RemoteServiceServlet implements
 		Cookie[] cookies = request.getCookies();
 		if (cookies != null) {
 			for (Cookie c : cookies) {
-				if (c.getName().equals(AceOperatorServiceImpl.ACE_ENDUSER_COOKIE_NAME)) {
+				if (c.getName().equals(AceOperatorService.ACE_ENDUSER_COOKIE_NAME)) {
 					cookieValue = c.getValue();
 					break;
 				}
