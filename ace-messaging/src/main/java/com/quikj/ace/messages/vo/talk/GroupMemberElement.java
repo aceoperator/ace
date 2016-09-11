@@ -25,6 +25,8 @@ public class GroupMemberElement implements TalkMessageInterface {
 	private String fullName = null;
 	
 	private String avatar;
+	
+	private boolean dnd;
 
 	private int callCount = -1;
 
@@ -35,7 +37,7 @@ public class GroupMemberElement implements TalkMessageInterface {
 		return callCount;
 	}
 
-	public java.lang.String getFullName() {
+	public String getFullName() {
 		return fullName;
 	}
 
@@ -43,7 +45,7 @@ public class GroupMemberElement implements TalkMessageInterface {
 		return operation;
 	}
 
-	public java.lang.String getUser() {
+	public String getUser() {
 		return user;
 	}
 
@@ -51,7 +53,7 @@ public class GroupMemberElement implements TalkMessageInterface {
 		this.callCount = callCount;
 	}
 
-	public void setFullName(java.lang.String fullName) {
+	public void setFullName(String fullName) {
 		this.fullName = fullName;
 	}
 
@@ -59,7 +61,7 @@ public class GroupMemberElement implements TalkMessageInterface {
 		this.operation = operation;
 	}
 
-	public void setUser(java.lang.String user) {
+	public void setUser(String user) {
 		this.user = user;
 	}
 
@@ -69,5 +71,13 @@ public class GroupMemberElement implements TalkMessageInterface {
 
 	public void setAvatar(String avatar) {
 		this.avatar = avatar;
+	}
+
+	public boolean isDnd() {
+		return dnd;
+	}
+
+	public void setDnd(boolean dnd) {
+		this.dnd = dnd;
 	}
 }

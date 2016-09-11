@@ -970,6 +970,10 @@ public class ChatSessionPresenter {
 		List<String> ret = new ArrayList<String>();
 
 		nextContact: for (UserContact contact : contacts) {
+			if (contact.isDnd()) {
+				continue;
+			}
+			
 			// Do not add the contact to the list if he/she is already
 			// participating in the chat
 			for (CallPartyElement other : otherParties) {

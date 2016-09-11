@@ -6,7 +6,6 @@
 
 package com.quikj.ace.messages.vo.talk;
 
-// JAXP packages
 import java.util.Vector;
 
 /**
@@ -18,7 +17,6 @@ public class GroupElement implements TalkMessageInterface {
 	
 	private Vector<GroupMemberElement> elements = new Vector<GroupMemberElement>();
 
-	/** Creates a new instance of GroupElement */
 	public GroupElement() {
 	}
 
@@ -32,5 +30,9 @@ public class GroupElement implements TalkMessageInterface {
 
 	public int numElements() {
 		return elements.size();
+	}
+
+	public Vector<GroupMemberElement> getElements() {
+		return elements;
 	}
 }

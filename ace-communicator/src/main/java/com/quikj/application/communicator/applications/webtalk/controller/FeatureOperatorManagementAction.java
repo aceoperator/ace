@@ -1,5 +1,6 @@
 package com.quikj.application.communicator.applications.webtalk.controller;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
@@ -29,19 +30,19 @@ import com.quikj.server.framework.AceLogger;
  */
 public class FeatureOperatorManagementAction extends Action {
 
+	private static final int PAUSE_DURATION = 60;
 	public static final String CLASSNAME = "com.quikj.application.web.talk.feature.operator.Operator";
 
 	public FeatureOperatorManagementAction() {
 	}
 
-	public ActionForward execute(ActionMapping mapping, ActionForm form,
-			HttpServletRequest request, HttpServletResponse response) {
+	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
+			HttpServletResponse response) {
 		FeatureOperatorManagementForm fform = (FeatureOperatorManagementForm) form;
 
 		ActionErrors errors = new ActionErrors();
 
-		FeatureBean featureBean = SpringUtils.getBean(request.getSession()
-				.getServletContext(), FeatureBean.class);
+		FeatureBean featureBean = SpringUtils.getBean(request.getSession().getServletContext(), FeatureBean.class);
 		ActionMessages messages = new ActionMessages();
 
 		if (fform.getSubmit().equals("Find")) {
@@ -57,32 +58,40 @@ public class FeatureOperatorManagementAction extends Action {
 				fform.setParamsList(paramList);
 
 				if (e.isActive()) {
-					request.setAttribute("featureStatus", new String("Active"));
+					request.setAttribute("featureStatus", "Active");
 				} else {
-					request.setAttribute("featureStatus",
-							new String("Inactive"));
+					request.setAttribute("featureStatus", "Inactive");
+				}
+
+				boolean paused = false;
+				String pausedUntilString = FeatureManagementAction.getFeatureParam(request, fform.getName(),
+						"paused-until", errors, "Find/by-" + request.getUserPrincipal().getName());
+				long pausedUntil = 0L;
+				if (pausedUntilString != null) {
+					pausedUntil = Long.parseLong(pausedUntilString);
+					paused = new Date(pausedUntil).after(new Date());
+				}
+
+				request.setAttribute("featurePaused", Boolean.toString(paused));
+				if (paused) {
+					request.setAttribute("pausedUntil", new Date(pausedUntil).toString());
 				}
 
 				if (!e.getClassName().equals(CLASSNAME)) {
 					// forward to generic feature form
 					WebTalkRelatedTasks menu = new WebTalkRelatedTasks();
-					menu.addLink(new LinkAttribute("Search users",
-							"display_user_search"));
-					menu.addLink(new LinkAttribute("Administer users",
-							"display_user_management"));
+					menu.addLink(new LinkAttribute("Search users", "display_user_search"));
+					menu.addLink(new LinkAttribute("Administer users", "display_user_management"));
 					request.setAttribute("menu", menu);
 
 					return mapping.findForward("feature_management");
 				}
 			} catch (WebTalkException e) {
-				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
-						"error.feature.not.exist"));
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.feature.not.exist"));
 			} catch (Exception e) {
-				AceLogger.Instance().log(
-						AceLogger.ERROR,
-						AceLogger.SYSTEM_LOG,
-						"FeatureOperatorManagementAction.execute()/Find/by-"
-								+ request.getUserPrincipal().getName() + ": " + e.getMessage());
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"FeatureOperatorManagementAction.execute()/Find/by-" + request.getUserPrincipal().getName()
+								+ ": " + e.getMessage());
 			}
 		} else if (fform.getSubmit().equals("Modify")) {
 			Feature e = new Feature();
@@ -96,37 +105,27 @@ public class FeatureOperatorManagementAction extends Action {
 
 			try {
 				featureBean.modifyFeature(e);
-				AceLogger.Instance().log(
-						AceLogger.INFORMATIONAL,
-						AceLogger.USER_LOG,
-						"User " + request.getUserPrincipal().getName() + " modified feature "
-								+ fform.getName());
+				AceLogger.Instance().log(AceLogger.INFORMATIONAL, AceLogger.USER_LOG,
+						"User " + request.getUserPrincipal().getName() + " modified feature " + fform.getName());
 
-				messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage(
-						"message.feature.modified"));
+				messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage("message.feature.modified"));
 
 				// notify app server via RMI
 				if (featureBean.isFeatureActive(e.getName())) {
-					if (FeatureManagementAction.notifyAppServer(request,
-							e.getName(), "synch", errors, "Modify/by-"
-									+ request.getUserPrincipal().getName()) == true) {
+					if (FeatureManagementAction.notifyAppServer(request, e.getName(), "synch", errors,
+							"Modify/by-" + request.getUserPrincipal().getName()) == true) {
 						messages.add(ActionMessages.GLOBAL_MESSAGE,
-								new ActionMessage(
-										"message.feature.appserver.updated"));
+								new ActionMessage("message.feature.appserver.updated"));
 					}
 				}
 			} catch (WebTalkException ex) {
-				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
-						"error.feature.not.exist"));
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.feature.not.exist"));
 			} catch (Exception ex) {
-				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
-						"error.db.failure"));
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.db.failure"));
 
-				AceLogger.Instance().log(
-						AceLogger.ERROR,
-						AceLogger.SYSTEM_LOG,
-						"FeatureOperatorManagementAction.execute()/Modify/by-"
-								+ request.getUserPrincipal().getName() + ": " + ex.getMessage());
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"FeatureOperatorManagementAction.execute()/Modify/by-" + request.getUserPrincipal().getName()
+								+ ": " + ex.getMessage());
 			}
 
 			// forward control to the webtalk main menu
@@ -150,47 +149,33 @@ public class FeatureOperatorManagementAction extends Action {
 
 			try {
 				featureBean.createFeature(e);
-				AceLogger.Instance().log(
-						AceLogger.INFORMATIONAL,
-						AceLogger.USER_LOG,
-						"User " + request.getUserPrincipal().getName() + " created feature "
-								+ fform.getName());
+				AceLogger.Instance().log(AceLogger.INFORMATIONAL, AceLogger.USER_LOG,
+						"User " + request.getUserPrincipal().getName() + " created feature " + fform.getName());
 
 				// forward control to the webtalk main menu
-				messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage(
-						"message.feature.created"));
+				messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage("message.feature.created"));
 				saveMessages(request, messages);
 				return mapping.findForward("webtalk_main_menu");
 			} catch (Exception ex) {
-				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
-						"error.feature.create.failure"));
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.feature.create.failure"));
 
-				AceLogger.Instance().log(
-						AceLogger.ERROR,
-						AceLogger.SYSTEM_LOG,
-						"FeatureOperatorManagementAction.execute()/Create/by-"
-								+ request.getUserPrincipal().getName() + ": " + ex.getMessage());
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"FeatureOperatorManagementAction.execute()/Create/by-" + request.getUserPrincipal().getName()
+								+ ": " + ex.getMessage());
 			}
 		} else if (fform.getSubmit().equals("Delete")) {
 			try {
 				featureBean.deleteFeature(fform.getName());
 
-				AceLogger.Instance().log(
-						AceLogger.INFORMATIONAL,
-						AceLogger.USER_LOG,
-						"User " + request.getUserPrincipal().getName() + " deleted feature "
-								+ fform.getName());
+				AceLogger.Instance().log(AceLogger.INFORMATIONAL, AceLogger.USER_LOG,
+						"User " + request.getUserPrincipal().getName() + " deleted feature " + fform.getName());
 
-				messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage(
-						"message.feature.deleted"));
+				messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage("message.feature.deleted"));
 
 				// notify app server via RMI
-				if (FeatureManagementAction.notifyAppServer(request,
-						fform.getName(), "deactivate", errors, "Delete/by-"
-								+ request.getUserPrincipal().getName()) == true) {
-					messages.add(ActionMessages.GLOBAL_MESSAGE,
-							new ActionMessage(
-									"message.feature.appserver.updated"));
+				if (FeatureManagementAction.notifyAppServer(request, fform.getName(), "deactivate", errors,
+						"Delete/by-" + request.getUserPrincipal().getName()) == true) {
+					messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage("message.feature.appserver.updated"));
 				}
 
 				// forward control to the webtalk main menu
@@ -200,53 +185,37 @@ public class FeatureOperatorManagementAction extends Action {
 				saveMessages(request, messages);
 				return mapping.findForward("webtalk_main_menu");
 			} catch (WebTalkException e) {
-				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
-						"error.feature.not.exist"));
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.feature.not.exist"));
 			} catch (Exception e) {
-				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
-						"error.db.failure"));
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.db.failure"));
 
-				AceLogger.Instance().log(
-						AceLogger.ERROR,
-						AceLogger.SYSTEM_LOG,
-						"FeatureOperatorManagementAction.execute()/Delete/by-"
-								+ request.getUserPrincipal().getName() + ": " + e.getMessage());
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"FeatureOperatorManagementAction.execute()/Delete/by-" + request.getUserPrincipal().getName()
+								+ ": " + e.getMessage());
 			}
 		} else if (fform.getSubmit().equals("Activate")) {
 			try {
 				featureBean.setActive(fform.getName(), true);
-				
-				AceLogger.Instance().log(
-						AceLogger.INFORMATIONAL,
-						AceLogger.USER_LOG,
-						"User " + request.getUserPrincipal().getName() + " activated feature "
-								+ fform.getName());
 
-				messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage(
-						"message.feature.modified"));
+				AceLogger.Instance().log(AceLogger.INFORMATIONAL, AceLogger.USER_LOG,
+						"User " + request.getUserPrincipal().getName() + " activated feature " + fform.getName());
+
+				messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage("message.feature.modified"));
 
 				// notify app server via RMI
-				if (FeatureManagementAction.notifyAppServer(request,
-						fform.getName(), "activate", errors, "Activate/by-"
-								+ request.getUserPrincipal().getName()) == true) {
-					messages.add(ActionMessages.GLOBAL_MESSAGE,
-							new ActionMessage(
-									"message.feature.appserver.updated"));
+				if (FeatureManagementAction.notifyAppServer(request, fform.getName(), "activate", errors,
+						"Activate/by-" + request.getUserPrincipal().getName()) == true) {
+					messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage("message.feature.appserver.updated"));
 				}
 
 			} catch (WebTalkException e) {
-				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
-						"error.feature.not.exist"));
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.feature.not.exist"));
 			} catch (Exception e) {
-				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
-						"error.db.failure"));
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.db.failure"));
 
-				AceLogger.Instance().log(
-						AceLogger.ERROR,
-						AceLogger.SYSTEM_LOG,
-						"FeatureOperatorManagementAction.execute()/Activate/by-"
-								+ request.getUserPrincipal().getName() + ": "
-								+ e.getMessage());
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"FeatureOperatorManagementAction.execute()/Activate/by-" + request.getUserPrincipal().getName()
+								+ ": " + e.getMessage());
 			}
 
 			// forward control to the webtalk main menu
@@ -254,44 +223,81 @@ public class FeatureOperatorManagementAction extends Action {
 				saveErrors(request, errors);
 			}
 			saveMessages(request, messages);
-			return mapping.findForward("webtalk_main_menu");		
+			return mapping.findForward("webtalk_main_menu");
 		} else if (fform.getSubmit().equals("Deactivate")) {
 			try {
 				featureBean.setActive(fform.getName(), false);
 
-				AceLogger.Instance().log(
-						AceLogger.INFORMATIONAL,
-						AceLogger.USER_LOG,
-						"User " + request.getUserPrincipal().getName() + " deactivated feature "
-								+ fform.getName());
+				AceLogger.Instance().log(AceLogger.INFORMATIONAL, AceLogger.USER_LOG,
+						"User " + request.getUserPrincipal().getName() + " deactivated feature " + fform.getName());
 
-				messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage(
-						"message.feature.modified"));
+				messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage("message.feature.modified"));
 
 				// notify app server via RMI
-				if (FeatureManagementAction.notifyAppServer(request,
-						fform.getName(), "deactivate", errors, "Deactivate/by-"
-								+ request.getUserPrincipal().getName())) {
-					messages.add(ActionMessages.GLOBAL_MESSAGE,
-							new ActionMessage(
-									"message.feature.appserver.updated"));
+				if (FeatureManagementAction.notifyAppServer(request, fform.getName(), "deactivate", errors,
+						"Deactivate/by-" + request.getUserPrincipal().getName())) {
+					messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage("message.feature.appserver.updated"));
 				}
 			} catch (WebTalkException e) {
-				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
-						"error.feature.not.exist"));
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.feature.not.exist"));
 			} catch (Exception e) {
-				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
-						"error.db.failure"));
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.db.failure"));
 
-				AceLogger.Instance().log(
-						AceLogger.ERROR,
-						AceLogger.SYSTEM_LOG,
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
 						"FeatureOperatorManagementAction.execute()/Deactivate/by-"
-								+ request.getUserPrincipal().getName() + ": "
-								+ e.getMessage());							
+								+ request.getUserPrincipal().getName() + ": " + e.getMessage());
 			}
-			
+
 			// forward control to the webtalk main menu
+			if (!errors.isEmpty()) {
+				saveErrors(request, errors);
+			}
+			saveMessages(request, messages);
+			return mapping.findForward("webtalk_main_menu");
+		} else if (fform.getSubmit().equals("Pause")) {
+			try {
+				if (FeatureManagementAction.setFeatureParam(request, fform.getName(), "pause-for",
+						Long.toString(PAUSE_DURATION), errors, "Pause/by-" + request.getUserPrincipal().getName())) {
+					AceLogger.Instance().log(AceLogger.INFORMATIONAL, AceLogger.USER_LOG,
+							"User " + request.getUserPrincipal().getName() + " paused feature " + fform.getName());
+					messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage("message.feature.modified"));
+				}
+			} catch (WebTalkException e) {
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.feature.not.exist"));
+			} catch (Exception e) {
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.db.failure"));
+
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"FeatureOperatorManagementAction.execute()/Pause/by-" + request.getUserPrincipal().getName()
+								+ ": " + e.getMessage());
+			}
+
+			if (!errors.isEmpty()) {
+				saveErrors(request, errors);
+			}
+			saveMessages(request, messages);
+			return mapping.findForward("webtalk_main_menu");
+		} else if (fform.getSubmit().equals("Resume")) {
+			try {
+				if (FeatureManagementAction.setFeatureParam(request, fform.getName(), "pause-for", "0", errors,
+						"Resume/by-" + request.getUserPrincipal().getName())) {
+
+					AceLogger.Instance().log(AceLogger.INFORMATIONAL, AceLogger.USER_LOG,
+							"User " + request.getUserPrincipal().getName() + " resumed feature " + fform.getName());
+
+					messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage("message.feature.modified"));
+				}
+
+			} catch (WebTalkException e) {
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.feature.not.exist"));
+			} catch (Exception e) {
+				errors.add(ActionErrors.GLOBAL_ERROR, new ActionError("error.db.failure"));
+
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"FeatureOperatorManagementAction.execute()/Resume/by-" + request.getUserPrincipal().getName()
+								+ ": " + e.getMessage());
+			}
+
 			if (!errors.isEmpty()) {
 				saveErrors(request, errors);
 			}
@@ -299,18 +305,18 @@ public class FeatureOperatorManagementAction extends Action {
 			return mapping.findForward("webtalk_main_menu");
 		}
 
-		if (errors.isEmpty() == false) {
+		// forward control to the webtalk main menu
+		if (!errors.isEmpty()) {
 			saveErrors(request, errors);
 		}
+		saveMessages(request, messages);
 
 		// add related tasks to the navigation bar
 		WebTalkRelatedTasks menu = new WebTalkRelatedTasks();
 		menu.addLink(new LinkAttribute("Search users", "display_user_search"));
-		menu.addLink(new LinkAttribute("Administer users",
-				"display_user_management"));
+		menu.addLink(new LinkAttribute("Administer users", "display_user_management"));
 		menu.addLink(new LinkAttribute("List all groups", "list_groups"));
-		menu.addLink(new LinkAttribute("Administer groups",
-				"display_group_management"));
+		menu.addLink(new LinkAttribute("Administer groups", "display_group_management"));
 		menu.addLink(new LinkAttribute("List all features", "list_features"));
 		request.setAttribute("menu", menu);
 

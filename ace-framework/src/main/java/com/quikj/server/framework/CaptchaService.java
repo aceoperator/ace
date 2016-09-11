@@ -70,17 +70,20 @@ public class CaptchaService {
 
 		Color bgColor = new Color(0, 0, 0);
 
-		Font font = Font.decode("Monospaced");
-		Font[] fonts = { font };
-
 		BackgroundGenerator background;
 		FontGenerator fontGenerator;
+		
+		Font font = Font.decode("Monospaced");
+		Font[] fonts = {font};
+		
 		if (captchType == CaptchaType.LARGE) {
 			fontGenerator = new RandomFontGenerator(40, 50, fonts);
-			background = new UniColorBackgroundGenerator(300, 100, bgColor);
+			background = new UniColorBackgroundGenerator(300,
+					100, bgColor);
 		} else {
 			fontGenerator = new RandomFontGenerator(20, 26, fonts);
-			background = new UniColorBackgroundGenerator(150, 50, bgColor);
+			background = new UniColorBackgroundGenerator(150,
+					50, bgColor);
 		}
 
 		WordToImage wordToImage = new ComposedWordToImage(fontGenerator, background, textPaster);

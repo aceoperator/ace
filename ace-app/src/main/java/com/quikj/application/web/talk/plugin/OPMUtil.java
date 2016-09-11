@@ -119,11 +119,9 @@ public class OPMUtil {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(timestamp);
 
-		String dateString = cal.get(Calendar.YEAR) + "-"
-				+ (cal.get(Calendar.MONTH) + 1) + "-"
-				+ cal.get(Calendar.DAY_OF_MONTH) + " "
-				+ cal.get(Calendar.HOUR_OF_DAY) + ":"
-				+ cal.get(Calendar.MINUTE) + ":" + cal.get(Calendar.SECOND);
+		String dateString = cal.get(Calendar.YEAR) + "-" + (cal.get(Calendar.MONTH) + 1) + "-"
+				+ cal.get(Calendar.DAY_OF_MONTH) + " " + cal.get(Calendar.HOUR_OF_DAY) + ":" + cal.get(Calendar.MINUTE)
+				+ ":" + cal.get(Calendar.SECOND);
 
 		return dateString;
 	}
@@ -137,8 +135,8 @@ public class OPMUtil {
 		return 0;
 	}
 
-	public void setKeyColumnValue(String val) // if you have just 1 key column
-	{
+	public void setKeyColumnValue(String val) {
+		// if you have just 1 key column
 		keyColumnsSql = val;
 	}
 
@@ -154,8 +152,8 @@ public class OPMUtil {
 		// use 1 string - INSERT [INTO] tbl_name VALUES ((expression |
 		// DEFAULT),...),(...),...
 
-		StringBuffer sql = new StringBuffer("insert into " + tableName
-				+ " (groupid, time_stamp, opm_name, opm_value) values ");
+		StringBuffer sql = new StringBuffer(
+				"insert into " + tableName + " (groupid, time_stamp, opm_name, opm_value) values ");
 
 		if (lastAverages.size() > 0) // store the averages only and get out
 		{
@@ -176,8 +174,7 @@ public class OPMUtil {
 		}
 	}
 
-	private int appendOPMs(StringBuffer sql,
-			Set<Entry<String, List<OPMValue>>> entrySet) {
+	private int appendOPMs(StringBuffer sql, Set<Entry<String, List<OPMValue>>> entrySet) {
 		int count = 0;
 		for (Entry<String, List<OPMValue>> entry : entrySet) {
 			String opmName = entry.getKey();
@@ -189,9 +186,8 @@ public class OPMUtil {
 						sql.append(",");
 					}
 
-					sql.append("('" + keyColumnsSql + "','"
-							+ getDateString(opm.getTimestamp()) + "','"
-							+ opmName + "'," + opm.getOpmValue() + ")");
+					sql.append("('" + keyColumnsSql + "','" + getDateString(opm.getTimestamp()) + "','" + opmName + "',"
+							+ opm.getOpmValue() + ")");
 					count++;
 				}
 			}
@@ -200,8 +196,7 @@ public class OPMUtil {
 		return count;
 	}
 
-	private int appendOPM(StringBuffer sql,
-			Set<Entry<String, OPMValue>> entrySet) {
+	private int appendOPM(StringBuffer sql, Set<Entry<String, OPMValue>> entrySet) {
 		int count = 0;
 		for (Entry<String, OPMValue> entry : entrySet) {
 			String opmName = entry.getKey();
@@ -212,9 +207,8 @@ public class OPMUtil {
 					sql.append(",");
 				}
 
-				sql.append("('" + keyColumnsSql + "','"
-						+ getDateString(opm.getTimestamp()) + "','" + opmName
-						+ "'," + opm.getOpmValue() + ")");
+				sql.append("('" + keyColumnsSql + "','" + getDateString(opm.getTimestamp()) + "','" + opmName + "',"
+						+ opm.getOpmValue() + ")");
 				count++;
 			}
 		}

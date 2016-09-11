@@ -17,6 +17,9 @@ public class GroupInfo implements Serializable {
 	private int queueSize;
 	private boolean allOperatorsBusy;
 	private int numOperators;
+	private int numDND;
+	private String waitTime = "00:00:00";
+	private long pausedUntil;
 	
 	public GroupInfo() {
 	}
@@ -51,5 +54,35 @@ public class GroupInfo implements Serializable {
 
 	public void setNumOperators(int numOperators) {
 		this.numOperators = numOperators;
+	}
+
+	public int getNumDND() {
+		return numDND;
+	}
+
+	public void setNumDND(int numDND) {
+		this.numDND = numDND;
+	}
+
+	public String getWaitTime() {
+		return waitTime;
+	}
+
+	public void setWaitTime(String waitTime) {
+		this.waitTime = waitTime;
+	}
+
+	/**
+	 * @return the pausedUntil
+	 */
+	public long getPausedUntil() {
+		return pausedUntil;
+	}
+
+	/**
+	 * @param pausedUntil the pausedUntil to set
+	 */
+	public void setPausedUntil(long pausedUntil) {
+		this.pausedUntil = pausedUntil;
 	}
 }
