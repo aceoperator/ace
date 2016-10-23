@@ -1,9 +1,7 @@
-docker pull centos
+https://hub.docker.com/r/luxifer/docker-postfix-dovecot/
 
+docker pull luxifer/docker-postfix-dovecot
 
-docker run -it \
-  --security-opt seccomp=unconfined \
-  --cap-add=SYS_ADMIN \
-  -e "container=docker" \
-  -v /sys/fs/cgroup:/sys/fs/cgroup \
-  centos:7 /usr/sbin/init
+docker run --name mail -d -p=26:25/tcp -p=144:143/tcp -p=994:993/tcp luxifer/docker-postfix-dovecot:latest
+
+docker exec -it mail bash

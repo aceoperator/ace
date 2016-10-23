@@ -23,6 +23,7 @@ public class ExternalLocationXmlWebApplicationContext extends
 
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
+		// FIXME
 		String home = System.getProperty("user.home") + "/.ace/spring/ace-communicator";
 		File dir = new File(home);
 		if (dir.exists() && dir.isDirectory()) {
