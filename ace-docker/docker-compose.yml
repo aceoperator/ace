@@ -1,0 +1,41 @@
+version: "2"
+services:
+    app:
+        container_name: ace-app
+        image: "aceoperator/app:latest"
+        ports:
+          - "8080:8080"
+          - "8443:8443"
+        depends_on:
+          - mail
+          - db
+        links:
+          - "db:db"
+          - "mail:mail"
+        networks:
+          - "network"
+        volumes:
+          - /usr/share/aceoperator/.ace
+    db:
+        container_name: ace-db
+        image: "aceoperator/db:latest"
+        ports: 
+          - "3306:3306"
+        networks:
+          - "network"
+        environment:
+          - "MYSQL_ROOT_PASSWORD=a1b2c3d4"
+    mail:
+        container_name: ace-mail
+        image: "aceoperator/mail:latest"
+        ports:
+          - "25:25"
+          - "143:143" 
+          - "993:993"
+        networks:
+          - "network"
+          
+networks:
+  network:
+    driver: bridge
+ 

@@ -14,6 +14,8 @@ import java.util.List;
 import org.springframework.beans.BeansException;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 
+import com.quikj.server.framework.AceConfigFileHelper;
+
 /**
  * @author Amit Chatterjee
  * 
@@ -23,7 +25,7 @@ public class ExternalLocationXmlWebApplicationContext extends
 
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
-		String home = System.getProperty("user.home") + "/.ace/spring/ace-app";
+		String home = AceConfigFileHelper.getAcePath("spring/ace-app");
 		File dir = new File(home);
 		if (dir.exists() && dir.isDirectory()) {
 			File[] files = dir.listFiles(new FilenameFilter() {
