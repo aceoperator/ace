@@ -18,6 +18,9 @@ COPY work/${ACE_VERSION}/${ACE_VERSION}/web/ace-communicator.war /usr/local/tomc
 COPY work/${ACE_VERSION}/${ACE_VERSION}/web/ace-contactcenter.war /usr/local/tomcat/webapps/
 COPY work/${ACE_VERSION}/${ACE_VERSION}/web/ace-custom /usr/local/tomcat/webapps/ace-custom
 
+RUN sed -i -e 's/emailTranscript=false/emailTranscript=true/; s/transcriptEmailTo=@SELF;@OTHERS/transcriptEmailTo=@SELF;operations@acedemo.net/' \
+	/usr/share/aceoperator/.ace/profiles/default-operator.properties 
+
 COPY server.xml /usr/local/tomcat/conf
 COPY .keystore /root/
 
