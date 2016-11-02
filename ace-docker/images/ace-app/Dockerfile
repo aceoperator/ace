@@ -2,9 +2,9 @@
 FROM tomcat:7.0.72-jre8
 MAINTAINER Amit Chatterjee <amit.chatterjee@quik-j.com>
 
-ARG ACE_VERSION=ace-2.3.0-SNAPSHOT
+ARG ACE_VERSION=SNAPSHOT
 
-COPY work/${ACE_VERSION}/${ACE_VERSION}/.ace /usr/share/aceoperator/.ace
+COPY work/${ACE_VERSION}/.ace /usr/share/aceoperator/.ace
 RUN sed -i -e 's/\$\$ACE(ACE_SQL_USER)/ace/g; s/\$\$ACE(ACE_SQL_PASSWORD)/a1b2c3d4/g;s/\$\$ACE(ACE_SQL_HOST)/db/g' \
 	 /usr/share/aceoperator/.ace/config/log4j.properties; \
 	sed -i -e 's/\$\$ACE(ACE_SQL_USER)/ace/g; s/\$\$ACE(ACE_SQL_PASSWORD)/a1b2c3d4/g; s/localhost/db/g' \
@@ -14,9 +14,9 @@ RUN sed -i -e 's/\$\$ACE(ACE_SQL_USER)/ace/g; s/\$\$ACE(ACE_SQL_PASSWORD)/a1b2c3
 
 RUN rm -rf /usr/local/tomcat/webapps/*
 
-COPY work/${ACE_VERSION}/${ACE_VERSION}/web/ace-communicator.war /usr/local/tomcat/webapps/
-COPY work/${ACE_VERSION}/${ACE_VERSION}/web/ace-contactcenter.war /usr/local/tomcat/webapps/
-COPY work/${ACE_VERSION}/${ACE_VERSION}/web/ace-custom /usr/local/tomcat/webapps/ace-custom
+COPY work/${ACE_VERSION}/web/ace-communicator.war /usr/local/tomcat/webapps/
+COPY work/${ACE_VERSION}/web/ace-contactcenter.war /usr/local/tomcat/webapps/
+COPY work/${ACE_VERSION}/web/ace-custom /usr/local/tomcat/webapps/ace-custom
 
 RUN sed -i -e 's/emailTranscript=false/emailTranscript=true/; s/transcriptEmailTo=@SELF;@OTHERS/transcriptEmailTo=@SELF;operations@acedemo.net/' \
 	/usr/share/aceoperator/.ace/profiles/default-operator.properties 
