@@ -12,10 +12,12 @@
 	
 	<security:http pattern="/aceapp/icons/*" security="none" />
 	
+	<!--  to enable https, add the attrbute
+	requires-channel="https"
+	 -->
 	<security:http auto-config="true">
 		<security:intercept-url pattern="/**"
-			access="IS_AUTHENTICATED_FULLY" 
-			requires-channel="https"/>
+			access="IS_AUTHENTICATED_FULLY" />
 		<security:form-login login-page="/aceapp/jsp/logon.jsp" default-target-url="/main_menu.do"
 			authentication-failure-url="/aceapp/jsp/logon.jsp?error=true" always-use-default-target="true"/>
 		<security:logout logout-success-url="/aceapp/jsp/logon.jsp" />

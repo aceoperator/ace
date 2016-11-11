@@ -1,0 +1,10 @@
+mkdir /etc/pki/aceoperator
+cd /etc/pki/aceoperator
+
+# Create public/private key
+openssl genrsa -des3 -out aceoperator.key 1024
+
+# Create a self-signed security certificate
+openssl req -new -key aceoperator.key -x509 -out aceoperator.crt
+
+
