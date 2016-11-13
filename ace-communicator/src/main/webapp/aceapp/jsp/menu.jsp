@@ -14,8 +14,6 @@
 	        </html:link>
 	<br>
 	 <html:link forward="logoff">Logout</html:link>
-<%-- 	<c:url var="url" value="/j_spring_security_logout"/> --%>
-<%-- 	<a href='<c:out value="${url}"/>'>Logout</a> --%>
 	<br>
 	<hr width="100%">
 	<html:link forward="main_menu">Main Menu</html:link>

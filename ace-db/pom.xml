@@ -153,6 +153,12 @@
 			<version>5.1.7.Final</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.quikj.ace</groupId>
+			<artifactId>ace-framework</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 	</dependencies>
 
 	<description>The core layer for the Ace Business Integration project.</description>

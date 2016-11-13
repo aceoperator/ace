@@ -9,13 +9,22 @@ public class AceConfigFileHelper {
 	}
 
 	public static String getAcePath(String dir, String file) {
-		String aceRoot = System.getProperty("ace.root");
-		String aceHome = null;
-		if (aceRoot != null) {
-			aceHome = aceRoot + File.separator + ".ace";
+		String aceHome = getAceRoot();	
+
+		String path = null;
+		if (file.isEmpty()) {
+			path = aceHome +  File.separator + ".ace" + File.separator + dir;			
 		} else {
-			aceHome = System.getProperty("user.home") + File.separator + ".ace";
-			if (!new File(aceHome).isDirectory()) {
+			path = aceHome + File.separator + ".ace" + File.separator + dir + File.separator + file;
+		}
+		return path;
+	}
+
+	public static String getAceRoot() {
+		String aceHome = System.getProperty("ace.root");		
+		if (aceHome == null) {
+			aceHome = System.getProperty("user.home");
+			if (!new File(aceHome + "/.ace").isDirectory()) {
 				File[] root = File.listRoots();
 				if (root == null) {
 					// Should not come here
@@ -23,25 +32,23 @@ public class AceConfigFileHelper {
 					root[0] = new File("/");
 				}
 
+				boolean found = false;
 				for (File rootElement : root) {
-					aceHome = rootElement.getAbsolutePath() + "/usr/share/aceoperator/.ace";
-					if (new File(aceHome).isDirectory()) {
+					aceHome = rootElement.getAbsolutePath() + "/usr/share/aceoperator";
+					if (new File(aceHome + "/.ace").isDirectory()) {
+						found = true;
 						break;
 					}
 				}
+				
+				if (!found) {
+					throw new AceRuntimeException("The root directory could not be determined");
+				}
 			}
+		} else if (!new File(aceHome + "/.ace").isDirectory()) {
+			throw new AceRuntimeException("The ace.root property is not right");
 		}
-
-		if (!new File(aceHome).isDirectory()) {
-			throw new AceRuntimeException("Aceoperator home could not be determined");
-		}
-
-		String path = null;
-		if (file.length() > 0) {
-			path = aceHome + File.separator + dir + File.separator + file;
-		} else {
-			path = aceHome + File.separator + dir;
-		}
-		return path;
+		
+		return aceHome;
 	}
 }

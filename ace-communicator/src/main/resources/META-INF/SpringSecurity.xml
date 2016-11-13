@@ -2,8 +2,8 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:security="http://www.springframework.org/schema/security"
 
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd">
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.1.xsd">
 
 	<security:global-method-security
 		secured-annotations="enabled" jsr250-annotations="enabled" />
@@ -17,10 +17,11 @@
 	 -->
 	<security:http auto-config="true">
 		<security:intercept-url pattern="/**"
-			access="IS_AUTHENTICATED_FULLY" />
+			access="isFullyAuthenticated()" />
 		<security:form-login login-page="/aceapp/jsp/logon.jsp" default-target-url="/main_menu.do"
-			authentication-failure-url="/aceapp/jsp/logon.jsp?error=true" always-use-default-target="true"/>
+			always-use-default-target="true"/>
 		<security:logout logout-success-url="/aceapp/jsp/logon.jsp" />
+		<security:csrf disabled="true"/>
 	</security:http>
 
 	<bean id="aceAuthenticationProvider"

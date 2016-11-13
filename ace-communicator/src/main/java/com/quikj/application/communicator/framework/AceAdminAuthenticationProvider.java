@@ -12,7 +12,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.GrantedAuthorityImpl;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.quikj.ace.db.core.webtalk.vo.Account;
 import com.quikj.ace.db.webtalk.model.AccountBean;
@@ -39,7 +39,7 @@ public class AceAdminAuthenticationProvider implements AuthenticationProvider {
 					(String) auth.getCredentials());
 			List<GrantedAuthority> roles = new ArrayList<GrantedAuthority>();
 						
-			roles.add(new GrantedAuthorityImpl("admin"));
+			roles.add(new SimpleGrantedAuthority("admin"));
 			
 			AceLogger.Instance().log(AceLogger.INFORMATIONAL,
 					AceLogger.USER_LOG,
