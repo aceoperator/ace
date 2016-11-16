@@ -25,7 +25,7 @@ COPY server.xml /usr/local/tomcat/conf
 COPY .keystore /root/
 COPY config-override.xml /usr/share/aceoperator/.ace/spring/ace-app/
 
-ENV JAVA_OPTS "-Xms256m -Xmx512m -Djava.awt.headless=true -Dfile.encoding=UTF8" -Duser.timezone=US/Eastern -Dace.root=/usr/share/aceoperator"
+ENV JAVA_OPTS "-Xms256m -Xmx512m -Djava.awt.headless=true -Dfile.encoding=UTF8" -Duser.timezone=US/Eastern -Dace.root.dir=/usr/share/aceoperator"
 
 EXPOSE 8443
 

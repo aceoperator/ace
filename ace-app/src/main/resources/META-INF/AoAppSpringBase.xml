@@ -19,20 +19,9 @@
 			</props>
 		</property>
 		<property name="locations">
-			<!-- TODO FIgure out how to use AceConfigHeler using SpEl to create the 
-				properties below instead of duplicating the logic -->
 			<list>
 				<value>classpath:META-INF/ace-app.properties</value>
-				<value>file:${ace.root}/.ace/config/properties/*.properties</value>
-				<value>file:${user.home}/.ace/config/properties/*.properties</value>
-				<value>file:/usr/share/aceoperator/.ace/config/properties/*.properties
-				</value>
-				<value>file:C:/usr/share/aceoperator/.ace/config/properties/*.properties
-				</value>
-				<value>file:D:/usr/share/aceoperator/.ace/config/properties/*.properties
-				</value>
-				<value>file:H:/usr/share/aceoperator/.ace/config/properties/*.properties
-				</value>
+				<value>file:${ace.root.dir}/.ace/config/properties/*.properties</value>
 			</list>
 		</property>
 	</bean>

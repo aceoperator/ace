@@ -24,25 +24,10 @@
 		<property name="ignoreResourceNotFound" value="true" />
 		<property name="ignoreUnresolvablePlaceholders" value="false" />
 
-		<property name="properties">
-			<props>
-				<prop key="ace.root.dir">#{T(com.quikj.server.framework.AceConfigFileHelper).getAceRoot()}
-				</prop>
-			</props>
-		</property>
 		<property name="locations">
 			<list>
 				<value>classpath:META-INF/ace-db.properties</value>
-				<value>file:${ace.root}/.ace/config/properties/*.properties</value>
-				<value>file:${user.home}/.ace/config/properties/*.properties</value>
-				<value>file:/usr/share/aceoperator/.ace/config/properties/*.properties
-				</value>
-				<value>file:C:/usr/share/aceoperator/.ace/config/properties/*.properties
-				</value>
-				<value>file:D:/usr/share/aceoperator/.ace/config/properties/*.properties
-				</value>
-				<value>file:H:/usr/share/aceoperator/.ace/config/properties/*.properties
-				</value>
+				<value>file:${ace.root.dir}/.ace/config/properties/*.properties</value>
 			</list>
 		</property>
 	</bean>
