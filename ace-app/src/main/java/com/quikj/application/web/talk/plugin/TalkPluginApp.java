@@ -12,6 +12,7 @@ import com.quikj.server.framework.AceException;
 import com.quikj.server.framework.AceLogger;
 import com.quikj.server.framework.AceMailService;
 import com.quikj.server.framework.AceNetworkAccess;
+import com.quikj.server.framework.CaptchaService;
 
 public class TalkPluginApp implements PluginAppInterface {
 	private static TalkPluginApp instance = null;
@@ -148,9 +149,15 @@ public class TalkPluginApp implements PluginAppInterface {
 		}
 
 		SynchronousDbOperations.getInstance();
+		
+		new CaptchaService().init();
 	}
 
 	public void cleanup() {
+		if (CaptchaService.getInstance() != null) {
+			CaptchaService.getInstance().destroy();
+		}
+			
 		if (controller != null) {
 			controller.dispose();
 			controller = null;

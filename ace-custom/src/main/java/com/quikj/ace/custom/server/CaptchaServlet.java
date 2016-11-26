@@ -11,16 +11,25 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.keypoint.PngEncoder;
-import com.octo.captcha.service.CaptchaServiceException;
 import com.quikj.server.framework.CaptchaService;
 
 public class CaptchaServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 9120211725683240148L;
 
+	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
 		super.init(servletConfig);
 
+		new CaptchaService().init();
+	}
+
+	@Override
+	public void destroy() {
+		super.destroy();
+		if (CaptchaService.getInstance() != null) {
+			CaptchaService.getInstance().destroy();
+		}
 	}
 
 	protected void doGet(HttpServletRequest httpServletRequest,
@@ -32,18 +41,9 @@ public class CaptchaServlet extends HttpServlet {
 			// get the session id that will identify the generated captcha.
 			// the same id must be used to validate the response, the session id
 			// is a good candidate!
-			String captchaId = httpServletRequest.getSession().getId();
+			String sessionId = httpServletRequest.getSession().getId();
 			
-			CaptchaService.CaptchaType captchaType = CaptchaService.CaptchaType.LARGE;
-			String type = httpServletRequest.getParameter("type");
-			if (type != null) {
-				captchaType = CaptchaService.CaptchaType.fromValue(type);
-			}
-			
-			// call the ImageCaptchaService getChallenge method
-			BufferedImage challenge = CaptchaService.getInstance(captchaType)
-					.getImageChallengeForID(captchaId,
-							httpServletRequest.getLocale());
+			BufferedImage challenge = CaptchaService.getInstance().generateImage(sessionId);
 
 			PngEncoder encoder = new PngEncoder(challenge);
 			captchaChallengeAsPng = encoder.pngEncode();
@@ -51,7 +51,7 @@ public class CaptchaServlet extends HttpServlet {
 		} catch (IllegalArgumentException e) {
 			httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;
-		} catch (CaptchaServiceException e) {
+		} catch (Exception e) {
 			httpServletResponse
 					.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			return;

@@ -95,17 +95,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.octo.captcha</groupId>
-			<artifactId>jcaptcha</artifactId>
+			<groupId>com.github.cage</groupId>
+			<artifactId>cage</artifactId>
 			<version>1.0</version>
-
-			<exclusions>
-				<exclusion>
-					<groupId>javax.servlet</groupId>
-					<artifactId>servlet-api</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
-
 	</dependencies>
 </project>
