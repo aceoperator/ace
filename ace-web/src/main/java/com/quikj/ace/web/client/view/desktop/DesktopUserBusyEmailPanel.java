@@ -207,8 +207,7 @@ public class DesktopUserBusyEmailPanel extends LayoutPanel implements
 
 	public String captchaImageUrl() {
 		return GWT.getModuleBaseURL() + "../jcaptcha?nocache="
-				+ new Date().getTime()
-				+ "&type=large";
+				+ new Date().getTime();
 	}
 
 	public void reset() {

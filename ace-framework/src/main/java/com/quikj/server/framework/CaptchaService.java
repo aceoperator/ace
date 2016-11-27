@@ -18,8 +18,6 @@ import com.github.cage.GCage;
  * 
  */
 public class CaptchaService {
-	private static CaptchaService instance;
-
 	protected class CaptchaInfo {
 		protected String token;
 		protected int countDown = 5;
@@ -32,6 +30,8 @@ public class CaptchaService {
 			return --countDown;
 		}
 	}
+	
+	private static CaptchaService instance;
 
 	Map<String, CaptchaInfo> buffer = new HashMap<String, CaptchaInfo>();
 
