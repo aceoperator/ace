@@ -2,13 +2,13 @@
 	xmlns="http://www.quikj.com/ace/db/core/webtalk/vo" targetNamespace="http://www.quikj.com/ace/db/core/webtalk/vo"
 	elementFormDefault="qualified">
 
-	<xs:element name="Account" type="Account" />
+	<xs:element name="account" type="Account" />
 
 	<xs:complexType name="Account">
 		<xs:sequence>
-			<xs:element name="UserName" type="xs:string" />
-			<xs:element name="Password" type="xs:string" minOccurs="0" />
-			<xs:element name="AdditionalInfo" type="xs:string"
+			<xs:element name="userName" type="xs:string" />
+			<xs:element name="password" type="xs:string" minOccurs="0" />
+			<xs:element name="additionalInfo" type="xs:string"
 				minOccurs="0" />
 		</xs:sequence>
 	</xs:complexType>

@@ -12,12 +12,32 @@
 	<name>ace-docker</name>
 	<packaging>pom</packaging>
 
+	<properties>
+		<docker.version>0.4.13</docker.version>
+	</properties>
+
 	<build>
 		<plugins>
+
+<!-- 			<plugin> -->
+<!-- 				<groupId>com.spotify</groupId> -->
+<!-- 				<artifactId>docker-maven-plugin</artifactId> -->
+<!-- 				<version>${docker.version}</version> -->
+<!-- 				<executions> -->
+<!-- 					<execution> -->
+<!-- 						<id>clean-all-images</id> -->
+<!-- 						<phase>clean</phase> -->
+<!-- 						<goals> -->
+<!-- 							<goal>removeImage</goal> -->
+<!-- 						</goals> -->
+<!-- 					</execution> -->
+<!-- 				</executions> -->
+<!-- 			</plugin> -->
+
 			<plugin>
 				<groupId>com.spotify</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
-				<version>0.4.13</version>
+				<version>${docker.version}</version>
 				<executions>
 					<execution>
 						<id>build-ace-db</id>
@@ -57,7 +77,7 @@
 							<dockerDirectory>images/ace-mail</dockerDirectory>
 						</configuration>
 					</execution>
-					
+
 					<execution>
 						<id>build-ace-app</id>
 						<phase>package</phase>
@@ -82,10 +102,26 @@
 							</resources>
 						</configuration>
 					</execution>
-					
-				</executions>
 
+
+					<execution>
+						<id>build-ace-frontend</id>
+						<phase>package</phase>
+						<goals>
+							<goal>build</goal>
+						</goals>
+						<configuration>
+							<imageName>aceoperator/frontend</imageName>
+							<imageTags>
+								<imageTag>latest</imageTag>
+								<imageTag>${project.version}</imageTag>
+							</imageTags>
+							<dockerDirectory>${basedir}/images/ace-frontend</dockerDirectory>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
+	
 </project>

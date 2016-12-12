@@ -2,14 +2,14 @@
 	xmlns="http://www.quikj.com/ace/db/core/webtalk/vo" targetNamespace="http://www.quikj.com/ace/db/core/webtalk/vo"
 	elementFormDefault="qualified">
 
-	<xs:element name="Log" type="Log" />
+	<xs:element name="log" type="Log" />
 
 	<xs:complexType name="Log">
 		<xs:sequence>
-			<xs:element name="Message" type="xs:string" />
-			<xs:element name="Timestamp" type="xs:dateTime"/>
-			<xs:element name="Severity" type="xs:string" />
-			<xs:element name="Process" type="xs:string" />
+			<xs:element name="message" type="xs:string" />
+			<xs:element name="timestamp" type="xs:dateTime"/>
+			<xs:element name="severity" type="xs:string" />
+			<xs:element name="process" type="xs:string" />
 		</xs:sequence>
 	</xs:complexType>
 
