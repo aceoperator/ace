@@ -2,10 +2,7 @@ version: "2"
 services:
     app:
         container_name: ace-app
-        image: "aceoperator/app:latest"
-        ports:
-          - "8080:8080"
-          - "8443:8443"
+        image: "aceoperator/app:${project.version}"
         depends_on:
           - mail
           - db
@@ -18,7 +15,7 @@ services:
           - /usr/share/aceoperator/.ace
     db:
         container_name: ace-db
-        image: "aceoperator/db:latest"
+        image: "aceoperator/db:${project.version}"
         ports: 
           - "3306:3306"
         networks:
@@ -27,7 +24,7 @@ services:
           - "MYSQL_ROOT_PASSWORD=a1b2c3d4"
     mail:
         container_name: ace-mail
-        image: "aceoperator/mail:latest"
+        image: "aceoperator/mail:${project.version}"
         ports:
           - "25:25"
           - "143:143" 
@@ -36,7 +33,7 @@ services:
           - "network"
     frontend:
         container_name: ace-frontend
-        image: "aceoperator/frontend:latest"
+        image: "aceoperator/frontend:${project.version}"
         ports:
           - "80:80"
           - "443:443"

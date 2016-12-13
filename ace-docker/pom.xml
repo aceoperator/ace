@@ -19,20 +19,43 @@
 	<build>
 		<plugins>
 
-<!-- 			<plugin> -->
-<!-- 				<groupId>com.spotify</groupId> -->
-<!-- 				<artifactId>docker-maven-plugin</artifactId> -->
-<!-- 				<version>${docker.version}</version> -->
-<!-- 				<executions> -->
-<!-- 					<execution> -->
-<!-- 						<id>clean-all-images</id> -->
-<!-- 						<phase>clean</phase> -->
-<!-- 						<goals> -->
-<!-- 							<goal>removeImage</goal> -->
-<!-- 						</goals> -->
-<!-- 					</execution> -->
-<!-- 				</executions> -->
-<!-- 			</plugin> -->
+			<!-- <plugin> -->
+			<!-- <groupId>com.spotify</groupId> -->
+			<!-- <artifactId>docker-maven-plugin</artifactId> -->
+			<!-- <version>${docker.version}</version> -->
+			<!-- <executions> -->
+			<!-- <execution> -->
+			<!-- <id>clean-all-images</id> -->
+			<!-- <phase>clean</phase> -->
+			<!-- <goals> -->
+			<!-- <goal>removeImage</goal> -->
+			<!-- </goals> -->
+			<!-- </execution> -->
+			<!-- </executions> -->
+			<!-- </plugin> -->
+
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.0.2</version>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>target/compose</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/resources</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 
 			<plugin>
 				<groupId>com.spotify</groupId>
@@ -48,14 +71,13 @@
 						<configuration>
 							<imageName>aceoperator/db</imageName>
 							<imageTags>
-								<imageTag>latest</imageTag>
 								<imageTag>${project.version}</imageTag>
 							</imageTags>
-							<dockerDirectory>${basedir}/images/ace-db</dockerDirectory>
+							<dockerDirectory>src/main/images/ace-db</dockerDirectory>
 							<resources>
 								<resource>
 									<targetPath>work</targetPath>
-									<directory>${basedir}/../ace-assembly/target/ace-${project.version}/ace-${project.version}/.ace/sql</directory>
+									<directory>../ace-assembly/target/ace-${project.version}/ace-${project.version}/.ace/sql</directory>
 									<include>**/*.sql</include>
 								</resource>
 							</resources>
@@ -71,10 +93,9 @@
 						<configuration>
 							<imageName>aceoperator/mail</imageName>
 							<imageTags>
-								<imageTag>latest</imageTag>
 								<imageTag>${project.version}</imageTag>
 							</imageTags>
-							<dockerDirectory>images/ace-mail</dockerDirectory>
+							<dockerDirectory>src/main/images/ace-mail</dockerDirectory>
 						</configuration>
 					</execution>
 
@@ -87,22 +108,20 @@
 						<configuration>
 							<imageName>aceoperator/app</imageName>
 							<imageTags>
-								<imageTag>latest</imageTag>
 								<imageTag>${project.version}</imageTag>
 							</imageTags>
-							<dockerDirectory>images/ace-app</dockerDirectory>
+							<dockerDirectory>src/main/images/ace-app</dockerDirectory>
 							<buildArgs>
 								<ACE_VERSION>ace-${project.version}</ACE_VERSION>
 							</buildArgs>
 							<resources>
 								<resource>
 									<targetPath>work</targetPath>
-									<directory>${basedir}/../ace-assembly/target/ace-${project.version}</directory>
+									<directory>../ace-assembly/target/ace-${project.version}</directory>
 								</resource>
 							</resources>
 						</configuration>
 					</execution>
-
 
 					<execution>
 						<id>build-ace-frontend</id>
@@ -113,15 +132,14 @@
 						<configuration>
 							<imageName>aceoperator/frontend</imageName>
 							<imageTags>
-								<imageTag>latest</imageTag>
 								<imageTag>${project.version}</imageTag>
 							</imageTags>
-							<dockerDirectory>${basedir}/images/ace-frontend</dockerDirectory>
+							<dockerDirectory>src/main/images/ace-frontend</dockerDirectory>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
 		</plugins>
 	</build>
-	
+
 </project>
