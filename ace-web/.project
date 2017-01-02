@@ -35,6 +35,11 @@
 			<arguments>
 			</arguments>
 		</buildCommand>
+		<buildCommand>
+			<name>org.eclipse.babel.editor.rbeBuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
 	</buildSpec>
 	<natures>
 		<nature>org.springframework.ide.eclipse.core.springnature</nature>
@@ -43,5 +48,6 @@
 		<nature>com.google.gwt.eclipse.core.gwtNature</nature>
 		<nature>org.eclipseguru.gwt.core.nature</nature>
 		<nature>org.eclipse.wst.common.project.facet.core.nature</nature>
+		<nature>com.jaspersoft.studio.babel.editor.rbeNature</nature>
 	</natures>
 </projectDescription>
