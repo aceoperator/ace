@@ -585,13 +585,13 @@ public class Operator extends AceThread
 		long minute = (time - (hour * 3600)) / 60;
 		if (builder.length() > 0) {
 			builder.append(bundle.getString("hour_abbr"));
-			builder.append(":");
+			builder.append(" ");
 		}
 		builder.append(pad(minute));
 
 		long seconds = time - (hour * 3600) - (minute * 60);
 		builder.append(bundle.getString("min_abbr"));
-		builder.append(":");
+		builder.append(" ");
 
 		builder.append(pad(seconds));
 		builder.append(bundle.getString("sec_abbr"));
