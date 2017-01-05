@@ -536,17 +536,13 @@ public class Operator extends AceThread
 		if (visitorQueue.isEmpty()) {
 			return 0L;
 		}		
-		return computeBottomWaitTime();
+		return computeTopWaitTime();
 	}
 
 	private long computeTopWaitTime() {
 		return (System.currentTimeMillis() - visitorQueue.getFirst().getStartWaitTime()) / 1000;
 	}
 	
-	private long computeBottomWaitTime() {
-		return (System.currentTimeMillis() - visitorQueue.getLast().getStartWaitTime()) / 1000;
-	}
-
 	private long computeEstimatedWaitTime(int index) {
 		if (visitorQueue.isEmpty()) {
 			return 0L;
