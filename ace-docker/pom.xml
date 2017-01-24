@@ -19,20 +19,23 @@
 	<build>
 		<plugins>
 
-			<!-- <plugin> -->
-			<!-- <groupId>com.spotify</groupId> -->
-			<!-- <artifactId>docker-maven-plugin</artifactId> -->
-			<!-- <version>${docker.version}</version> -->
-			<!-- <executions> -->
-			<!-- <execution> -->
-			<!-- <id>clean-all-images</id> -->
-			<!-- <phase>clean</phase> -->
-			<!-- <goals> -->
-			<!-- <goal>removeImage</goal> -->
-			<!-- </goals> -->
-			<!-- </execution> -->
-			<!-- </executions> -->
-			<!-- </plugin> -->
+<!-- 			<plugin> -->
+<!-- 				<groupId>com.spotify</groupId> -->
+<!-- 				<artifactId>docker-maven-plugin</artifactId> -->
+<!-- 				<version>${docker.version}</version> -->
+<!-- 				<executions> -->
+<!-- 					<execution> -->
+<!-- 						<id>clean-all-images</id> -->
+<!-- 						<phase>package</phase> -->
+<!-- 						<goals> -->
+<!-- 							<goal>removeImage</goal> -->
+<!-- 						</goals> -->
+<!-- 						<configuration> -->
+<!-- 							<imageName></imageName> -->
+<!-- 						</configuration> -->
+<!-- 					</execution> -->
+<!-- 				</executions> -->
+<!-- 			</plugin> -->
 
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
