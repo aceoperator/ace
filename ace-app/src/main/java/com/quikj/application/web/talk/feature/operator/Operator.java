@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.ResourceBundle;
 
 import com.quikj.ace.messages.vo.app.ResponseMessage;
 import com.quikj.ace.messages.vo.talk.CallPartyElement;
@@ -248,7 +249,7 @@ public class Operator extends AceThread
 			sumWaitTime += waitTime;
 			waitTimeCount++;
 
-			measurements.collectOPM(OPM_USER_WAIT_TIME, waitTime);
+			// measurements.collectOPM(OPM_USER_WAIT_TIME, waitTime);
 		} else { // call transfer failed
 			operatorQueue.addFirst(operator); // add him back
 			visitorQueue.addFirst(subscriber);
@@ -329,8 +330,8 @@ public class Operator extends AceThread
 		}
 
 		// peg wait time opm
-		int wait_time = (int) (currentTime - element.getStartWaitTime()) / 1000;
-		measurements.collectOPM(OPM_USER_WAIT_TIME, wait_time);
+//		int wait_time = (int) (currentTime - element.getStartWaitTime()) / 1000;
+//		measurements.collectOPM(OPM_USER_WAIT_TIME, wait_time);
 	}
 
 	public String getIdentifier() {
@@ -355,7 +356,8 @@ public class Operator extends AceThread
 		} else if (key.equals("paused-until")) {
 			return Long.toString(pausedUntil.getTime());
 		} else if (key.equals("estimated-wait-time")) {
-			return getEstimatedWaitTime(1);
+			return formatTime(computeMaxWaitTime(),
+					java.util.ResourceBundle.getBundle("com.quikj.application.web.talk.feature.operator.language"));
 		}
 
 		return null;
@@ -495,7 +497,9 @@ public class Operator extends AceThread
 								ServiceController.getLocale((String) subs.getEndpoint().getParam("language")))
 						.getString("Operator_Services:_estimated_wait_time_is"));
 				builder.append(" ");
-				builder.append(getEstimatedWaitTime(index));
+				builder.append(getEstimatedWaitTime(index,
+						java.util.ResourceBundle.getBundle("com.quikj.application.web.talk.feature.operator.language",
+								ServiceController.getLocale((String) subs.getEndpoint().getParam("language")))));
 			}
 			helem.setHtml(builder.toString());
 
@@ -523,32 +527,50 @@ public class Operator extends AceThread
 		return true;
 	}
 
-	private String getEstimatedWaitTime(int index) {
-		long total = computeWaitTime(index);
-		return formatTime(total);
+	private String getEstimatedWaitTime(int index, ResourceBundle bundle) {
+		long total = computeEstimatedWaitTime(index);
+		return formatTime(total, bundle);
 	}
 
-	private long computeWaitTime(int index) {
-		long alreadyWaitedFor = 0L;
-		if (!visitorQueue.isEmpty()) {
-			alreadyWaitedFor = (new Date().getTime() - visitorQueue.getFirst().getStartWaitTime()) / 1000;
+	private long computeMaxWaitTime() {
+		if (visitorQueue.isEmpty()) {
+			return 0L;
+		}		
+		return computeTopWaitTime();
+	}
+
+	private long computeTopWaitTime() {
+		return (System.currentTimeMillis() - visitorQueue.getFirst().getStartWaitTime()) / 1000;
+	}
+	
+	private long computeEstimatedWaitTime(int index) {
+		if (visitorQueue.isEmpty()) {
+			return 0L;
 		}
 
-		long waitTime = 300L; // an arbitrary value for the inital wait time
-		if (waitTimeCount > 0) {
-			// If wait time statistics is available
-			waitTime = sumWaitTime / waitTimeCount;
-		}
+		long alreadyWaitedFor = computeTopWaitTime();
+		long waitTime = getAverageWaitTime();
 
 		long total = (index * waitTime) - alreadyWaitedFor;
 		if (total <= 0) {
-			// If the visitor has waited longer than the estimated wait time
-			total = 300L * index;
+			// If the visitor has waited longer than the estimated wait time,
+			// set a default value
+			total = 60L * index;
 		}
 		return total;
 	}
 
-	private String formatTime(long time) {
+	private long getAverageWaitTime() {
+		// set an arbitrary value for the default wait time
+		long waitTime = 300L;
+		if (waitTimeCount > 0) {
+			// If wait time statistics is available
+			waitTime = sumWaitTime / waitTimeCount;
+		}
+		return waitTime;
+	}
+
+	private String formatTime(long time, ResourceBundle bundle) {
 		StringBuilder builder = new StringBuilder();
 
 		long hour = time / 3600;
@@ -558,13 +580,17 @@ public class Operator extends AceThread
 
 		long minute = (time - (hour * 3600)) / 60;
 		if (builder.length() > 0) {
-			builder.append(":");
+			builder.append(bundle.getString("hour_abbr"));
+			builder.append(" ");
 		}
 		builder.append(pad(minute));
 
 		long seconds = time - (hour * 3600) - (minute * 60);
-		builder.append(":");
+		builder.append(bundle.getString("min_abbr"));
+		builder.append(" ");
+
 		builder.append(pad(seconds));
+		builder.append(bundle.getString("sec_abbr"));
 
 		return builder.toString();
 	}
@@ -638,10 +664,6 @@ public class Operator extends AceThread
 				SubscriberElement element = iter.next();
 				if (element.getSessionId() == session) {
 					iter.remove();
-
-					// peg wait time opm
-					int waitTime = (int) (new Date().getTime() - element.getStartWaitTime()) / 1000;
-					measurements.collectOPM(OPM_USER_WAIT_TIME, waitTime);
 					break;
 				}
 			}
@@ -676,40 +698,22 @@ public class Operator extends AceThread
 
 		// determine number of users being served, note it will also reflect
 		// opr-opr calls
-		int num_opr_calls = 0;
-		ListIterator<OperatorElement> operator_iter = operatorQueue.listIterator(0);
-		while (operator_iter.hasNext()) {
-			num_opr_calls += operator_iter.next().getOperatorInfo().getCallCount();
-		} // end while
+		int numOprCalls = 0;
+		ListIterator<OperatorElement> operatorIter = operatorQueue.listIterator(0);
+		while (operatorIter.hasNext()) {
+			numOprCalls += operatorIter.next().getOperatorInfo().getCallCount();
+		}
 
-		measurements.collectOPM(opmCollectionTime, OPM_USERS_TALKING, num_opr_calls);
+		measurements.collectOPM(opmCollectionTime, OPM_USERS_TALKING, numOprCalls);
 
+		measurements.collectOPM(opmCollectionTime, OPM_USER_WAIT_TIME, (int)computeMaxWaitTime());
+		
 		// check OPM storage interval mark, if it's time, store the data in the
 		// database
 
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(opmCollectionTime);
 		if ((cal.get(Calendar.MINUTE) % OPM_STORAGE_INTERVAL) == 0) {
-			// process non-sampled OPMs for this interval
-
-			// accumulate/reset current user wait times:
-			long curr_time = cal.getTime().getTime();
-			ListIterator<SubscriberElement> subs_iter = visitorQueue.listIterator();
-			while (operator_iter.hasNext()) {
-				SubscriberElement subs = subs_iter.next();
-				int wait_time = (int) (curr_time - subs.getStartWaitTime()) / 1000;
-				if (wait_time >= 0) {
-					measurements.collectOPM(opmCollectionTime, OPM_USER_WAIT_TIME, wait_time);
-					subs.setStartWaitTime(curr_time);
-				}
-			}
-
-			// for non-sampled OPMs, if no entries this period, add one with
-			// value zero so that the opm is present in the db
-			if (measurements.getNumCollectedOPMs(OPM_USER_WAIT_TIME) == 0) {
-				measurements.collectOPM(opmCollectionTime, OPM_USER_WAIT_TIME, 0);
-			}
-
 			// average collected OPMs
 			measurements.averageOPMs(opmCollectionTime);
 
@@ -852,7 +856,7 @@ public class Operator extends AceThread
 
 			// add the subscriber to the call queue
 			subs.setRequestId(event.getRequestId());
-			subs.setStartWaitTime(new Date().getTime());
+			subs.setStartWaitTime(System.currentTimeMillis());
 
 			visitorQueue.addLast(subs);
 
