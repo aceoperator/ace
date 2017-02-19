@@ -73,7 +73,7 @@ public class ApplicationLayerImpl implements Server, ApplicationLayer {
 		if (transport.isConnected()) {
 			logger.severe("Trying to connect to an already connected session");
 			throw new AceClientException(
-					"An internal error occured. See logs for details.");
+					"Trying to connect to an already connected session");
 		}
 
 		transport.connect();
@@ -92,10 +92,10 @@ public class ApplicationLayerImpl implements Server, ApplicationLayer {
 			ResponseListener responseListener) {
 
 		if (timeout > 0L && responseListener == null) {
-			logger.severe("Invalid argument: timeout = " + timeout
-					+ ", listener = " + responseListener);
-			throw new AceClientException(
-					"An internal error occured. See logs for details.");
+			String message = "Invalid argument: timeout = " + timeout
+					+ ", listener = " + responseListener;
+			logger.severe(message);
+			throw new AceClientException(message);
 		}
 
 		RequestMessage req = new RequestMessage();
