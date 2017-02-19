@@ -19,6 +19,7 @@ public class DesktopUserContactCell extends
 	private static final int COLUMN_NAME = 1;
 	private static final int COLUMN_ACTION = 2;
 	private static final int COLUMN_CALLCOUNT = 3;
+	public static final int COLUMN_STATUS = 4;
 
 	private DesktopUserContactsPanel parent;
 
@@ -53,7 +54,7 @@ public class DesktopUserContactCell extends
 			break;
 		case COLUMN_CALLCOUNT:
 			break;
-		default:
+		case COLUMN_STATUS:
 			break;
 		}
 	}
@@ -68,12 +69,26 @@ public class DesktopUserContactCell extends
 				+ " width='" + Images.TINY_IMG_WIDTH + "' height='"
 				+ Images.TINY_IMG_HEIGHT + "'>";
 	}
+	
+	public String renderStatus(UserContact contact) {
+		boolean dnd = contact.isDnd();
+		if (dnd) {			
+			return "<img src='" + Images.OFFLINE_HIGHLIGHT_TINY + "' align='middle' border='0'"
+					+ " width='" + Images.TINY_IMG_WIDTH + "' height='"
+					+ Images.TINY_IMG_HEIGHT + "'>";
+		}
+		return "";
+	}
 
 	public String renderName(UserContact contact) {
 		return ViewUtils.formatName(contact.getUser(), contact.getFullName());
 	}
 
 	public String renderAction(UserContact contact) {
+		if (contact.isDnd()) {
+			return "";
+		}
+		
 		return "<button title='"
 				+ ApplicationController.getMessages()
 						.DesktopUserContactCell_clickToChat()
@@ -111,7 +126,8 @@ public class DesktopUserContactCell extends
 		case COLUMN_CALLCOUNT:
 			sb.appendHtmlConstant(renderCallCount(contact));
 			break;
-		default:
+		case COLUMN_STATUS:
+			sb.appendHtmlConstant(renderStatus(contact));
 			break;
 		}
 	}

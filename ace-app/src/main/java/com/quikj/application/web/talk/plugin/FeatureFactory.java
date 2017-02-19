@@ -222,14 +222,14 @@ public class FeatureFactory implements RemoteServiceInterface {
 		// value = "activate", "deactivate", or "synch"
 
 		String str = "feature:";
-		if (param.startsWith(str) == true) {
+		if (param.startsWith(str)) {
 			String name = param.substring(str.length());
 			if (name.length() > 0) {
-				if (value.equals("activate") == true) {
+				if (value.equals("activate")) {
 					return activateFeature(name);
-				} else if (value.equals("deactivate") == true) {
+				} else if (value.equals("deactivate")) {
 					return deactivateFeature(name);
-				} else if (value.equals("synch") == true) {
+				} else if (value.equals("synch")) {
 					return synchFeature(name);
 				}
 			}
@@ -347,14 +347,14 @@ public class FeatureFactory implements RemoteServiceInterface {
 	}
 
 	public synchronized boolean synchFeature(String name) {
-		FeatureElement current_feature = (FeatureElement) featureList.get(name);
-		if (current_feature != null) {
-			FeatureInterface obj = current_feature.getObj();
+		FeatureElement currentFeature = (FeatureElement) featureList.get(name);
+		if (currentFeature != null) {
+			FeatureInterface obj = currentFeature.getObj();
 			if (obj != null) {
 				// the feature is currently running
-				FeatureElement new_feature_info = getActiveFeatureInfo(name);
+				FeatureElement newFeatureInfo = getActiveFeatureInfo(name);
 
-				if (new_feature_info == null) {
+				if (newFeatureInfo == null) {
 					AceLogger.Instance().log(
 							AceLogger.ERROR,
 							AceLogger.SYSTEM_LOG,
@@ -364,8 +364,8 @@ public class FeatureFactory implements RemoteServiceInterface {
 					return false;
 				}
 
-				obj.resynchParam(new_feature_info.getMap());
-				current_feature.setMap(new_feature_info.getMap());
+				obj.resynchParam(newFeatureInfo.getMap());
+				currentFeature.setMap(newFeatureInfo.getMap());
 
 				AceLogger.Instance().log(AceLogger.INFORMATIONAL,
 						AceLogger.SYSTEM_LOG,

@@ -136,7 +136,7 @@ public class TransportLayerImpl implements TransportLayer {
 		if (!connected) {
 			logger.severe("Trying to disconnect from an already disconnected session");
 			throw new AceClientException(
-					"An internal error occured. See logs for details.");
+					"Trying to disconnect from an already disconnected session");
 		}
 
 		connected = false;

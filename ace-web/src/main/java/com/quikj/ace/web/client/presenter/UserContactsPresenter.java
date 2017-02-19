@@ -39,9 +39,8 @@ public class UserContactsPresenter {
 		view = createView();
 		view.setPresenter(this);
 
-		UserPanelPresenter.getCurrentInstance().addNewPanel(
-				ApplicationController.getMessages()
-						.UserContactsPresenter_contacts(), (Widget) view);
+		UserPanelPresenter.getCurrentInstance()
+				.addNewPanel(ApplicationController.getMessages().UserContactsPresenter_contacts(), (Widget) view);
 
 		List<UserContact> contacts = getInitialContactList(rsp.getGroup());
 		view.addContacts(contacts);
@@ -60,8 +59,8 @@ public class UserContactsPresenter {
 
 		for (int i = 0; i < group.numElements(); i++) {
 			GroupMemberElement contact = group.elementAt(i);
-			contacts.add(new UserContact(contact.getUser(), contact
-					.getFullName(), contact.getCallCount(), contact.getAvatar()));
+			contacts.add(new UserContact(contact.getUser(), contact.getFullName(), contact.getCallCount(),
+					contact.getAvatar(), contact.isDnd()));
 		}
 
 		return contacts;
@@ -78,14 +77,13 @@ public class UserContactsPresenter {
 			switch (contact.getOperation()) {
 			case GroupMemberElement.OPERATION_ADD_LIST: {
 				AudioUtils.getInstance().play(AudioUtils.KNOCK);
-				view.addContact(new UserContact(contact.getUser(), contact
-						.getFullName(), contact.getCallCount(), contact
-						.getAvatar()));
+				view.addContact(new UserContact(contact.getUser(), contact.getFullName(), contact.getCallCount(),
+						contact.getAvatar(), contact.isDnd()));
 				UserPanelPresenter.getCurrentInstance().highlightTab(2, true);
 				break;
 			}
 			case GroupMemberElement.OPERATION_MOD_LIST: {
-				view.modifyContact(contact.getUser(), contact.getCallCount());
+				view.modifyContact(contact.getUser(), contact.getCallCount(), contact.isDnd());
 				break;
 			}
 			case GroupMemberElement.OPERATION_REM_LIST: {
@@ -112,12 +110,10 @@ public class UserContactsPresenter {
 	}
 
 	public void chatWith(String user) {
-		new ChatSessionPresenter().setupOutboundChat(user, null, null, null,
-				-1, null, false);
+		new ChatSessionPresenter().setupOutboundChat(user, null, null, null, -1, null, false);
 	}
 
 	public void showErrorDialog(String title, String error) {
-		MessageBoxPresenter.getInstance().show(title, error,
-				(String) Images.CRITICAL_MEDIUM, true);
+		MessageBoxPresenter.getInstance().show(title, error, (String) Images.CRITICAL_MEDIUM, true);
 	}
 }

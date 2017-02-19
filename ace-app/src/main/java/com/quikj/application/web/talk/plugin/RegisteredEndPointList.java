@@ -10,6 +10,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Set;
 
 import com.quikj.application.web.talk.plugin.accounting.LogoutCDR;
 import com.quikj.server.app.EndPointInterface;
@@ -58,8 +59,7 @@ public class RegisteredEndPointList {
 																		// registered
 			{
 				registeredNames.put(endpointinfo.getName(), endpointinfo);
-				registeredEndPoints.put(endpointinfo.getEndPoint(),
-						endpointinfo);
+				registeredEndPoints.put(endpointinfo.getEndPoint(), endpointinfo);
 				return true;
 			} else {
 				return false;
@@ -73,8 +73,7 @@ public class RegisteredEndPointList {
 
 			while (e.hasMoreElements() == true) {
 				EndPointInfo info = (EndPointInfo) e.nextElement();
-				ServiceController.Instance().sendCDR(
-						new LogoutCDR(info.getEndPoint().getIdentifier()));
+				ServiceController.Instance().sendCDR(new LogoutCDR(info.getEndPoint().getIdentifier()));
 			}
 
 			registeredEndPoints.clear();
@@ -114,8 +113,7 @@ public class RegisteredEndPointList {
 
 	public String findRegisteredName(EndPointInterface endpoint) {
 		synchronized (registeredNames) {
-			EndPointInfo info = (EndPointInfo) registeredEndPoints
-					.get(endpoint);
+			EndPointInfo info = (EndPointInfo) registeredEndPoints.get(endpoint);
 			if (info == null) {
 				return null;
 			}
@@ -126,8 +124,7 @@ public class RegisteredEndPointList {
 
 	public UserElement findRegisteredUserData(EndPointInterface endpoint) {
 		synchronized (registeredNames) {
-			EndPointInfo info = (EndPointInfo) registeredEndPoints
-					.get(endpoint);
+			EndPointInfo info = (EndPointInfo) registeredEndPoints.get(endpoint);
 			if (info == null) {
 				return null;
 			}
@@ -155,14 +152,10 @@ public class RegisteredEndPointList {
 
 		UserElement user_data = findRegisteredUserData(name);
 		if (user_data == null) {
-			AceLogger
-					.Instance()
-					.log(
-							AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ " EndPointList.getActiveMembers() -- Couldn't find user data for user "
-									+ name + " in registered user list.");
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					Thread.currentThread().getName()
+							+ " EndPointList.getActiveMembers() -- Couldn't find user data for user " + name
+							+ " in registered user list.");
 
 			return null;
 		}
@@ -173,25 +166,18 @@ public class RegisteredEndPointList {
 
 		String[] group_list = user_data.getOwnsGroups();
 		for (int i = 0; i < group_list.length; i++) {
-			GroupInfo group_info = GroupList.Instance()
-					.findGroup(group_list[i]);
+			GroupInfo group_info = GroupList.Instance().findGroup(group_list[i]);
 			if (group_info == null) {
-				AceLogger
-						.Instance()
-						.log(
-								AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ " EndPointList.getActiveMembers() -- Couldn't find owned group data for user "
-										+ name + ", group name "
-										+ group_list[i]);
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						Thread.currentThread().getName()
+								+ " EndPointList.getActiveMembers() -- Couldn't find owned group data for user " + name
+								+ ", group name " + group_list[i]);
 
 				continue;
 			}
 
 			// should this owner see the members?
-			int notif_control = group_info.getGroupData()
-					.getMemberLoginNotificationControl();
+			int notif_control = group_info.getGroupData().getMemberLoginNotificationControl();
 			switch (notif_control) {
 			case RegisteredEndPointList.NOTIFY_OWNER:
 			case RegisteredEndPointList.NOTIFY_ALL: {
@@ -208,25 +194,18 @@ public class RegisteredEndPointList {
 
 		group_list = user_data.getBelongsToGroups();
 		for (int i = 0; i < group_list.length; i++) {
-			GroupInfo group_info = GroupList.Instance()
-					.findGroup(group_list[i]);
+			GroupInfo group_info = GroupList.Instance().findGroup(group_list[i]);
 			if (group_info == null) {
-				AceLogger
-						.Instance()
-						.log(
-								AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ " EndPointList.getActiveMembers() -- Couldn't find belong to group data for user "
-										+ name + ", group name "
-										+ group_list[i]);
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						Thread.currentThread().getName()
+								+ " EndPointList.getActiveMembers() -- Couldn't find belong to group data for user "
+								+ name + ", group name " + group_list[i]);
 
 				continue;
 			}
 
 			// should this member see the other members?
-			int notif_control = group_info.getGroupData()
-					.getMemberLoginNotificationControl();
+			int notif_control = group_info.getGroupData().getMemberLoginNotificationControl();
 			switch (notif_control) {
 			case RegisteredEndPointList.NOTIFY_MEMBERS:
 			case RegisteredEndPointList.NOTIFY_ALL: {
@@ -241,8 +220,7 @@ public class RegisteredEndPointList {
 			}
 
 			// should this member see the owner?
-			notif_control = group_info.getGroupData()
-					.getOwnerLoginNotificationControl();
+			notif_control = group_info.getGroupData().getOwnerLoginNotificationControl();
 			switch (notif_control) {
 			case RegisteredEndPointList.NOTIFY_MEMBERS:
 			case RegisteredEndPointList.NOTIFY_ALL:
@@ -253,8 +231,7 @@ public class RegisteredEndPointList {
 
 		if (results.size() > 0) {
 			for (Iterator i = results.iterator(); i.hasNext();) {
-				if (RegisteredEndPointList.Instance().findRegisteredEndPoint(
-						(String) i.next()) == null) {
+				if (RegisteredEndPointList.Instance().findRegisteredEndPoint((String) i.next()) == null) {
 					i.remove();
 				}
 			}
@@ -273,8 +250,7 @@ public class RegisteredEndPointList {
 	// returns -1 if element not found
 	{
 		synchronized (registeredNames) {
-			EndPointInfo info = (EndPointInfo) registeredEndPoints
-					.get(endpoint);
+			EndPointInfo info = (EndPointInfo) registeredEndPoints.get(endpoint);
 			if (info == null) {
 				return -1;
 			}
@@ -306,14 +282,10 @@ public class RegisteredEndPointList {
 
 		UserElement user_data = findRegisteredUserData(name);
 		if (user_data == null) {
-			AceLogger
-					.Instance()
-					.log(
-							AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ " EndPointList.notifyOfBusyIdle() -- Couldn't find user data for user "
-									+ name + " in registered user list.");
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					Thread.currentThread().getName()
+							+ " EndPointList.notifyOfBusyIdle() -- Couldn't find user data for user " + name
+							+ " in registered user list.");
 
 			return null;
 		}
@@ -324,24 +296,17 @@ public class RegisteredEndPointList {
 
 		String[] group_list = user_data.getOwnsGroups();
 		for (int i = 0; i < group_list.length; i++) {
-			GroupInfo group_info = GroupList.Instance()
-					.findGroup(group_list[i]);
+			GroupInfo group_info = GroupList.Instance().findGroup(group_list[i]);
 			if (group_info == null) {
-				AceLogger
-						.Instance()
-						.log(
-								AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ " EndPointList.notifyOfBusyIdle() -- Couldn't find owned group data for user "
-										+ name + ", group name "
-										+ group_list[i]);
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						Thread.currentThread().getName()
+								+ " EndPointList.notifyOfBusyIdle() -- Couldn't find owned group data for user " + name
+								+ ", group name " + group_list[i]);
 
 				continue;
 			}
 
-			int notif_control = group_info.getGroupData()
-					.getOwnerBusyNotificationControl();
+			int notif_control = group_info.getGroupData().getOwnerBusyNotificationControl();
 			switch (notif_control) {
 			case RegisteredEndPointList.NOTIFY_MEMBERS:
 			case RegisteredEndPointList.NOTIFY_ALL: {
@@ -355,16 +320,10 @@ public class RegisteredEndPointList {
 			case RegisteredEndPointList.NOTIFY_NONE:
 				break;
 			default: {
-				AceLogger
-						.Instance()
-						.log(
-								AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ " EndPointList.notifyOfBusyIdle() -- Invalid busy/idle notification setting "
-										+ notif_control
-										+ " in group data for group "
-										+ group_info.getName());
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						Thread.currentThread().getName()
+								+ " EndPointList.notifyOfBusyIdle() -- Invalid busy/idle notification setting "
+								+ notif_control + " in group data for group " + group_info.getName());
 			}
 				break;
 			}
@@ -374,24 +333,17 @@ public class RegisteredEndPointList {
 
 		group_list = user_data.getBelongsToGroups();
 		for (int i = 0; i < group_list.length; i++) {
-			GroupInfo group_info = GroupList.Instance()
-					.findGroup(group_list[i]);
+			GroupInfo group_info = GroupList.Instance().findGroup(group_list[i]);
 			if (group_info == null) {
-				AceLogger
-						.Instance()
-						.log(
-								AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ " EndPointList.notifyOfBusyIdle() -- Couldn't find belong to group data for user "
-										+ name + ", group name "
-										+ group_list[i]);
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						Thread.currentThread().getName()
+								+ " EndPointList.notifyOfBusyIdle() -- Couldn't find belong to group data for user "
+								+ name + ", group name " + group_list[i]);
 
 				continue;
 			}
 
-			int notif_control = group_info.getGroupData()
-					.getMemberBusyNotificationControl();
+			int notif_control = group_info.getGroupData().getMemberBusyNotificationControl();
 			switch (notif_control) {
 			case RegisteredEndPointList.NOTIFY_MEMBERS: {
 				String[] members = group_info.getMembers();
@@ -420,16 +372,10 @@ public class RegisteredEndPointList {
 			case RegisteredEndPointList.NOTIFY_NONE:
 				break;
 			default: {
-				AceLogger
-						.Instance()
-						.log(
-								AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ " EndPointList.notifyOfBusyIdle() -- Invalid busy/idle notification setting "
-										+ notif_control
-										+ " in group data for group "
-										+ group_info.getName());
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						Thread.currentThread().getName()
+								+ " EndPointList.notifyOfBusyIdle() -- Invalid busy/idle notification setting "
+								+ notif_control + " in group data for group " + group_info.getName());
 			}
 				break;
 			}
@@ -438,58 +384,46 @@ public class RegisteredEndPointList {
 		if (results.size() > 0) {
 			list = results.toArray(new String[results.size()]);
 		}
-		
+
 		return list;
 	}
 
-	public String[] notifyOfLoginLogout(String name)
-	// called to get list of group members to notify when parm name logs in/out
-	// returns an array of 1 or more elements, or null if no users to notify
-	{
+	public String[] notifyOfLoginLogout(String name) {
+		// called to get list of group members to notify when parm name logs
+		// in/out returns an array of 1 or more elements, or null if no users to
+		// notify
 		String[] list = null;
 
-		UserElement user_data = findRegisteredUserData(name);
-		if (user_data == null) {
-			AceLogger
-					.Instance()
-					.log(
-							AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							Thread.currentThread().getName()
-									+ " EndPointList.notifyOfLoginLogout() -- Couldn't find user data for user "
-									+ name + " in registered user list.");
+		UserElement userData = findRegisteredUserData(name);
+		if (userData == null) {
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					Thread.currentThread().getName()
+							+ " EndPointList.notifyOfLoginLogout() -- Couldn't find user data for user " + name
+							+ " in registered user list.");
 
 			return null;
 		}
 
-		HashSet results = new HashSet();
+		Set<String> results = new HashSet<String>();
 
 		// process owns groups
-
-		String[] group_list = user_data.getOwnsGroups();
-		for (int i = 0; i < group_list.length; i++) {
-			GroupInfo group_info = GroupList.Instance()
-					.findGroup(group_list[i]);
-			if (group_info == null) {
-				AceLogger
-						.Instance()
-						.log(
-								AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ " EndPointList.notifyOfLoginLogout() -- Couldn't find owned group data for user "
-										+ name + ", group name "
-										+ group_list[i]);
+		String[] groupList = userData.getOwnsGroups();
+		for (int i = 0; i < groupList.length; i++) {
+			GroupInfo groupInfo = GroupList.Instance().findGroup(groupList[i]);
+			if (groupInfo == null) {
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						Thread.currentThread().getName()
+								+ " EndPointList.notifyOfLoginLogout() -- Couldn't find owned group data for user "
+								+ name + ", group name " + groupList[i]);
 
 				continue;
 			}
 
-			int notif_control = group_info.getGroupData()
-					.getOwnerLoginNotificationControl();
-			switch (notif_control) {
+			int notifControl = groupInfo.getGroupData().getOwnerLoginNotificationControl();
+			switch (notifControl) {
 			case RegisteredEndPointList.NOTIFY_MEMBERS:
 			case RegisteredEndPointList.NOTIFY_ALL: {
-				String[] members = group_info.getMembers();
+				String[] members = groupInfo.getMembers();
 				for (int j = 0; j < members.length; j++) {
 					results.add(new String(members[j]));
 				}
@@ -499,44 +433,30 @@ public class RegisteredEndPointList {
 			case RegisteredEndPointList.NOTIFY_NONE:
 				break;
 			default: {
-				AceLogger
-						.Instance()
-						.log(
-								AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ " EndPointList.notifyOfLoginLogout() -- Invalid login notification setting "
-										+ notif_control
-										+ " in group data for group "
-										+ group_info.getName());
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						Thread.currentThread().getName()
+								+ " EndPointList.notifyOfLoginLogout() -- Invalid login notification setting "
+								+ notifControl + " in group data for group " + groupInfo.getName());
 			}
 				break;
 			}
 		}
 
 		// process belongs to groups
-
-		group_list = user_data.getBelongsToGroups();
-		for (int i = 0; i < group_list.length; i++) {
-			GroupInfo group_info = GroupList.Instance()
-					.findGroup(group_list[i]);
+		groupList = userData.getBelongsToGroups();
+		for (int i = 0; i < groupList.length; i++) {
+			GroupInfo group_info = GroupList.Instance().findGroup(groupList[i]);
 			if (group_info == null) {
-				AceLogger
-						.Instance()
-						.log(
-								AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ " EndPointList.notifyOfLoginLogout() -- Couldn't find belong to group data for user "
-										+ name + ", group name "
-										+ group_list[i]);
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						Thread.currentThread().getName()
+								+ " EndPointList.notifyOfLoginLogout() -- Couldn't find belong to group data for user "
+								+ name + ", group name " + groupList[i]);
 
 				continue;
 			}
 
-			int notif_control = group_info.getGroupData()
-					.getMemberLoginNotificationControl();
-			switch (notif_control) {
+			int notifControl = group_info.getGroupData().getMemberLoginNotificationControl();
+			switch (notifControl) {
 			case RegisteredEndPointList.NOTIFY_MEMBERS: {
 				String[] members = group_info.getMembers();
 				for (int j = 0; j < members.length; j++) {
@@ -564,16 +484,10 @@ public class RegisteredEndPointList {
 			case RegisteredEndPointList.NOTIFY_NONE:
 				break;
 			default: {
-				AceLogger
-						.Instance()
-						.log(
-								AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								Thread.currentThread().getName()
-										+ " EndPointList.notifyOfLoginLogout() -- Invalid login notification setting "
-										+ notif_control
-										+ " in group data for group "
-										+ group_info.getName());
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						Thread.currentThread().getName()
+								+ " EndPointList.notifyOfLoginLogout() -- Invalid login notification setting "
+								+ notifControl + " in group data for group " + group_info.getName());
 			}
 				break;
 			}
@@ -617,11 +531,10 @@ public class RegisteredEndPointList {
 		}
 		return true;
 	}
-	
+
 	public void setCallCount(EndPointInterface endpoint, int count) {
 		synchronized (registeredNames) {
-			EndPointInfo info = (EndPointInfo) registeredEndPoints
-					.get(endpoint);
+			EndPointInfo info = (EndPointInfo) registeredEndPoints.get(endpoint);
 			if (info == null) {
 				return;
 			}
