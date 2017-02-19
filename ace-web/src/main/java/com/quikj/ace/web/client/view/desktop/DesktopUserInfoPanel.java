@@ -181,7 +181,7 @@ public class DesktopUserInfoPanel extends StackLayoutPanel implements UserInfoPa
 			buffer.append(group.getNumDND());
 			buffer.append("<br>");
 
-			buffer.append(ApplicationController.getMessages().DesktopUserInfoPanel_estimatedWaitTime() + ": ");
+			buffer.append(ApplicationController.getMessages().DesktopUserInfoPanel_maxWaitTime() + ": ");
 			buffer.append(group.getWaitTime());
 
 			buffer.append("</blockquote>");

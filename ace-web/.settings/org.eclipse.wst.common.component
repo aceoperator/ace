@@ -7,10 +7,10 @@
         <dependent-module archiveName="ace-messaging-2.3.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/ace-messaging/ace-messaging">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="ace-framework-2.3.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/ace-framework/ace-framework">
+        <dependent-module archiveName="ace-framework-2.3.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/ace-framework/ace-framework">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="ace-app-2.3.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/ace-app/ace-app">
+        <dependent-module archiveName="ace-app-2.3.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/ace-app/ace-app">
             <dependency-type>uses</dependency-type>
         </dependent-module>
         <property name="context-root" value="ace-contactcenter"/>

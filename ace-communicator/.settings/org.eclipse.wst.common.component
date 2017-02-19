@@ -5,7 +5,7 @@
         <dependent-module archiveName="ace-framework-2.3.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/ace-framework/ace-framework">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module archiveName="ace-db-2.3.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/ace-db/ace-db">
+        <dependent-module archiveName="ace-db-2.3.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/ace-db/ace-db">
             <dependency-type>uses</dependency-type>
         </dependent-module>
         <property name="context-root" value="ace-communicator"/>
