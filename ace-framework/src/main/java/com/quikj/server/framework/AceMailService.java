@@ -61,9 +61,8 @@ public class AceMailService extends AceThread {
 
 	private String pendingDir;
 
-	public AceMailService(String server, int port, boolean tls, boolean debug,
-			String username, String password, String pendingDir,
-			String pendingFile, String overrideFrom) {
+	public AceMailService(String server, int port, boolean tls, boolean debug, String username, String password,
+			String pendingDir, String pendingFile, String overrideFrom) {
 		super("AceMailService");
 
 		this.pendingDir = AceConfigFileHelper.getAcePath(pendingDir);
@@ -74,8 +73,7 @@ public class AceMailService extends AceThread {
 		instance = this;
 	}
 
-	private void initMail(String server, int port, boolean tls, boolean debug,
-			String username, String password) {
+	private void initMail(String server, int port, boolean tls, boolean debug, String username, String password) {
 
 		// do mail server setup
 		Properties props = new Properties();
@@ -88,15 +86,14 @@ public class AceMailService extends AceThread {
 
 		if (tls) {
 			props.setProperty("mail.smtp.starttls.enable", "true");
-			props.setProperty("mail.smtp.socketFactory.class",
-					"javax.net.ssl.SSLSocketFactory");
+			props.setProperty("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
 			props.setProperty("mail.smtp.socketFactory.fallback", "false");
-			props.setProperty("mail.smtp.socketFactory.port",
-					Integer.toString(port));
+			props.setProperty("mail.smtp.socketFactory.port", Integer.toString(port));
 		}
 
 		if (debug) {
 			props.setProperty("mail.smtp.debug", "true");
+			props.setProperty("mail.debug", "true");
 		}
 
 		SmtpAuthenticator authenticator = null;
@@ -125,20 +122,18 @@ public class AceMailService extends AceThread {
 
 		// serialize out the pending message list
 		if (pendingMessageList.size() > 0) {
+			AceLogger.Instance().log(AceLogger.INFORMATIONAL, AceLogger.SYSTEM_LOG, getName()
+					+ "- cleanup() -- Writing " + pendingMessageList.size() + " unsent mail messages to file");
 			File file = new File(pendingFile);
 
 			try {
-				ObjectOutputStream os = new ObjectOutputStream(
-						new FileOutputStream(file));
+				ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(file));
 				os.writeObject(pendingMessageList);
 				os.close();
-			} catch (Exception ex) {
-				AceLogger.Instance().log(
-						AceLogger.ERROR,
-						AceLogger.SYSTEM_LOG,
-						getName() + "- dispose() -- Error while serializing - "
-								+ ex.getClass().getName() + " : "
-								+ ex.getMessage());
+			} catch (Exception e) {
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, getName()
+						+ "- cleanup() -- Error while serializing - " + e.getClass().getName() + " : " + e.getMessage(),
+						e);
 			}
 		}
 
@@ -158,20 +153,17 @@ public class AceMailService extends AceThread {
 		return mailSession;
 	}
 
-	private boolean handleMail(AceMailMessage mail_message) {
+	private boolean handleMail(AceMailMessage mailMessage) {
 		// override from/reply-to if specified in the config file
-		if (overrideFrom != null && overrideFrom.length() > 0) {
-			mail_message.setFrom(overrideFrom);
+		if (overrideFrom != null && !overrideFrom.isEmpty()) {
+			mailMessage.setFrom(overrideFrom);
 		}
 
-		javax.mail.Message message = mail_message.toEmail(mailSession);
+		javax.mail.Message message = mailMessage.toEmail(mailSession);
 		if (message == null) {
-			// log message
-			AceLogger.Instance().log(
-					AceLogger.WARNING,
-					AceLogger.SYSTEM_LOG,
+			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
 					"AceMailService.handleMail() -- Outgoing email message discarded : "
-							+ mail_message.getErrorMessage());
+							+ mailMessage.getErrorMessage());
 
 			return true;
 		}
@@ -205,15 +197,12 @@ public class AceMailService extends AceThread {
 			// check the accumulated message queue
 			int size = pendingMessageList.size();
 			if (size > 0) {
-				Date current_time = new Date();
-				if (current_time.getTime() >= (accLogged.getTime() + 30 * 60 * 1000)) {
+				Date currentTime = new Date();
+				if (currentTime.getTime() >= (accLogged.getTime() + 30 * 60 * 1000)) {
 					// print log message
-					AceLogger.Instance().log(
-							AceLogger.WARNING,
-							AceLogger.SYSTEM_LOG,
-							"AceMailService.handleMail() -- Accumulated mail queue size is  "
-									+ size);
-					accLogged = current_time;
+					AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
+							"AceMailService.handleMail() -- Accumulated mail queue size is  " + size);
+					accLogged = currentTime;
 				}
 			}
 		}
@@ -231,43 +220,27 @@ public class AceMailService extends AceThread {
 
 		if (file.exists()) {
 			try {
-				ObjectInputStream is = new ObjectInputStream(
-						new FileInputStream(file));
-				pendingMessageList = (ArrayList<AceMailMessage>) is
-						.readObject();
+				ObjectInputStream is = new ObjectInputStream(new FileInputStream(file));
+				pendingMessageList = (ArrayList<AceMailMessage>) is.readObject();
 				is.close();
 
-				if (file.delete() == false) {
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									getName()
-											+ "- run() -- Failure deleting save pending mail file "
-											+ file.getAbsolutePath()
-											+ ". Please remove the file manually.");
+				if (!file.delete()) {
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							getName() + "- run() -- Failure deleting save pending mail file " + file.getAbsolutePath()
+									+ ". Please remove the file manually.");
 				}
 
 				sendPendingMessage();
 			} catch (Exception ex) {
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								getName()
-										+ "- run() -- Error while serializing in saved pending mail file, pending messages discarded. Error = "
-										+ ex.getClass().getName() + " : "
-										+ ex.getMessage());
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						getName()
+								+ "- run() -- Error while serializing in saved pending mail file, pending messages discarded. Error = "
+								+ ex.getClass().getName() + " : " + ex.getMessage());
 
 				if (file.delete() == false) {
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									getName()
-											+ "- run() -- Failure deleting save pending mail file "
-											+ file.getAbsolutePath()
-											+ ". Please remove the file manually.");
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							getName() + "- run() -- Failure deleting save pending mail file " + file.getAbsolutePath()
+									+ ". Please remove the file manually.");
 				}
 			}
 		}
@@ -275,49 +248,33 @@ public class AceMailService extends AceThread {
 		while (true) {
 			AceMessageInterface message = waitMessage();
 			if (message == null) {
-				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								getName()
-										+ "- run() -- A null message was received while waiting for a message - "
-										+ getErrorMessage());
-
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, getName()
+						+ "- run() -- A null message was received while waiting for a message - " + getErrorMessage());
 				break;
 			}
 
 			if (message instanceof AceSignalMessage) {
 				// A signal message is received
-
-				// print informational message
-				AceLogger.Instance().log(
-						AceLogger.INFORMATIONAL,
-						AceLogger.SYSTEM_LOG,
-						getName() + " - AceMailService.run() --  A signal "
-								+ ((AceSignalMessage) message).getSignalId()
-								+ " is received : "
-								+ ((AceSignalMessage) message).getMessage());
+				AceLogger.Instance().log(AceLogger.INFORMATIONAL, AceLogger.SYSTEM_LOG,
+						getName() + " - AceMailService.run() --  A signal " + ((AceSignalMessage) message).getSignalId()
+								+ " is received : " + ((AceSignalMessage) message).getMessage());
 
 				break;
-			} else if ((message instanceof AceMailServiceMessage) == true) {
-				AceMailMessage mail_message = ((AceMailServiceMessage) message)
-						.getMailMessage();
+			} else if (message instanceof AceMailServiceMessage) {
+				AceMailMessage mailMessage = ((AceMailServiceMessage) message).getMailMessage();
 
 				// if we have a backlog of outgoing msgs, put message in pending
 				// queue
 				if (retryTimerId != -1) {
-					pendingMessageList.add(mail_message);
+					pendingMessageList.add(mailMessage);
 				} else {
 					// send the message
-
-					if (handleMail(mail_message) == false) {
+					if (!handleMail(mailMessage)) {
 						// put the message in the pending queue and start retry
 						// timing
-						pendingMessageList.add(mail_message);
+						pendingMessageList.add(mailMessage);
 
-						retryTimerId = AceTimer.Instance().startTimer(
-								RETRY_INTERVAL, RETRY_SENDING);
+						retryTimerId = AceTimer.Instance().startTimer(RETRY_INTERVAL, RETRY_SENDING);
 					}
 				}
 			} else if (message instanceof AceTimerMessage) {
@@ -326,25 +283,13 @@ public class AceMailService extends AceThread {
 				if (timer_msg.getUserSpecifiedParm() == RETRY_SENDING) {
 					sendPendingMessage();
 				} else {
-					// print error message
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									getName()
-											+ "- run() -- An unexpected timeout is received : "
-											+ timer_msg.getUserSpecifiedParm());
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, getName()
+							+ "- run() -- An unexpected timeout is received : " + timer_msg.getUserSpecifiedParm());
 				}
 			} else {
 				// unexpected event
-				// print error message
-				AceLogger
-						.Instance()
-						.log(AceLogger.ERROR,
-								AceLogger.SYSTEM_LOG,
-								getName()
-										+ "- run() -- An unexpected message is received : "
-										+ message.messageType());
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						getName() + "- run() -- An unexpected message is received : " + message.messageType());
 			}
 		}
 
@@ -359,8 +304,7 @@ public class AceMailService extends AceThread {
 			}
 
 			if (pendingMessageList.size() > 0) {
-				retryTimerId = AceTimer.Instance().startTimer(RETRY_INTERVAL,
-						RETRY_SENDING);
+				retryTimerId = AceTimer.Instance().startTimer(RETRY_INTERVAL, RETRY_SENDING);
 				return;
 			}
 		}

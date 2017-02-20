@@ -2,14 +2,14 @@
 	xmlns="http://www.quikj.com/ace/db/core/webtalk/vo" targetNamespace="http://www.quikj.com/ace/db/core/webtalk/vo"
 	elementFormDefault="qualified">
 
-	<xs:element name="VisitorStatistics" type="VisitorStatistics" />
+	<xs:element name="visitorStatistics" type="VisitorStatistics" />
 
 	<xs:complexType name="VisitorStatistics">
 		<xs:sequence>
-			<xs:element name="LoginTime" type="xs:dateTime" />
-			<xs:element name="FullName" type="xs:string" />
-			<xs:element name="Email" type="xs:string" minOccurs="0" />
-			<xs:element name="AdditionalInfo" type="xs:string" minOccurs="0" />
+			<xs:element name="loginTime" type="xs:dateTime" />
+			<xs:element name="fullName" type="xs:string" />
+			<xs:element name="email" type="xs:string" minOccurs="0" />
+			<xs:element name="additionalInfo" type="xs:string" minOccurs="0" />
 		</xs:sequence>
 	</xs:complexType>
 </xs:schema>

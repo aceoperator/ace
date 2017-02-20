@@ -5,10 +5,10 @@
 CATALINA_HOME=/usr/java/tomcat; export CATALINA_HOME
 JAVA_HOME=/usr/java/jdk; export JAVA_HOME
 
-# Add the following properties to support truested store
+# Add the following properties to support trusted store
 # -Djavax.net.ssl.trustStore=/home/tomcat/.keystore 
 # -Djavax.net.ssl.trustStorePassword=changeit
-JAVA_OPTS="-Xms256m -Xmx512m -XX:MaxPermSize=256m -Djava.awt.headless=true -Dfile.encoding=UTF8" -Duser.timezone=US/Eastern"; export JAVA_OPTS
+JAVA_OPTS="-Xms256m -Xmx512m -Djava.awt.headless=true -Dfile.encoding=UTF8" -Duser.timezone=US/Eastern"; export JAVA_OPTS
 TOMCAT_OWNER=tomcat; export TOMCAT_OWNER
 
 start() {

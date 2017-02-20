@@ -40,15 +40,15 @@
 	</welcome-file-list>
 
 	<!-- Only allow SSL communication -->
-	<security-constraint>
-		<web-resource-collection>
-			<web-resource-name>Ace Operator Custom</web-resource-name>
-			<url-pattern>/*</url-pattern>
-		</web-resource-collection>
+<!-- 	<security-constraint> -->
+<!-- 		<web-resource-collection> -->
+<!-- 			<web-resource-name>Ace Operator Custom</web-resource-name> -->
+<!-- 			<url-pattern>/*</url-pattern> -->
+<!-- 		</web-resource-collection> -->
 
-		<user-data-constraint>
-			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
-		</user-data-constraint>
-	</security-constraint>
+<!-- 		<user-data-constraint> -->
+<!-- 			<transport-guarantee>CONFIDENTIAL</transport-guarantee> -->
+<!-- 		</user-data-constraint> -->
+<!-- 	</security-constraint> -->
 	
 </web-app>

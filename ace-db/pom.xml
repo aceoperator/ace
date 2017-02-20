@@ -1,13 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<parent>
 		<groupId>com.quikj.ace</groupId>
 		<artifactId>ace</artifactId>
-		<version>2.3.0</version>
+		<version>2.3.0-SNAPSHOT</version>
 	</parent>
-	
+
 	<artifactId>ace-db</artifactId>
 	<name>ace-db</name>
 
@@ -153,6 +153,12 @@
 			<version>5.1.7.Final</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.quikj.ace</groupId>
+			<artifactId>ace-framework</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 	</dependencies>
 
 	<description>The core layer for the Ace Business Integration project.</description>
@@ -164,7 +170,7 @@
 				<version>2.10</version>
 
 				<configuration>
-					<argLine>-Xmx512m -XX:MaxPermSize=128m</argLine>
+					<argLine>-Xmx512m</argLine>
 					<useSystemClassLoader>true</useSystemClassLoader>
 					<includes>
 						<include>**/unit/*.java</include>
@@ -175,6 +181,11 @@
 							<name>basedir</name>
 							<value>${basedir}</value>
 						</property>
+
+						<property>
+							<name>ace.root.dir</name>
+							<value>${user.home}</value>
+						</property>
 					</systemProperties>
 				</configuration>
 			</plugin>
@@ -182,7 +193,7 @@
 			<plugin>
 				<groupId>org.jvnet.jaxb2.maven2</groupId>
 				<artifactId>maven-jaxb2-plugin</artifactId>
-				<version>0.8.3</version>
+				<version>0.11.0</version>
 				<executions>
 					<execution>
 						<goals>
@@ -191,6 +202,9 @@
 					</execution>
 				</executions>
 				<configuration>
+					<args>
+						<arg>-Djavax.xml.accessExternalSchema=all</arg>
+					</args>
 					<schemaDirectory>src/main/resources/xsd</schemaDirectory>
 					<extension>true</extension>
 					<episode>true</episode>
@@ -203,7 +217,6 @@
 							<artifactId>jaxb2-value-constructor</artifactId>
 							<version>3.0</version>
 						</plugin>
-
 					</plugins>
 				</configuration>
 			</plugin>

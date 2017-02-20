@@ -101,14 +101,15 @@
 	</welcome-file-list>
 
 	<!-- Only allow SSL communication -->
-	<security-constraint>
-		<web-resource-collection>
-			<web-resource-name>Ace Operator</web-resource-name>
-			<url-pattern>/*</url-pattern>
-		</web-resource-collection>
+	<!--  Disabled to allow Apache to front-end tomcat using mod_proxy  -->
+<!-- 	<security-constraint> -->
+<!-- 		<web-resource-collection> -->
+<!-- 			<web-resource-name>Ace Operator</web-resource-name> -->
+<!-- 			<url-pattern>/*</url-pattern> -->
+<!-- 		</web-resource-collection> -->
 
-		<user-data-constraint>
-			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
-		</user-data-constraint>
-	</security-constraint>
+<!-- 		<user-data-constraint> -->
+<!-- 			<transport-guarantee>CONFIDENTIAL</transport-guarantee> -->
+<!-- 		</user-data-constraint> -->
+<!-- 	</security-constraint> -->
 </web-app>
