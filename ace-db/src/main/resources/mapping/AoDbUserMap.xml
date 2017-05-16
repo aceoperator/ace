@@ -50,8 +50,8 @@
 	</select>
 
 	<insert id="replace" statementType="PREPARED" parameterMap="userInfoParam">
-		REPLACE INTO user_tbl (userid, password, fullname, flags, locked, change_password, password_updated) 
-			VALUES (#{userName}, PASSWORD(#{password}), #{fullName}, #{flags}, #{locked}, #{changePassword}, NOW())
+		REPLACE INTO user_tbl (userid, password, address, fullname, flags, locked, change_password, password_updated) 
+			VALUES (#{userName}, PASSWORD(#{password}), #{email}, #{fullName}, #{flags}, #{locked}, #{changePassword}, NOW())
 	</insert>
 
 	<select id="getBelongsToGroups" statementType="PREPARED"
@@ -179,7 +179,8 @@
 
 	<select id="listUsers" statementType="PREPARED" resultMap="userInfoResult">
 		SELECT u.userid AS userName, u.fullname AS fullName, u.addnl_info AS additionalInfo, 
-			avatar, password_updated AS passwordUpdated
+			avatar, password_updated AS passwordUpdated,
+			address AS email
 		FROM user_tbl u, group_member_tbl m
 		WHERE u.userid = m.userid
 			AND m.groupid = #{group}

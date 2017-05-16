@@ -446,12 +446,14 @@ public class UserBeanTest {
 		assertEquals("Additional information for testUser1", list.get(0)
 				.getAdditionalInfo());
 		assertEquals("avatar", list.get(0).getAvatar());
+		assertEquals("testUser1@domain.com", list.get(0).getEmail());
 
 		assertEquals("testUser2", list.get(1).getUserName());
 		assertEquals("Test testUser2", list.get(1).getFullName());
 		assertEquals("Additional information for testUser2", list.get(1)
 				.getAdditionalInfo());
 		assertEquals("avatar", list.get(1).getAvatar());
+		assertEquals("testUser2@domain.com", list.get(1).getEmail());
 
 		list = userBean.listUsers("testGroup3");
 		assertNotNull(list);
