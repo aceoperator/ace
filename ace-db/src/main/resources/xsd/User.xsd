@@ -2,51 +2,51 @@
 	xmlns="http://www.quikj.com/ace/db/core/webtalk/vo" targetNamespace="http://www.quikj.com/ace/db/core/webtalk/vo"
 	elementFormDefault="qualified">
 
-	<xs:element name="User" type="User" />
+	<xs:element name="user" type="User" />
 
 	<xs:complexType name="User">
 		<xs:sequence>
-			<xs:element name="Id" type="xs:long" minOccurs="0" />
-			<xs:element name="UserName" type="xs:string" />
-			<xs:element name="Password" type="xs:string" minOccurs="0" />
-			<xs:element name="FullName" type="xs:string" minOccurs="0" />
-			<xs:element name="Email" type="xs:string" minOccurs="0" />
-			<xs:element name="AdditionalInfo" type="xs:string"
+			<xs:element name="id" type="xs:long" minOccurs="0" />
+			<xs:element name="userName" type="xs:string" />
+			<xs:element name="password" type="xs:string" minOccurs="0" />
+			<xs:element name="fullName" type="xs:string" minOccurs="0" />
+			<xs:element name="email" type="xs:string" minOccurs="0" />
+			<xs:element name="additionalInfo" type="xs:string"
 				minOccurs="0" />
-			<xs:element name="UnavailableTransferTo" type="xs:string"
+			<xs:element name="unavailableTransferTo" type="xs:string"
 				minOccurs="0" />
-			<xs:element name="Gatekeeper" type="xs:string" minOccurs="0" />
-			<xs:element name="Avatar" type="xs:string" minOccurs="0" />
-			<xs:element name="Flags" type="xs:int" />
-			<xs:element name="Locked" type="xs:boolean" />
-			<xs:element name="PrivateInfo" type="xs:boolean" />
-			<xs:element name="ChangePassword" type="xs:boolean" />
-			<xs:element name="Domain" type="xs:string" minOccurs="0" />
-			<xs:element name="PasswordUpdated" type="xs:dateTime" minOccurs="0" />
+			<xs:element name="gatekeeper" type="xs:string" minOccurs="0" />
+			<xs:element name="avatar" type="xs:string" minOccurs="0" />
+			<xs:element name="flags" type="xs:int" />
+			<xs:element name="locked" type="xs:boolean" />
+			<xs:element name="privateInfo" type="xs:boolean" />
+			<xs:element name="changePassword" type="xs:boolean" />
+			<xs:element name="domain" type="xs:string" minOccurs="0" />
+			<xs:element name="passwordUpdated" type="xs:dateTime" minOccurs="0" />
 
-			<xs:element name="SearchLocked" type="xs:boolean"
+			<xs:element name="searchLocked" type="xs:boolean"
 				minOccurs="0" />
-			<xs:element name="SearchChangePassword" type="xs:boolean"
+			<xs:element name="searchChangePassword" type="xs:boolean"
 				minOccurs="0" />
 
-			<xs:element name="Roles" type="xs:string" minOccurs="0"
+			<xs:element name="roles" type="xs:string" minOccurs="0"
 				maxOccurs="unbounded" />
-			<xs:element name="MemberOfGroup" type="xs:string"
+			<xs:element name="memberOfGroup" type="xs:string"
 				minOccurs="0" maxOccurs="unbounded" />
-			<xs:element name="OwnsGroup" type="xs:string" minOccurs="0"
+			<xs:element name="ownsGroup" type="xs:string" minOccurs="0"
 				maxOccurs="unbounded" />
-			<xs:element name="SecurityQuestion" type="SecurityQuestion"
+			<xs:element name="securityQuestion" type="SecurityQuestion"
 				minOccurs="0" maxOccurs="unbounded" />
 		</xs:sequence>
 	</xs:complexType>
 
 	<xs:complexType name="SecurityQuestion">
 		<xs:sequence>
-			<xs:element name="Id" type="xs:long" minOccurs="0" />
-			<xs:element name="UserId" type="xs:long" minOccurs="0" />
-			<xs:element name="QuestionId" type="xs:int" />
-			<xs:element name="Question" type="xs:string" />
-			<xs:element name="Answer" type="xs:string" />
+			<xs:element name="id" type="xs:long" minOccurs="0" />
+			<xs:element name="userId" type="xs:long" minOccurs="0" />
+			<xs:element name="questionId" type="xs:int" />
+			<xs:element name="question" type="xs:string" />
+			<xs:element name="answer" type="xs:string" />
 		</xs:sequence>
 	</xs:complexType>
 

@@ -2,16 +2,16 @@
 	xmlns="http://www.quikj.com/ace/db/core/webtalk/vo" targetNamespace="http://www.quikj.com/ace/db/core/webtalk/vo"
 	elementFormDefault="qualified">
 
-	<xs:element name="Group" type="Group" />
+	<xs:element name="group" type="Group" />
 
 	<xs:complexType name="Group">
 		<xs:sequence>
-			<xs:element name="Name" type="xs:string" />
-			<xs:element name="Domain" type="xs:string" minOccurs="0"/>
-			<xs:element name="MemberLoginNotification" type="xs:int" default="0" />
-			<xs:element name="MemberBusyNotification" type="xs:int" default="0" />
-			<xs:element name="OwnerLoginNotification" type="xs:int" default="0" />
-			<xs:element name="OwnerBusyNotification" type="xs:int" default="0" />
+			<xs:element name="name" type="xs:string" />
+			<xs:element name="domain" type="xs:string" minOccurs="0"/>
+			<xs:element name="memberLoginNotification" type="xs:int" default="0" />
+			<xs:element name="memberBusyNotification" type="xs:int" default="0" />
+			<xs:element name="ownerLoginNotification" type="xs:int" default="0" />
+			<xs:element name="ownerBusyNotification" type="xs:int" default="0" />
 		</xs:sequence>
 	</xs:complexType>
 

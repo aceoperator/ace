@@ -19,7 +19,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.octo.captcha.service.CaptchaServiceException;
 import com.quikj.server.framework.AceMailMessage;
 import com.quikj.server.framework.AceMailService;
 import com.quikj.server.framework.CaptchaService;
@@ -52,29 +51,22 @@ public class FormMailerServlet extends HttpServlet {
 					"The mandatory parameter 'captcha' has not been specified");
 		}
 
-		if (captcha.trim().length() == 0) {
+		if (captcha.trim().isEmpty()) {
 			showResult(request, response,
 					messages.getString("imagePasscodeMissing"));
 			return;
 		}
 		
-		CaptchaService.CaptchaType captchaType = CaptchaService.CaptchaType.LARGE;
-		String type = request.getParameter("type");
-		if (type != null) {
-			captchaType = CaptchaService.CaptchaType.fromValue(type);
-		}
-
 		try {
-			captcha = captcha.trim().toLowerCase();
-			boolean correct = CaptchaService.getInstance(captchaType)
-					.validateResponseForID(request.getSession().getId(),
+			captcha = captcha.trim();
+			boolean correct = CaptchaService.getInstance().verify(request.getSession().getId(),
 							captcha);
 			if (!correct) {
 				showResult(request, response,
 						messages.getString("unmatchedCapchaChars"));
 				return;
 			}
-		} catch (CaptchaServiceException e) {
+		} catch (Exception e) {
 			// should not happen, may be thrown if the id is not valid
 			e.printStackTrace();
 			showResult(request, response, messages.getString("tryImageAgain"));

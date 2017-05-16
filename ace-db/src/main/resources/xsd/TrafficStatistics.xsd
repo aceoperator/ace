@@ -2,14 +2,14 @@
 	xmlns="http://www.quikj.com/ace/db/core/webtalk/vo" targetNamespace="http://www.quikj.com/ace/db/core/webtalk/vo"
 	elementFormDefault="qualified">
 
-	<xs:element name="TrafficStatistics" type="TrafficStatistics" />
+	<xs:element name="trafficStatistics" type="TrafficStatistics" />
 
 	<xs:complexType name="TrafficStatistics">
 		<xs:sequence>
-			<xs:element name="Timestamp" type="xs:dateTime" />
-			<xs:element name="NumActiveOperators" type="xs:float" />
-			<xs:element name="NumUsersInQueue" type="xs:float" />
-			<xs:element name="NumConversations" type="xs:float" />
+			<xs:element name="timestamp" type="xs:dateTime" />
+			<xs:element name="numActiveOperators" type="xs:float" />
+			<xs:element name="numUsersInQueue" type="xs:float" />
+			<xs:element name="numConversations" type="xs:float" />
 		</xs:sequence>
 	</xs:complexType>
 </xs:schema>

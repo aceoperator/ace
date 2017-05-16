@@ -1,0 +1,148 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.quikj.ace</groupId>
+		<artifactId>ace</artifactId>
+		<version>3.0.0</version>
+	</parent>
+
+	<artifactId>ace-docker</artifactId>
+	<name>ace-docker</name>
+	<packaging>pom</packaging>
+
+	<properties>
+		<docker.version>0.4.13</docker.version>
+	</properties>
+
+	<build>
+		<plugins>
+
+<!-- 			<plugin> -->
+<!-- 				<groupId>com.spotify</groupId> -->
+<!-- 				<artifactId>docker-maven-plugin</artifactId> -->
+<!-- 				<version>${docker.version}</version> -->
+<!-- 				<executions> -->
+<!-- 					<execution> -->
+<!-- 						<id>clean-all-images</id> -->
+<!-- 						<phase>package</phase> -->
+<!-- 						<goals> -->
+<!-- 							<goal>removeImage</goal> -->
+<!-- 						</goals> -->
+<!-- 						<configuration> -->
+<!-- 							<imageName></imageName> -->
+<!-- 						</configuration> -->
+<!-- 					</execution> -->
+<!-- 				</executions> -->
+<!-- 			</plugin> -->
+
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.0.2</version>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>target/docker-scripts</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/scripts</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>${docker.version}</version>
+				<executions>
+					<execution>
+						<id>build-ace-db</id>
+						<phase>package</phase>
+						<goals>
+							<goal>build</goal>
+						</goals>
+						<configuration>
+							<imageName>aceoperator/db</imageName>
+							<imageTags>
+								<imageTag>${project.version}</imageTag>
+							</imageTags>
+							<dockerDirectory>src/main/images/ace-db</dockerDirectory>
+							<resources>
+								<resource>
+									<targetPath>work</targetPath>
+									<directory>../ace-assembly/target/ace-${project.version}/ace-${project.version}/.ace/sql</directory>
+									<include>**/*.sql</include>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>build-ace-mail</id>
+						<phase>package</phase>
+						<goals>
+							<goal>build</goal>
+						</goals>
+						<configuration>
+							<imageName>aceoperator/mail</imageName>
+							<imageTags>
+								<imageTag>${project.version}</imageTag>
+							</imageTags>
+							<dockerDirectory>src/main/images/ace-mail</dockerDirectory>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>build-ace-app</id>
+						<phase>package</phase>
+						<goals>
+							<goal>build</goal>
+						</goals>
+						<configuration>
+							<imageName>aceoperator/app</imageName>
+							<imageTags>
+								<imageTag>${project.version}</imageTag>
+							</imageTags>
+							<dockerDirectory>src/main/images/ace-app</dockerDirectory>
+							<buildArgs>
+								<ACE_VERSION>ace-${project.version}</ACE_VERSION>
+							</buildArgs>
+							<resources>
+								<resource>
+									<targetPath>work</targetPath>
+									<directory>../ace-assembly/target/ace-${project.version}</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>build-ace-frontend</id>
+						<phase>package</phase>
+						<goals>
+							<goal>build</goal>
+						</goals>
+						<configuration>
+							<imageName>aceoperator/frontend</imageName>
+							<imageTags>
+								<imageTag>${project.version}</imageTag>
+							</imageTags>
+							<dockerDirectory>src/main/images/ace-frontend</dockerDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

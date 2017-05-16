@@ -1,0 +1,48 @@
+version: "2"
+services:
+    app:
+        container_name: ace-app
+        image: "aceoperator/app:${project.version}"
+        depends_on:
+          - mail
+          - db
+        links:
+          - "db:db"
+          - "mail:mail"
+        networks:
+          - "network"
+        volumes:
+          - /usr/share/aceoperator/.ace
+    db:
+        container_name: ace-db
+        image: "aceoperator/db:${project.version}"
+        ports: 
+          - "3306:3306"
+        networks:
+          - "network"
+        environment:
+          - "MYSQL_ROOT_PASSWORD=a1b2c3d4"
+    mail:
+        container_name: ace-mail
+        image: "aceoperator/mail:${project.version}"
+        ports:
+          - "25:25"
+          - "143:143" 
+          - "993:993"
+        networks:
+          - "network"
+    frontend:
+        container_name: ace-frontend
+        image: "aceoperator/frontend:${project.version}"
+        ports:
+          - "80:80"
+          - "443:443"
+        links:
+          - "app:app"
+        networks:
+          - "network"
+          
+networks:
+  network:
+    driver: bridge
+ 

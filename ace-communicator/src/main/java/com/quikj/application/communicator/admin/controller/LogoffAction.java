@@ -36,7 +36,7 @@ public class LogoffAction extends Action {
 				AceLogger.USER_LOG,
 				"User " + request.getUserPrincipal().getName() + " logged out");
 		
-		response.sendRedirect(request.getContextPath() + "/j_spring_security_logout");
+		response.sendRedirect(request.getContextPath() + "/logout");
 		
 		return null;
 	}

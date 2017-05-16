@@ -2,16 +2,16 @@
 	xmlns="http://www.quikj.com/ace/db/core/webtalk/vo" targetNamespace="http://www.quikj.com/ace/db/core/webtalk/vo"
 	elementFormDefault="qualified">
 
-	<xs:element name="Blacklist" type="Blacklist" />
+	<xs:element name="blacklist" type="Blacklist" />
 
 	<xs:complexType name="Blacklist">
 		<xs:sequence>
-			<xs:element name="Id" type="xs:long" minOccurs="0" />
-			<xs:element name="UserId" type="xs:long" minOccurs="0" />
-			<xs:element name="Identifier" type="xs:string" />
-			<xs:element name="Type" type="xs:int" /> 
-			<xs:element name="Level" type="xs:int" />
-			<xs:element name="LastModified" type="xs:long" minOccurs="0" />			
+			<xs:element name="id" type="xs:long" minOccurs="0" />
+			<xs:element name="userId" type="xs:long" minOccurs="0" />
+			<xs:element name="identifier" type="xs:string" />
+			<xs:element name="type" type="xs:int" /> 
+			<xs:element name="level" type="xs:int" />
+			<xs:element name="lastModified" type="xs:long" minOccurs="0" />			
 		</xs:sequence>
 	</xs:complexType>
 	

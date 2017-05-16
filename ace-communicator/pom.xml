@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.quikj.ace</groupId>
 		<artifactId>ace</artifactId>
-		<version>2.3.0</version>
+		<version>3.0.0</version>
 	</parent>
 	
 	<artifactId>ace-communicator</artifactId>
@@ -56,6 +56,13 @@
 			<groupId>struts</groupId>
 			<artifactId>struts</artifactId>
 			<version>1.1</version>
+
+			<exclusions>
+            			<exclusion>
+                			<artifactId>jdbc-stdext</artifactId>
+                			<groupId>javax.sql</groupId>
+            			</exclusion>
+        		</exclusions>
 		</dependency>
 
 		<dependency>
@@ -86,25 +93,25 @@
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-core</artifactId>
-			<version>${org.springframework.version}</version>
+			<version>${org.springframework.security.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-web</artifactId>
-			<version>${org.springframework.version}</version>
+			<version>${org.springframework.security.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-config</artifactId>
-			<version>${org.springframework.version}</version>
+			<version>${org.springframework.security.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-taglibs</artifactId>
-			<version>${org.springframework.version}</version>
+			<version>${org.springframework.security.version}</version>
 		</dependency>
 
 	</dependencies>

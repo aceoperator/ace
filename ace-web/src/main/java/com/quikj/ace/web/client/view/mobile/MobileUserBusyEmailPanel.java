@@ -194,7 +194,7 @@ public class MobileUserBusyEmailPanel extends LayoutPanel implements
 
 	public String captchaImageUrl() {
 		return GWT.getModuleBaseURL() + "../jcaptcha?nocache="
-				+ new Date().getTime() + "&type=small";
+				+ new Date().getTime();
 	}
 
 	public void reset() {

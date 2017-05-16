@@ -3,108 +3,103 @@
  */
 package com.quikj.server.framework;
 
-import java.awt.Color;
-import java.awt.Font;
+import java.awt.image.BufferedImage;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Timer;
+import java.util.TimerTask;
 
-import com.octo.captcha.CaptchaFactory;
-import com.octo.captcha.component.image.backgroundgenerator.BackgroundGenerator;
-import com.octo.captcha.component.image.backgroundgenerator.UniColorBackgroundGenerator;
-import com.octo.captcha.component.image.fontgenerator.FontGenerator;
-import com.octo.captcha.component.image.fontgenerator.RandomFontGenerator;
-import com.octo.captcha.component.image.textpaster.SimpleTextPaster;
-import com.octo.captcha.component.image.textpaster.TextPaster;
-import com.octo.captcha.component.image.wordtoimage.ComposedWordToImage;
-import com.octo.captcha.component.image.wordtoimage.WordToImage;
-import com.octo.captcha.component.word.wordgenerator.RandomWordGenerator;
-import com.octo.captcha.component.word.wordgenerator.WordGenerator;
-import com.octo.captcha.engine.CaptchaEngine;
-import com.octo.captcha.engine.GenericCaptchaEngine;
-import com.octo.captcha.image.gimpy.GimpyFactory;
-import com.octo.captcha.service.image.DefaultManageableImageCaptchaService;
-import com.octo.captcha.service.image.ImageCaptchaService;
+import com.github.cage.GCage;
 
 /**
- * @author achatte3
+ * @author amit
  * 
  */
-
-// TODO Add license information for jcaptcha
 public class CaptchaService {
+	protected class CaptchaInfo {
+		protected String token;
+		protected int countDown = 5;
 
-	public enum CaptchaType {
-		SMALL("small"), LARGE("large");
-
-		String value;
-
-		CaptchaType(String value) {
-			this.value = value;
+		public CaptchaInfo(String token) {
+			this.token = token;
 		}
 
-		public String value() {
-			return value;
+		public int decrement() {
+			return --countDown;
 		}
+	}
+	
+	private static CaptchaService instance;
 
-		public static CaptchaType fromValue(String value) {
-			for (CaptchaType v : values()) {
-				if (v.value().equals(value)) {
-					return v;
+	Map<String, CaptchaInfo> buffer = new HashMap<String, CaptchaInfo>();
+
+	private Timer timer;
+
+	public int getBufferSize() {
+		return buffer.size();
+	}
+	
+	public void init() {
+		TimerTask task = new TimerTask() {
+			@Override
+			public void run() {
+				synchronized (buffer) {
+					Iterator<Entry<String, CaptchaInfo>> i = buffer.entrySet().iterator();
+					while (i.hasNext()) {
+						Entry<String, CaptchaInfo> element = i.next();
+						int countDown = element.getValue().decrement();
+						if (countDown == 0) {
+							i.remove();
+						}
+					}
+				}
+
+				if (buffer.size() > 200) {
+					System.out.println("Warning! There are " + buffer.size() + " images in the captcha list");
 				}
 			}
+		};
 
-			return null;
+		timer = new Timer("CaptchaTimer");
+		timer.scheduleAtFixedRate(task, 60* 1000L, 60 * 1000L);
+		instance = this;
+	}
+
+	public void destroy() {
+		if (timer != null) {
+			timer.cancel();
 		}
-	}
-
-	private static Map<CaptchaType, ImageCaptchaService> instances = new HashMap<CaptchaService.CaptchaType, ImageCaptchaService>();
-
-	private CaptchaService(CaptchaType captchaType) {
-		ImageCaptchaService service = init(captchaType);
-		instances.put(captchaType, service);
-	}
-
-	private ImageCaptchaService init(CaptchaType captchType) {
-		Color textColor = new Color(255, 255, 255);
-		TextPaster textPaster = new SimpleTextPaster(5, 8, textColor);
-
-		Color bgColor = new Color(0, 0, 0);
-
-		BackgroundGenerator background;
-		FontGenerator fontGenerator;
 		
-		Font font = Font.decode("Monospaced");
-		Font[] fonts = {font};
-		
-		if (captchType == CaptchaType.LARGE) {
-			fontGenerator = new RandomFontGenerator(40, 50, fonts);
-			background = new UniColorBackgroundGenerator(300,
-					100, bgColor);
-		} else {
-			fontGenerator = new RandomFontGenerator(20, 26, fonts);
-			background = new UniColorBackgroundGenerator(150,
-					50, bgColor);
+		synchronized (buffer) {
+			buffer.clear();
 		}
-
-		WordToImage wordToImage = new ComposedWordToImage(fontGenerator, background, textPaster);
-		WordGenerator wordgen = new RandomWordGenerator("abcdefghijklmnopqrstuvwxyz0123456789");
-
-		CaptchaFactory[] factories = new CaptchaFactory[] { new GimpyFactory(wordgen, wordToImage) };
-		CaptchaEngine imageEngine = new GenericCaptchaEngine(factories);
-
-		DefaultManageableImageCaptchaService def = new DefaultManageableImageCaptchaService();
-		def.setCaptchaEngine(imageEngine);
-
-		return def;
+		
+		instance = null;
 	}
 
-	public static ImageCaptchaService getInstance(CaptchaType captchaType) {
-		ImageCaptchaService instance = instances.get(captchaType);
-		if (instance == null) {
-			new CaptchaService(captchaType);
-			instance = instances.get(captchaType);
-		}
-
+	public static CaptchaService getInstance() {
 		return instance;
+	}
+
+	public BufferedImage generateImage(String sessionId) {
+		GCage cage = new GCage();
+		String token = cage.getTokenGenerator().next();
+		synchronized (buffer) {
+			buffer.put(sessionId, new CaptchaInfo(token));
+		}
+		return cage.drawImage(token);
+	}
+
+	public boolean verify(String sessionId, String input) {
+		synchronized (buffer) {
+			CaptchaInfo info = buffer.get(sessionId);
+			if (info == null) {
+				return false;
+			}
+			buffer.remove(sessionId);
+			return info.token.equalsIgnoreCase(input);
+		}		
 	}
 }

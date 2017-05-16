@@ -16,14 +16,12 @@
 
 <h4 style="color:green"><bean:message key="index.message"/></h4>
 
-<c:if test="${not empty error}">
-		<div class="errorblock">
-			Your login attempt was not successful, try again.<br /> Caused :
-			${sessionScope["SPRING_SECURITY_LAST_EXCEPTION"].message}
-		</div>
+<c:if test="${param.error != null}"> 
+	<p style="color:red"><b>Invalid username / password</b></p>
 </c:if>
 
-<form name="login" action="<c:url value='/j_spring_security_check' />" method='POST'>
+<c:url var="loginUrl" value="/login"/>
+<form name="login" action="${loginUrl}" method="post">
 <table border="0">
 
   <tr>
@@ -31,7 +29,7 @@
       <bean:message key="prompt.username"/>
     </th>
     <td align="left">
-      <input type='text' name='j_username' value='' size='16' maxlength='16'>
+      <input type="text" id="username" name="username" size='16' maxlength='16'/> 
     </td>
   </tr>
 
@@ -40,7 +38,7 @@
       <bean:message key="prompt.password"/>
     </th>
     <td align="left">
-      <input type='password' name='j_password' size='16' maxlength='16' />
+      <input type="password" id="password" name="password" maxlength='16' /> 
     </td>
   </tr>
   
@@ -60,7 +58,7 @@
 </table>
 
 <script>
-	document.login.j_username.focus();
+	document.login.username.focus();
 </script>
 
 </form>

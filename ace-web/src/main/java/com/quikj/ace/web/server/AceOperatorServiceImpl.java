@@ -10,7 +10,6 @@ import java.util.Properties;
 import javax.servlet.http.Cookie;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
-import com.octo.captcha.service.CaptchaServiceException;
 import com.quikj.ace.messages.vo.adapter.GroupInfo;
 import com.quikj.ace.messages.vo.app.Message;
 import com.quikj.ace.messages.vo.talk.CannedMessageElement;
@@ -19,8 +18,8 @@ import com.quikj.ace.messages.vo.talk.SendMailRequestMessage;
 import com.quikj.ace.web.client.AceOperatorService;
 import com.quikj.ace.web.shared.AceServerException;
 import com.quikj.application.web.talk.plugin.accounting.OpBusyCDR;
-import com.quikj.server.app.adapter.PolledAppServerAdapter;
 import com.quikj.server.app.adapter.AppServerAdapterException;
+import com.quikj.server.app.adapter.PolledAppServerAdapter;
 import com.quikj.server.framework.AceMailMessage;
 import com.quikj.server.framework.AceMailService;
 import com.quikj.server.framework.CaptchaService;
@@ -187,22 +186,13 @@ public class AceOperatorServiceImpl extends RemoteServiceServlet implements
 	@Override
 	public String sendMail(SendMailRequestMessage mail, String captcha,
 			String captchaType) {
-		String captchaId = getThreadLocalRequest().getSession().getId();
-		// Call the Service method
+		String salt = getThreadLocalRequest().getSession().getId();
 		try {
-			captcha = captcha.toLowerCase();
-
-			CaptchaService.CaptchaType ctype = CaptchaService.CaptchaType.LARGE;
-			if (captchaType != null) {
-				ctype = CaptchaService.CaptchaType.fromValue(captchaType);
-			}
-
-			boolean correct = CaptchaService.getInstance(ctype)
-					.validateResponseForID(captchaId, captcha);
+			boolean correct = CaptchaService.getInstance().verify(salt, captcha);
 			if (!correct) {
 				return "NoMatch";
 			}
-		} catch (CaptchaServiceException e) {
+		} catch (Exception e) {
 			// should not happen, may be thrown if the id is not valid
 			e.printStackTrace();
 			return "NoMatch";
@@ -291,22 +281,13 @@ public class AceOperatorServiceImpl extends RemoteServiceServlet implements
 
 	private void validateCaptcha(String captcha, String captchaType)
 			throws AceServerException {
-		String captchaId = getThreadLocalRequest().getSession().getId();
-		// Call the Service method
+		String salt = getThreadLocalRequest().getSession().getId();
 		try {
-			captcha = captcha.toLowerCase();
-
-			CaptchaService.CaptchaType ctype = CaptchaService.CaptchaType.LARGE;
-			if (captchaType != null) {
-				ctype = CaptchaService.CaptchaType.fromValue(captchaType);
-			}
-
-			boolean correct = CaptchaService.getInstance(ctype)
-					.validateResponseForID(captchaId, captcha);
+			boolean correct = CaptchaService.getInstance().verify(salt, captcha);
 			if (!correct) {
 				throw new AceServerException("unmatchedCapchaChars", true);
 			}
-		} catch (CaptchaServiceException e) {
+		} catch (Exception e) {
 			// should not happen, may be thrown if the id is not valid
 			e.printStackTrace();
 			throw new AceServerException("imagePasscodeErrorTryAgain", true);
