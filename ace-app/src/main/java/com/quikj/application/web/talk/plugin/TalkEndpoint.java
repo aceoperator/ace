@@ -469,7 +469,6 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		if (access != null) // specified in the config file
 		{
 			if (!access.match(host)) {
-				// print error message
 				AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
 						Thread.currentThread().getName()
 								+ "- TalkEndoint.processRegistrationRequestMessage() -- Unauthorized registered user access from host "
@@ -481,7 +480,6 @@ public class TalkEndpoint implements PluginAppClientInterface {
 										ServiceController.getLocale((String) parent.getParam("language")))
 								.getString("You_are_not_allowed_to_login_from_this_location"),
 						Message.CONTENT_TYPE_XML, null)) {
-					// print error message
 					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
 							+ "- TalkEndoint.processRegistrationRequestMessage() -- Error sending registration response message to the endpoint");
 				}
@@ -926,7 +924,10 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			message.getCallingNameElement().getCallParty().setIpAddress(host);
 			message.getCallingNameElement().getCallParty().setEndUserCookie(endUserCookie);
 		}
-
+		
+		// Set this value so that a robot end user cannot bypass blacklist check by setting this flag while sending a request
+		message.setUserTransfer(false);
+		
 		// send the message to the service controller
 		if (!ServiceController.Instance()
 				.sendMessage(new MessageEvent(MessageEvent.SETUP_REQUEST, parent, message, null))) {

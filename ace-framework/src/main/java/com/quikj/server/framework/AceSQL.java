@@ -82,14 +82,7 @@ public class AceSQL implements AceCompareMessageInterface {
 							ps.setDate(index++, new java.sql.Date(
 									((Date) param).getTime()));
 						} else {
-							// print log message and continue (it will result in
-							// an exception any way)
-							AceLogger.Instance().log(
-									AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									"AceSQL.AceSQLThread.run() : unsupported data type "
-											+ param.getClass().getName());
-							continue;
+							ps.setObject(index++, param);
 						}
 					}
 

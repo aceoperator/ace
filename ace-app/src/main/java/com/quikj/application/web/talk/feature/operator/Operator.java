@@ -316,7 +316,6 @@ public class Operator extends AceThread
 		SetupResponseMessage resp = new SetupResponseMessage();
 		resp.setSessionId(element.getSessionId());
 
-		// send the message
 		if (ServiceController.Instance()
 				.sendMessage(new MessageEvent(MessageEvent.SETUP_RESPONSE, this, SetupResponseMessage.UNAVAILABLE,
 						java.util.ResourceBundle
@@ -328,10 +327,6 @@ public class Operator extends AceThread
 			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
 					+ "- Operator.dropAllSubscribers() -- Error sending UNAVAILABLE message to the service controller");
 		}
-
-		// peg wait time opm
-//		int wait_time = (int) (currentTime - element.getStartWaitTime()) / 1000;
-//		measurements.collectOPM(OPM_USER_WAIT_TIME, wait_time);
 	}
 
 	public String getIdentifier() {
@@ -444,7 +439,6 @@ public class Operator extends AceThread
 		if (displayWaitTimeString != null) {
 			displayWaitTime = Boolean.parseBoolean(displayWaitTimeString);
 		}
-
 		return true;
 	}
 
@@ -803,7 +797,6 @@ public class Operator extends AceThread
 				SetupResponseMessage resp = new SetupResponseMessage();
 				resp.setSessionId(setup.getSessionId());
 
-				// send the message
 				if (!ServiceController.Instance()
 						.sendMessage(
 								new MessageEvent(MessageEvent.SETUP_RESPONSE, this, SetupResponseMessage.BUSY,

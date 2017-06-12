@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Locale;
+import java.util.ResourceBundle;
 
 import javax.sql.DataSource;
 
@@ -1251,7 +1252,7 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 			return;
 		}
 
-		if (message.getCallingNameElement().getCallParty().getEndUserCookie() != null) {
+		if (message.getCallingNameElement().getCallParty().getEndUserCookie() != null && !message.isUserTransfer()) {
 			DbBlacklistVerification bl = new DbBlacklistVerification(from, message, this, database);
 			if (!bl.checkBlacklist()) {
 				adjustFailedTransferCallCount(message);
@@ -1295,9 +1296,14 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 		groupNotifyOfCallCountChange(calledEndpoint);
 	}
 
+	public void setPrivate(CallPartyElement party) {
+		party.setEmail(null);
+		party.setIpAddress(null);
+	}
+
 	public void finishChatSetup(SetupRequestMessage message, EndPointInterface from) {
 
-		long session_id = message.getSessionId();
+		long sessionId = message.getSessionId();
 		if (message.getTransferId() == null) {
 			// Not a transfer
 
@@ -1313,8 +1319,7 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 				String cookie = null;
 
 				CallingNameElement calling = message.getCallingNameElement();
-				if (calling != null) // calling name specified
-				{
+				if (calling != null) {
 					name = calling.getCallParty().getFullName();
 					email = calling.getCallParty().getEmail();
 					additional = calling.getCallParty().getComment();
@@ -1330,29 +1335,31 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 			}
 		}
 
-		String called_name = message.getCalledNameElement().getCallParty().getName();
+		setupVisitorPrivacy(message, from);
+
+		String calledName = message.getCalledNameElement().getCallParty().getName();
 
 		// check if the user is in the registered list
-		EndPointInterface called_endpoint = RegisteredEndPointList.Instance().findRegisteredEndPoint(called_name);
-		if (called_endpoint == null) {
+		EndPointInterface calledEndpoint = RegisteredEndPointList.Instance().findRegisteredEndPoint(calledName);
+		if (calledEndpoint == null) {
 			adjustFailedTransferCallCount(message);
 
 			// called user not logged in, check for unavailable transfer-to
 			// number
 
-			SessionSetupCDR cdr = new SessionSetupCDR(from.getIdentifier(), called_name, message.getTransferId());
+			SessionSetupCDR cdr = new SessionSetupCDR(from.getIdentifier(), calledName, message.getTransferId());
 			sendCDR(cdr);
 
 			// add to the session list
-			SessionInfo session = new SessionInfo(session_id, from);
+			SessionInfo session = new SessionInfo(sessionId, from);
 			session.setBillingId(cdr.getIdentifier());
 			addSession(session);
 
 			SetupResponseMessage response = new SetupResponseMessage();
-			response.setSessionId(session_id);
+			response.setSessionId(sessionId);
 			response.setCalledParty(message.getCalledNameElement());
 
-			checkUnavailableUserTransfer(session, called_name, null, response, SetupResponseMessage.UNAVAILABLE,
+			checkUnavailableUserTransfer(session, calledName, null, response, SetupResponseMessage.UNAVAILABLE,
 					java.util.ResourceBundle
 							.getBundle("com.quikj.application.web.talk.plugin.language",
 									ServiceController.getLocale((String) from.getParam("language")))
@@ -1361,15 +1368,15 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 			return;
 		}
 
-		EndPointInfo info = RegisteredEndPointList.Instance().findRegisteredEndPointInfo(called_endpoint);
+		EndPointInfo info = RegisteredEndPointList.Instance().findRegisteredEndPointInfo(calledEndpoint);
 		if (info == null) {
 			adjustFailedTransferCallCount(message);
 			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
 					"ServiceController.processSetupRequest() (TALK) -- Could not find the end-point info for "
-							+ called_endpoint);
+							+ calledEndpoint);
 
 			SetupResponseMessage response = new SetupResponseMessage();
-			response.setSessionId(session_id);
+			response.setSessionId(sessionId);
 
 			// send a response
 			if (from.sendEvent(new MessageEvent(MessageEvent.SETUP_RESPONSE, null, ResponseMessage.INTERNAL_ERROR,
@@ -1391,7 +1398,7 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 
 			// the user has set DND
 			SetupResponseMessage response = new SetupResponseMessage();
-			response.setSessionId(session_id);
+			response.setSessionId(sessionId);
 
 			// send a response
 			if (!from.sendEvent(new MessageEvent(MessageEvent.SETUP_RESPONSE, null, SetupResponseMessage.BUSY,
@@ -1408,18 +1415,18 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 		}
 
 		// send the message to the called party
-		if (!called_endpoint.sendEvent(new MessageEvent(MessageEvent.SETUP_REQUEST, from, message, null))) {
+		if (!calledEndpoint.sendEvent(new MessageEvent(MessageEvent.SETUP_REQUEST, from, message, null))) {
 			adjustFailedTransferCallCount(message);
 			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
 					"ServiceController.processSetupRequest() (TALK) -- Could not send setup message to the called endpoint "
-							+ called_endpoint);
+							+ calledEndpoint);
 
 			SetupResponseMessage response = new SetupResponseMessage();
-			response.setSessionId(session_id);
+			response.setSessionId(sessionId);
 
 			// send a response
 			if (!from.sendEvent(new MessageEvent(MessageEvent.SETUP_RESPONSE, null, ResponseMessage.INTERNAL_ERROR,
-					java.util.ResourceBundle
+					ResourceBundle
 							.getBundle("com.quikj.application.web.talk.plugin.language",
 									getLocale((String) from.getParam("language")))
 							.getString("Failed_to_send_message_to_the_called_party"),
@@ -1432,15 +1439,27 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 			return;
 		}
 
-		SessionSetupCDR cdr = new SessionSetupCDR(from.getIdentifier(), called_endpoint.getIdentifier(),
+		SessionSetupCDR cdr = new SessionSetupCDR(from.getIdentifier(), calledEndpoint.getIdentifier(),
 				message.getTransferId());
 		sendCDR(cdr);
 
 		// add to the session list
-		SessionInfo session = new SessionInfo(session_id, from);
+		SessionInfo session = new SessionInfo(sessionId, from);
 		session.setBillingId(cdr.getIdentifier());
-		session.addEndPoint(called_endpoint);
+		session.addEndPoint(calledEndpoint);
 		addSession(session);
+	}
+
+	public void setupVisitorPrivacy(SetupRequestMessage message, EndPointInterface from) {
+		if (RegisteredEndPointList.Instance().findRegisteredEndPointInfo(from) == null) {
+			// visitor
+			CallingNameElement calling = message.getCallingNameElement();
+			if (calling != null) {
+				if (calling.getCallParty().isPrivateInfo()) {
+					setPrivate(calling.getCallParty());
+				}
+			}
+		}
 	}
 
 	private void processSetupResponse(SetupResponseMessage message, int status, String reason, EndPointInterface from) {
@@ -1599,7 +1618,6 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 								getName() + "- ServiceController.run() -- No database handler for database event.");
 					}
 				} else {
-					// unexpected event
 					AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
 							getName() + "- ServiceController.run() -- An unexpected event is received : "
 									+ message.messageType());

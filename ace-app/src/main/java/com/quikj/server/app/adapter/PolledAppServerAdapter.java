@@ -343,12 +343,6 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 				nextSessionId++;
 			}
 
-			// AceLogger.Instance().log(
-			// AceLogger.INFORMATIONAL,
-			// AceLogger.SYSTEM_LOG,
-			// "AppServerAdapter.clientConnected() -- Received a connection request : "
-			// + ip + ", " + endUserCookie + ", " + sessionId);
-
 			RemoteEndPoint ep = new RemoteEndPoint(sessionId, ip,
 					endUserCookie, this);
 			ep.start();

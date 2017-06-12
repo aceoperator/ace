@@ -87,6 +87,9 @@ public class VisitorInfoPresenter {
 		cp.setComment(message);
 		cp.setCookiesEnabled(Cookies.isCookieEnabled());
 
+		cp.setPrivateInfo(ClientProperties.getInstance().getBooleanValue(
+				ClientProperties.VISITOR_INFO_PRIVATE, false));
+		
 		ApplicationController.getInstance().connectToServer();
 	}
 

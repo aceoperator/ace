@@ -49,6 +49,8 @@ public class ClientProperties extends HashMap<String, List<String>> {
 	public static final String VISITOR_EMAIL_MANDATORY = "visitorEmailMandatory";
 
 	public static final String VISITOR_EMAIL_HIDDEN = "visitorEmailHidden";
+	
+	public static final String VISITOR_INFO_PRIVATE = "visitorInfoPrivate";
 
 	public static final String VISITOR_FORM_CAPTION = "visitorFormCaption";
 
