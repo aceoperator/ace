@@ -2,6 +2,7 @@ package com.quikj.application.web.talk.plugin;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +27,7 @@ public class UserTable {
 	public static final String AVATAR = "avatar";
 	public static final String LOCKED = "locked";
 	public static final String CHANGE_PASSWORD = "change_password";
+	public static final String PASSWORD_UPDATED = "password_updated";
 	public static final String PRIVATE = "private";
 
 	private static final String SQL_GET_GROUP_MEMBER_NAMES = "select "
@@ -55,8 +57,9 @@ public class UserTable {
 			+ " and " + PASSWORD + " = password(?) and " + LOCKED + " = 0";
 
 	private static final String SQL_CHANGE_PASSWORD = "update "
-			+ USER_TABLE_NAME + " set " + PASSWORD + "=password(?), "
-			+ CHANGE_PASSWORD + "=0" + " where " + USERNAME + " = ? and "
+			+ USER_TABLE_NAME + " set " + PASSWORD + "= password(?), "
+			+ CHANGE_PASSWORD + "= 0, " + PASSWORD_UPDATED + "= ?"
+			+ " where " + USERNAME + " = ? and "
 			+ PASSWORD + "=password(?)";
 
 	private static final String SQL_VALIDATE_IDENTIFIER = "select b.identifier from "
@@ -69,7 +72,8 @@ public class UserTable {
 	public static SQLParam[] getChangePasswordStatement(String username,
 			String oldPassword, String newPassword) {
 		return new SQLParam[] { new SQLParam(SQL_CHANGE_PASSWORD, null,
-				newPassword, username, oldPassword) };
+				newPassword, new Timestamp(System.currentTimeMillis()),
+				username, oldPassword) };
 	}
 
 	public static SQLParam getQueryStatement(String username) {
