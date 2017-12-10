@@ -79,10 +79,10 @@ public class AceSQL implements AceCompareMessageInterface {
 							ps.setDouble(index++, (Double) param);
 						} else if (param instanceof Float) {
 							ps.setFloat(index++, (Float) param);
-						} else if (param instanceof Date) {
-							ps.setDate(index++, new java.sql.Date(((Date) param).getTime()));
 						} else if (param instanceof Timestamp) {
 							ps.setTimestamp(index++, (Timestamp) param);
+						} else if (param instanceof Date) {
+							ps.setDate(index++, new java.sql.Date(((Date) param).getTime()));
 						} else {
 							// print log message and continue (it will result in
 							// an exception any way)

@@ -56,6 +56,7 @@ public class UserTable {
 	private static final String SQL_AUTHENTICATE_USER = SQL_QUERY_USER
 			+ " and " + PASSWORD + " = password(?) and " + LOCKED + " = 0";
 
+	// TODO add clause for old and new password same check
 	private static final String SQL_CHANGE_PASSWORD = "update "
 			+ USER_TABLE_NAME + " set " + PASSWORD + "= password(?), "
 			+ CHANGE_PASSWORD + "= 0, " + PASSWORD_UPDATED + "= ?"
