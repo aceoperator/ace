@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.quikj.ace</groupId>
 		<artifactId>ace</artifactId>
-		<version>3.0.1</version>
+		<version>3.0.1-SNAPSHOT</version>
 	</parent>
 	
 	<artifactId>ace-communicator</artifactId>
