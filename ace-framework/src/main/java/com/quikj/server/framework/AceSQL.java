@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
@@ -30,8 +31,7 @@ public class AceSQL implements AceCompareMessageInterface {
 		private long operationId;
 		private SQLParam[] sqlStatements;
 
-		public AceSQLThread(long operationId, SQLParam[] sqlStatements,
-				AceThread parent, Object userParm) {
+		public AceSQLThread(long operationId, SQLParam[] sqlStatements, AceThread parent, Object userParm) {
 			this.operationId = operationId;
 			this.sqlStatements = sqlStatements;
 			this.parent = parent;
@@ -41,7 +41,8 @@ public class AceSQL implements AceCompareMessageInterface {
 		public void dispose() {
 			if (!quitThread) {
 				quitThread = true;
-				// System.out.println("AceSQLThread.dispose() called, canceling the SQL statement");
+				// System.out.println("AceSQLThread.dispose() called, canceling
+				// the SQL statement");
 			}
 
 			super.dispose();
@@ -78,17 +79,15 @@ public class AceSQL implements AceCompareMessageInterface {
 							ps.setDouble(index++, (Double) param);
 						} else if (param instanceof Float) {
 							ps.setFloat(index++, (Float) param);
+						} else if (param instanceof Timestamp) {
+							ps.setTimestamp(index++, (Timestamp) param);
 						} else if (param instanceof Date) {
-							ps.setDate(index++, new java.sql.Date(
-									((Date) param).getTime()));
+							ps.setDate(index++, new java.sql.Date(((Date) param).getTime()));
 						} else {
 							// print log message and continue (it will result in
 							// an exception any way)
-							AceLogger.Instance().log(
-									AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									"AceSQL.AceSQLThread.run() : unsupported data type "
-											+ param.getClass().getName());
+							AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+									"AceSQL.AceSQLThread.run() : unsupported data type " + param.getClass().getName());
 							continue;
 						}
 					}
@@ -107,38 +106,25 @@ public class AceSQL implements AceCompareMessageInterface {
 
 				// send a message to the calling thread
 				if (!quit && !quitThread) {
-					if (!parent.sendMessage(new AceSQLMessage(
-							AceSQLMessage.SQL_EXECUTED, operationId, results,
+					if (!parent.sendMessage(new AceSQLMessage(AceSQLMessage.SQL_EXECUTED, operationId, results,
 							numAffectedRows, numExecuted, userParm))) {
-						AceLogger
-								.Instance()
-								.log(AceLogger.ERROR,
-										AceLogger.SYSTEM_LOG,
-										parent.getName()
-												+ "- AceSQL.AceSQLThread.run() -- Error sending SQL executed message : "
-												+ getErrorMessage());
+						AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+								parent.getName()
+										+ "- AceSQL.AceSQLThread.run() -- Error sending SQL executed message : "
+										+ getErrorMessage());
 					}
 				}
 			} catch (Exception e) {
 				if (!quit && !quitThread) {
-					AceLogger.Instance().log(
-							AceLogger.WARNING,
-							AceLogger.SYSTEM_LOG,
-							parent.getName()
-									+ " -- Unexpected database result : "
-									+ e.getMessage(), e);
+					AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
+							parent.getName() + " -- Unexpected database result : " + e.getMessage(), e);
 
 					// send a message to the calling thread
-					if (!parent.sendMessage(new AceSQLMessage(
-							AceSQLMessage.SQL_ERROR, operationId, null, 0, 0,
-							userParm))) {
-						AceLogger
-								.Instance()
-								.log(AceLogger.ERROR,
-										AceLogger.SYSTEM_LOG,
-										parent.getName()
-												+ "- AceSQL.AceSQLThread.run() -- Error sending SQL error message : "
-												+ getErrorMessage());
+					if (!parent.sendMessage(
+							new AceSQLMessage(AceSQLMessage.SQL_ERROR, operationId, null, 0, 0, userParm))) {
+						AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+								parent.getName() + "- AceSQL.AceSQLThread.run() -- Error sending SQL error message : "
+										+ getErrorMessage());
 					}
 				}
 			} finally {
@@ -151,12 +137,8 @@ public class AceSQL implements AceCompareMessageInterface {
 						connection.close();
 					}
 				} catch (SQLException e) {
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									"AceSQL.AceSQLThread.run() : SQL Exception while cleaning up",
-									e);
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							"AceSQL.AceSQLThread.run() : SQL Exception while cleaning up", e);
 				}
 
 				// remove this thread to the pending operations
@@ -200,9 +182,8 @@ public class AceSQL implements AceCompareMessageInterface {
 			}
 		}
 
-		ret = cthread.removeMessage(
-				new AceSQLMessage(AceSQLMessage.SQL_CANCELLED, id, null, 0, 0,
-						thr.getUserParm()), this);
+		ret = cthread.removeMessage(new AceSQLMessage(AceSQLMessage.SQL_CANCELLED, id, null, 0, 0, thr.getUserParm()),
+				this);
 
 		return ret;
 	}
@@ -213,22 +194,19 @@ public class AceSQL implements AceCompareMessageInterface {
 		}
 	}
 
-	public long executeSQL(AceThread cthread, Object userParam,
-			String statement, MapResult resultHandler, Object... params) {
-		return executeSQL(cthread, userParam, new SQLParam[] { new SQLParam(
-				statement, resultHandler, params) });
+	public long executeSQL(AceThread cthread, Object userParam, String statement, MapResult resultHandler,
+			Object... params) {
+		return executeSQL(cthread, userParam, new SQLParam[] { new SQLParam(statement, resultHandler, params) });
 	}
 
-	public long executeSQL(AceThread cthread, Object userParam,
-			SQLParam[] statements) {
+	public long executeSQL(AceThread cthread, Object userParam, SQLParam[] statements) {
 		Thread caller = cthread;
 		if (caller == null) {
 			caller = Thread.currentThread();
 		}
 
 		if (!(caller instanceof AceThread)) {
-			writeErrorMessage(
-					"The calling thread must be an instance of AceThread", null);
+			writeErrorMessage("The calling thread must be an instance of AceThread", null);
 			return -1;
 		}
 
@@ -237,8 +215,7 @@ public class AceSQL implements AceCompareMessageInterface {
 			nextId = nextOperationId++;
 		}
 
-		AceSQLThread sql = new AceSQLThread(nextId, statements,
-				(AceThread) caller, userParam);
+		AceSQLThread sql = new AceSQLThread(nextId, statements, (AceThread) caller, userParam);
 
 		sql.start(); // start the thread
 
@@ -249,8 +226,7 @@ public class AceSQL implements AceCompareMessageInterface {
 		boolean ret = false;
 
 		if (obj1 instanceof AceSQLMessage && obj2 instanceof AceSQLMessage) {
-			if (((AceSQLMessage) obj1).getOperationId() == ((AceSQLMessage) obj2)
-					.getOperationId()) {
+			if (((AceSQLMessage) obj1).getOperationId() == ((AceSQLMessage) obj2).getOperationId()) {
 				ret = true;
 			}
 		}
@@ -262,8 +238,7 @@ public class AceSQL implements AceCompareMessageInterface {
 		Thread thr = Thread.currentThread();
 
 		if ((thr instanceof AceThread) == false) {
-			writeErrorMessage(
-					"This method is not being called from an object which is a sub-class of type AceThread",
+			writeErrorMessage("This method is not being called from an object which is a sub-class of type AceThread",
 					null);
 			return null;
 		}
@@ -289,8 +264,7 @@ public class AceSQL implements AceCompareMessageInterface {
 		if (cthread instanceof AceThread) {
 			((AceThread) cthread).dispatchErrorMessage(error, e);
 		} else {
-			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
-					"AceSQL.writeErrorMessage() : " + error, e);
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, "AceSQL.writeErrorMessage() : " + error, e);
 		}
 	}
 }
