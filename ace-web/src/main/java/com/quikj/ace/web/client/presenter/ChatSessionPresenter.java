@@ -395,8 +395,8 @@ public class ChatSessionPresenter {
 					.show(ApplicationController.getMessages().ChatSessionPresenter_incomingChat(),
 							ApplicationController.getMessages().ChatSessionPresenter_incomingChatFromParty(
 									ViewUtils.formatUserInfo(otherParties.get(0))) + "<p>"
-							+ ApplicationController.getMessages().ChatSessionPresenter_doYouWantToAnswer(), image,
-					new AcceptCallListener(chatInfo, reqId, contentType, msg, acceptTimer), false);
+									+ ApplicationController.getMessages().ChatSessionPresenter_doYouWantToAnswer(),
+							image, new AcceptCallListener(chatInfo, reqId, contentType, msg, acceptTimer), false);
 			Notifier.alert(ApplicationController.getMessages().ChatSessionPresenter_incomingChat());
 		}
 	}
@@ -525,7 +525,8 @@ public class ChatSessionPresenter {
 					}
 				};
 				typingTimer.schedule(TYPING_TIMEOUT);
-
+			} else if (element instanceof HtmlElement) {
+				// TODO
 			} else {
 				logger.warning("Media element of type " + element.getClass().getName() + " is not supported");
 			}
@@ -973,7 +974,7 @@ public class ChatSessionPresenter {
 			if (contact.isDnd()) {
 				continue;
 			}
-			
+
 			// Do not add the contact to the list if he/she is already
 			// participating in the chat
 			for (CallPartyElement other : otherParties) {

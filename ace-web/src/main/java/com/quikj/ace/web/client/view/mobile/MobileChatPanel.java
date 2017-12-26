@@ -24,6 +24,7 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.StackLayoutPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.quikj.ace.messages.vo.talk.CallPartyElement;
 import com.quikj.ace.messages.vo.talk.CannedMessageElement;
 import com.quikj.ace.messages.vo.talk.DisconnectReasonElement;
@@ -56,7 +57,7 @@ public class MobileChatPanel extends StackLayoutPanel implements ChatPanel {
 	private HorizontalPanel chatPanelHeaderControls;
 	private String me;
 
-	private HTML typing;
+	private Widget typing;
 	private String typingFrom;
 
 	private List<HandlerRegistration> eventHandlers = new ArrayList<HandlerRegistration>();
@@ -218,7 +219,7 @@ public class MobileChatPanel extends StackLayoutPanel implements ChatPanel {
 	}
 
 	@Override
-	public void appendToConveration(String from, long timeStamp, String message) {
+	public void appendToConveration(String from, long timeStamp, Object obj) {
 
 		if (!adjusted) {
 			adjustScrollHeight();
@@ -230,7 +231,7 @@ public class MobileChatPanel extends StackLayoutPanel implements ChatPanel {
 			transcriptPanel.remove(typing);
 		}
 
-		HTML html = ChatPanel.Util.formatChat(from, timeStamp, message, me,
+		Widget html = ChatPanel.Util.formatChat(from, timeStamp, (String)obj, me,
 				true);
 		transcriptPanel.add(html);
 
