@@ -8,9 +8,6 @@ import java.util.List;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.quikj.ace.messages.vo.talk.CallPartyElement;
 import com.quikj.ace.messages.vo.talk.CannedMessageElement;

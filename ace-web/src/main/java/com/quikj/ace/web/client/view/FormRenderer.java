@@ -21,6 +21,8 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.quikj.ace.messages.vo.talk.FormDefinitionElement;
+import com.quikj.ace.messages.vo.talk.FormSubmissionElement;
 import com.quikj.ace.web.client.ClientProperties;
 
 /**
@@ -33,10 +35,21 @@ public class FormRenderer {
 	private static final String TYPE = "type";
 	private static final String MINLENGTH = "minlength";
 	private static final String REQUIRED = "required";
+	
+	public interface FormListener {
+		boolean formSubmitted(FormSubmissionElement response);
+	}
 
 	public class SubmitHandler implements ClickHandler {
 		Map<Widget, Map<String, String>> validators = new HashMap<Widget, Map<String, String>>();
+		private String formId;
+		private FormListener listener;
 
+		public SubmitHandler(String formId, FormListener listener) {
+			this.formId = formId;
+			this.listener = listener;
+		}
+		
 		public void addAttribute(Widget widget, String key, String value) {
 			Map<String, String> widgetValidators = validators.get(widget);
 			if (widgetValidators == null) {
@@ -49,10 +62,12 @@ public class FormRenderer {
 
 		@Override
 		public void onClick(ClickEvent event) {
+			Map<String, String> result = new HashMap<>();
+			
 			for (Entry<Widget, Map<String, String>> e : validators.entrySet()) {
 				Widget widget = e.getKey();
 				Map<String, String> attributes = e.getValue();
-
+				
 				String value;
 				if (widget instanceof TextBox) {
 					value = ((TextArea) widget).getValue();
@@ -62,21 +77,26 @@ public class FormRenderer {
 					// Should not happen
 					value = "";
 				}
+				
+				value = value.trim();
 
 				if (!validate(attributes, value)) {
 					return;
 				}
+				
+				result.put(attributes.get(NAME), value);
 			}
 			
-			// TODO submit the form
-
-			// TODO disable the buttons once the form has been submitted
+			FormSubmissionElement response = new FormSubmissionElement(result, formId);
+			if (listener.formSubmitted(response)) {
+				((Button)event.getSource()).setEnabled(false);
+			}
 		}
 
 		public boolean validate(Map<String, String> attributes, String value) {
 			// Validate for required
 			String v = attributes.get(REQUIRED);
-			if (v != null && v.equalsIgnoreCase("true") && value.trim().isEmpty()) {
+			if (v != null && v.equalsIgnoreCase("true") && value.isEmpty()) {
 				// TODO notify error
 				return false;
 			}
@@ -135,12 +155,12 @@ public class FormRenderer {
 		}
 	}
 
-	public Widget renderForm(String from, long timeStamp, String formConfig, String me, boolean smallSpace) {
+	public Widget renderForm(String from, long timeStamp, FormDefinitionElement form, String me, boolean smallSpace, FormListener listener) {
 		Panel panel = renderPanel();
 
-		SubmitHandler validator = new SubmitHandler();
+		SubmitHandler validator = new SubmitHandler(form.getFormId(), listener);
 
-		String[] lines = formConfig.split("(\\r\\n|\\r|\\n)");
+		String[] lines = form.getFormDef().split("(\\r\\n|\\r|\\n)");
 		for (String line : lines) {
 			line = line.trim();
 			if (line.isEmpty()) {
