@@ -219,7 +219,7 @@ public class MobileChatPanel extends StackLayoutPanel implements ChatPanel {
 	}
 
 	@Override
-	public void appendToConveration(String from, long timeStamp, Object obj) {
+	public void appendToConveration(String from, long timeStamp, String message) {
 
 		if (!adjusted) {
 			adjustScrollHeight();
@@ -231,7 +231,7 @@ public class MobileChatPanel extends StackLayoutPanel implements ChatPanel {
 			transcriptPanel.remove(typing);
 		}
 
-		Widget html = ChatPanel.Util.formatChat(from, timeStamp, (String)obj, me,
+		Widget html = ChatPanel.Util.formatChat(from, timeStamp, message, me,
 				true);
 		transcriptPanel.add(html);
 
@@ -395,5 +395,10 @@ public class MobileChatPanel extends StackLayoutPanel implements ChatPanel {
 				adjustScrollHeight();
 			}
 		});
+	}
+
+	@Override
+	public void appendToConveration(String from, long timeStamp, String formId, String formDef) {
+		// TODO Auto-generated method stub
 	}
 }

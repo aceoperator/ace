@@ -409,7 +409,7 @@ public class TabletChatPanel extends StackLayoutPanel implements ChatPanel {
 	}
 
 	@Override
-	public void appendToConveration(String from, long timeStamp, Object obj) {
+	public void appendToConveration(String from, long timeStamp, String message) {
 
 		if (!adjusted) {
 			adjustScrollHeight();
@@ -424,7 +424,7 @@ public class TabletChatPanel extends StackLayoutPanel implements ChatPanel {
 		Widget html = ChatPanel.Util.formatChat(
 				from,
 				timeStamp,
-				(String)obj,
+				message,
 				me,
 				ClientProperties.getInstance().getBooleanValue(
 						ClientProperties.CONVERSATION_SMALL_SPACE, false));
@@ -665,5 +665,11 @@ public class TabletChatPanel extends StackLayoutPanel implements ChatPanel {
 				adjustScrollHeight();
 			}
 		});
+	}
+
+	@Override
+	public void appendToConveration(String from, long timeStamp, String formId, String formDef) {
+		// TODO Auto-generated method stub
+		
 	}
 }

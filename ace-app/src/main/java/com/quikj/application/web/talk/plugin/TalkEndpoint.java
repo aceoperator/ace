@@ -8,6 +8,8 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.quikj.ace.messages.vo.app.Message;
 import com.quikj.ace.messages.vo.app.ResponseMessage;
@@ -18,6 +20,7 @@ import com.quikj.ace.messages.vo.talk.CannedMessageElement;
 import com.quikj.ace.messages.vo.talk.ConferenceInformationMessage;
 import com.quikj.ace.messages.vo.talk.DisconnectMessage;
 import com.quikj.ace.messages.vo.talk.DisconnectReasonElement;
+import com.quikj.ace.messages.vo.talk.FormDefinitionElement;
 import com.quikj.ace.messages.vo.talk.HtmlElement;
 import com.quikj.ace.messages.vo.talk.JoinRequestMessage;
 import com.quikj.ace.messages.vo.talk.JoinResponseMessage;
@@ -720,12 +723,11 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			if (medium instanceof CannedMessageElement) {
 				CannedMessageElement canned = (CannedMessageElement) medium;
 
-				HtmlElement html = null;
+				MediaElementInterface html = null;
 				if (canned.getMessage() == null) {
 					String result = SynchronousDbOperations.getInstance().queryCannedMessages(canned.getId());
 					if (result != null) {
-						html = new HtmlElement();
-						html.setHtml(result);
+						html = resolveMedia(canned.getId(), result);
 					} else {
 						AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
 								Thread.currentThread().getName()
@@ -734,8 +736,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 										+ " Going to ignore");
 					}
 				} else {
-					html = new HtmlElement();
-					html.setHtml(canned.getMessage());
+					html = new HtmlElement(canned.getMessage());
 				}
 
 				i.remove();
@@ -749,6 +750,22 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		}
 
 		return cannedList;
+	}
+
+	private MediaElementInterface resolveMedia(long id, String content) {
+		MediaElementInterface element = null;
+		Matcher matcher = Pattern.compile("^#form\\|(.*)\\r?\\n((?s:.)*)", Pattern.CASE_INSENSITIVE).matcher(content);
+		if (matcher.matches()) {
+			FormDefinitionElement form = new FormDefinitionElement();
+			form.setFormId(Long.toString(id));
+			form.setFormDef(matcher.group(2));
+		}
+
+		if (element == null) {
+			element = new HtmlElement(content);
+		}
+
+		return element;
 	}
 
 	private void scrubMessage(RTPMessage message, List<Integer> cannedList) {

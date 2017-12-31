@@ -22,39 +22,41 @@ import com.quikj.ace.web.client.presenter.ChatSessionPresenter;
  */
 public interface ChatPanel {
 
-	public static final boolean DEFAULT_SUPPRESS_COPYPASTE = false;
-	public static final String TYPING = "<span style='color:green'>" + "<img src='" + Images.TYPING_TINY + "'></span>";
+	static final boolean DEFAULT_SUPPRESS_COPYPASTE = false;
+	static final String TYPING = "<span style='color:green'>" + "<img src='" + Images.TYPING_TINY + "'></span>";
 
-	public void appendToConveration(String from, long timeStamp, Object obj);
+	void appendToConveration(String from, long timeStamp, String message);
+	
+	void appendToConveration(String from, long timeStamp, String formId, String formDef);
 
-	public void setPresenter(ChatSessionPresenter presenter);
+	void setPresenter(ChatSessionPresenter presenter);
 
-	public ChatSessionPresenter getPresenter();
+	ChatSessionPresenter getPresenter();
 
-	public void makeReadOnly();
+	void makeReadOnly();
 
-	public void emoticonSelected(String url);
+	void emoticonSelected(String url);
 
-	public void attach(String me, CallPartyElement otherParty, CannedMessageElement[] cannedMessages, boolean operator,
+	void attach(String me, CallPartyElement otherParty, CannedMessageElement[] cannedMessages, boolean operator,
 			boolean showOtherPartyInfo, boolean hideAvatar);
 
-	public String getTranscript();
+	String getTranscript();
 
-	public void chatEnabled();
+	void chatEnabled();
 
-	public void chatDisabled();
+	void chatDisabled();
 
-	public void setOtherPartyInfo(List<CallPartyElement> otherParties);
+	void setOtherPartyInfo(List<CallPartyElement> otherParties);
 
-	public void transferSetEnabled(boolean enabled);
+	void transferSetEnabled(boolean enabled);
 
-	public void showTyping(String from, long timestamp);
+	void showTyping(String from, long timestamp);
 
-	public void hideTyping();
+	void hideTyping();
 
-	public void dispose();
+	void dispose();
 
-	public static class Util {
+	static class Util {
 		public static Widget formatChat(String from, long timeStamp, String message, String me, boolean smallSpace) {
 			Date date = new Date(timeStamp);
 			String formattedDate = DateTimeFormat.getFormat(ClientProperties.getInstance()

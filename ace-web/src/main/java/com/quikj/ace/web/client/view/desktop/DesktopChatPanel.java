@@ -5,6 +5,7 @@ package com.quikj.ace.web.client.view.desktop;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -56,6 +57,8 @@ import com.quikj.ace.web.client.presenter.EmoticonPresenter;
 import com.quikj.ace.web.client.presenter.MessageBoxPresenter;
 import com.quikj.ace.web.client.view.ChatPanel;
 import com.quikj.ace.web.client.view.EmoticonUtils;
+import com.quikj.ace.web.client.view.FormRenderer;
+import com.quikj.ace.web.client.view.FormRenderer.FormListener;
 import com.quikj.ace.web.client.view.HtmlUtils;
 import com.quikj.ace.web.client.view.ViewUtils;
 
@@ -63,7 +66,7 @@ import com.quikj.ace.web.client.view.ViewUtils;
  * @author amit
  * 
  */
-public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
+public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel, FormListener {
 
 	private static final double VISITOR_TITLE_SIZE = 30.0;
 	private static final double TITLE_SIZE = 45.0;
@@ -106,13 +109,14 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 	private Hidden sessionField;
 	private Button shareButton;
 
+	private FormRenderer formRenderer = new FormRenderer();
+
 	public DesktopChatPanel() {
 		super(Unit.PX);
 		setSize("100%", "97%");
 	}
 
-	private void init(String me, CallPartyElement otherParty,
-			CannedMessageElement[] cannedMessages, boolean operator,
+	private void init(String me, CallPartyElement otherParty, CannedMessageElement[] cannedMessages, boolean operator,
 			boolean showOtherPartyInfo, boolean hideAvatar) {
 		this.operator = operator;
 		this.me = me;
@@ -129,8 +133,7 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 
 	private void initChatInfoArea(CallPartyElement otherParty) {
 		chatInfoDetailTable = new FlexTable();
-		add(chatInfoDetailTable, ApplicationController.getMessages()
-				.DesktopChatPanel_chatSessionInformation(), false,
+		add(chatInfoDetailTable, ApplicationController.getMessages().DesktopChatPanel_chatSessionInformation(), false,
 				VISITOR_TITLE_SIZE);
 		chatInfoDetailTable.setWidth("100%");
 		chatInfoDetailTable.setCellPadding(10);
@@ -138,8 +141,7 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 		setOtherPartyDetails(0, otherParty);
 	}
 
-	private void initTranscriptArea(CallPartyElement otherParty,
-			boolean operator) {
+	private void initTranscriptArea(CallPartyElement otherParty, boolean operator) {
 		chatPanel = new VerticalPanel();
 		chatPanel.setSize("100%", "100%");
 
@@ -154,42 +156,32 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 		chatPanelHeaderLabel.setWidth("100%");
 
 		chatPanelHeader.add(chatPanelHeaderLabel);
-		chatPanelHeader.setCellHorizontalAlignment(chatPanelHeaderLabel,
-				HasHorizontalAlignment.ALIGN_LEFT);
-		chatPanelHeader.setCellVerticalAlignment(chatPanelHeaderLabel,
-				HasVerticalAlignment.ALIGN_MIDDLE);
+		chatPanelHeader.setCellHorizontalAlignment(chatPanelHeaderLabel, HasHorizontalAlignment.ALIGN_LEFT);
+		chatPanelHeader.setCellVerticalAlignment(chatPanelHeaderLabel, HasVerticalAlignment.ALIGN_MIDDLE);
 
-		chatPanelHeaderLabel.setHTML(otherParty == null ? ApplicationController
-				.getMessages().DesktopChatPanel_private() : formatOtherParties(
-				ViewUtils.formatName(otherParty), otherParty.getAvatar())
-				.toString());
+		chatPanelHeaderLabel.setHTML(otherParty == null ? ApplicationController.getMessages().DesktopChatPanel_private()
+				: formatOtherParties(ViewUtils.formatName(otherParty), otherParty.getAvatar()).toString());
 
 		chatPanelHeaderControls = new HorizontalPanel();
 		chatPanelHeader.add(chatPanelHeaderControls);
 		chatPanelHeaderControls.setSpacing(4);
-		chatPanelHeader.setCellHorizontalAlignment(chatPanelHeaderControls,
-				HasHorizontalAlignment.ALIGN_RIGHT);
-		chatPanelHeader.setCellVerticalAlignment(chatPanelHeaderControls,
-				HasVerticalAlignment.ALIGN_MIDDLE);
+		chatPanelHeader.setCellHorizontalAlignment(chatPanelHeaderControls, HasHorizontalAlignment.ALIGN_RIGHT);
+		chatPanelHeader.setCellVerticalAlignment(chatPanelHeaderControls, HasVerticalAlignment.ALIGN_MIDDLE);
 
 		if (operator) {
 			contactList = new ListBox();
 			chatPanelHeaderControls.add(contactList);
-			chatPanelHeaderControls.setCellHorizontalAlignment(contactList,
-					HasHorizontalAlignment.ALIGN_RIGHT);
-			chatPanelHeaderControls.setCellVerticalAlignment(contactList,
-					HasVerticalAlignment.ALIGN_MIDDLE);
+			chatPanelHeaderControls.setCellHorizontalAlignment(contactList, HasHorizontalAlignment.ALIGN_RIGHT);
+			chatPanelHeaderControls.setCellVerticalAlignment(contactList, HasVerticalAlignment.ALIGN_MIDDLE);
 			contactList.setEnabled(false);
 
-			contactList.addItem(ApplicationController.getMessages()
-					.DesktopChatPanel_selectContact());
+			contactList.addItem(ApplicationController.getMessages().DesktopChatPanel_selectContact());
 			contactList.addFocusHandler(new FocusHandler() {
 
 				@Override
 				public void onFocus(FocusEvent event) {
 					contactList.clear();
-					contactList.addItem(ApplicationController.getMessages()
-							.DesktopChatPanel_selectContact());
+					contactList.addItem(ApplicationController.getMessages().DesktopChatPanel_selectContact());
 					List<String> contacts = presenter.getContactsList();
 					for (String contact : contacts) {
 						contactList.addItem(contact);
@@ -198,13 +190,10 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 				}
 			});
 
-			conferenceButton = new Button(ApplicationController.getMessages()
-					.DesktopChatPanel_add());
+			conferenceButton = new Button(ApplicationController.getMessages().DesktopChatPanel_add());
 			chatPanelHeaderControls.add(conferenceButton);
-			chatPanelHeaderControls.setCellHorizontalAlignment(
-					conferenceButton, HasHorizontalAlignment.ALIGN_LEFT);
-			chatPanelHeaderControls.setCellVerticalAlignment(conferenceButton,
-					HasVerticalAlignment.ALIGN_MIDDLE);
+			chatPanelHeaderControls.setCellHorizontalAlignment(conferenceButton, HasHorizontalAlignment.ALIGN_LEFT);
+			chatPanelHeaderControls.setCellVerticalAlignment(conferenceButton, HasVerticalAlignment.ALIGN_MIDDLE);
 			conferenceButton.setEnabled(false);
 			conferenceButton.addClickHandler(new ClickHandler() {
 
@@ -220,13 +209,10 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 				}
 			});
 
-			transferButton = new Button(ApplicationController.getMessages()
-					.DesktopChatPanel_transfer());
+			transferButton = new Button(ApplicationController.getMessages().DesktopChatPanel_transfer());
 			chatPanelHeaderControls.add(transferButton);
-			chatPanelHeaderControls.setCellHorizontalAlignment(transferButton,
-					HasHorizontalAlignment.ALIGN_LEFT);
-			chatPanelHeaderControls.setCellVerticalAlignment(transferButton,
-					HasVerticalAlignment.ALIGN_MIDDLE);
+			chatPanelHeaderControls.setCellHorizontalAlignment(transferButton, HasHorizontalAlignment.ALIGN_LEFT);
+			chatPanelHeaderControls.setCellVerticalAlignment(transferButton, HasVerticalAlignment.ALIGN_MIDDLE);
 			transferButton.setEnabled(false);
 			transferButton.addClickHandler(new ClickHandler() {
 
@@ -246,30 +232,23 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 			chatPanelHeaderControls.add(controlSeparator);
 		}
 
-		discButton = new Button(ApplicationController.getMessages()
-				.DesktopChatPanel_disconnect());
+		discButton = new Button(ApplicationController.getMessages().DesktopChatPanel_disconnect());
 		chatPanelHeaderControls.add(discButton);
-		chatPanelHeaderControls.setCellHorizontalAlignment(discButton,
-				HasHorizontalAlignment.ALIGN_LEFT);
-		chatPanelHeaderControls.setCellVerticalAlignment(discButton,
-				HasVerticalAlignment.ALIGN_MIDDLE);
+		chatPanelHeaderControls.setCellHorizontalAlignment(discButton, HasHorizontalAlignment.ALIGN_LEFT);
+		chatPanelHeaderControls.setCellVerticalAlignment(discButton, HasVerticalAlignment.ALIGN_MIDDLE);
 
 		discButton.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				presenter.userDisconnected(
-						DisconnectReasonElement.NORMAL_DISCONNECT, null);
+				presenter.userDisconnected(DisconnectReasonElement.NORMAL_DISCONNECT, null);
 			}
 		});
 
 		if (operator) {
-			Button closeButton = new Button(ApplicationController.getMessages()
-					.DesktopChatPanel_close());
+			Button closeButton = new Button(ApplicationController.getMessages().DesktopChatPanel_close());
 			chatPanelHeaderControls.add(closeButton);
-			chatPanelHeaderControls.setCellHorizontalAlignment(closeButton,
-					HasHorizontalAlignment.ALIGN_LEFT);
-			chatPanelHeaderControls.setCellVerticalAlignment(closeButton,
-					HasVerticalAlignment.ALIGN_MIDDLE);
+			chatPanelHeaderControls.setCellHorizontalAlignment(closeButton, HasHorizontalAlignment.ALIGN_LEFT);
+			chatPanelHeaderControls.setCellVerticalAlignment(closeButton, HasVerticalAlignment.ALIGN_MIDDLE);
 
 			closeButton.addClickHandler(new ClickHandler() {
 				@Override
@@ -289,31 +268,28 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 		transcriptScrollPanel.setWidget(transcriptPanel);
 		transcriptPanel.setSize("100%", "100%");
 
-		if (ClientProperties.getInstance().getBooleanValue(
-				ClientProperties.SUPPRESS_COPY_PASTE,
+		if (ClientProperties.getInstance().getBooleanValue(ClientProperties.SUPPRESS_COPY_PASTE,
 				ChatPanel.DEFAULT_SUPPRESS_COPYPASTE)) {
 
-			eventHandlers.add(RootPanel.get().addDomHandler(
-					new ContextMenuHandler() {
+			eventHandlers.add(RootPanel.get().addDomHandler(new ContextMenuHandler() {
 
-						@Override
-						public void onContextMenu(ContextMenuEvent event) {
-							event.preventDefault();
-							event.stopPropagation();
-						}
-					}, ContextMenuEvent.getType()));
+				@Override
+				public void onContextMenu(ContextMenuEvent event) {
+					event.preventDefault();
+					event.stopPropagation();
+				}
+			}, ContextMenuEvent.getType()));
 
-			eventHandlers.add(RootPanel.get().addDomHandler(
-					new KeyDownHandler() {
+			eventHandlers.add(RootPanel.get().addDomHandler(new KeyDownHandler() {
 
-						@Override
-						public void onKeyDown(KeyDownEvent event) {
-							if (event.isControlKeyDown()) {
-								event.preventDefault();
-								event.stopPropagation();
-							}
-						}
-					}, KeyDownEvent.getType()));
+				@Override
+				public void onKeyDown(KeyDownEvent event) {
+					if (event.isControlKeyDown()) {
+						event.preventDefault();
+						event.stopPropagation();
+					}
+				}
+			}, KeyDownEvent.getType()));
 		}
 	}
 
@@ -330,8 +306,7 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 		dataEntryPanel = new VerticalPanel();
 		dataEntryPanel.setSpacing(3);
 		chatPanel.add(dataEntryPanel);
-		chatPanel.setCellVerticalAlignment(dataEntryPanel,
-				HasVerticalAlignment.ALIGN_BOTTOM);
+		chatPanel.setCellVerticalAlignment(dataEntryPanel, HasVerticalAlignment.ALIGN_BOTTOM);
 		dataEntryPanel.setWidth("100%");
 		dataEntryPanel.setHeight(DATA_ENTRY_PANEL_SIZE + "px");
 
@@ -345,10 +320,8 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 
 		btnBold = new Button("B");
 		commandPanel.add(btnBold);
-		btnBold.setTitle(ApplicationController.getMessages()
-				.DesktopChatPanel_boldType());
-		commandPanel.setCellVerticalAlignment(btnBold,
-				HasVerticalAlignment.ALIGN_MIDDLE);
+		btnBold.setTitle(ApplicationController.getMessages().DesktopChatPanel_boldType());
+		commandPanel.setCellVerticalAlignment(btnBold, HasVerticalAlignment.ALIGN_MIDDLE);
 		btnBold.addClickHandler(new ClickHandler() {
 
 			@Override
@@ -364,10 +337,8 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 
 		btnItalics = new Button("I");
 		commandPanel.add(btnItalics);
-		btnItalics.setTitle(ApplicationController.getMessages()
-				.DesktopChatPanel_italicsType());
-		commandPanel.setCellVerticalAlignment(btnItalics,
-				HasVerticalAlignment.ALIGN_MIDDLE);
+		btnItalics.setTitle(ApplicationController.getMessages().DesktopChatPanel_italicsType());
+		commandPanel.setCellVerticalAlignment(btnItalics, HasVerticalAlignment.ALIGN_MIDDLE);
 		btnItalics.addClickHandler(new ClickHandler() {
 
 			@Override
@@ -383,10 +354,8 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 
 		btnUnderline = new Button("U");
 		commandPanel.add(btnUnderline);
-		btnUnderline.setTitle(ApplicationController.getMessages()
-				.DesktopChatPanel_underlineType());
-		commandPanel.setCellVerticalAlignment(btnUnderline,
-				HasVerticalAlignment.ALIGN_MIDDLE);
+		btnUnderline.setTitle(ApplicationController.getMessages().DesktopChatPanel_underlineType());
+		commandPanel.setCellVerticalAlignment(btnUnderline, HasVerticalAlignment.ALIGN_MIDDLE);
 		btnUnderline.addClickHandler(new ClickHandler() {
 
 			@Override
@@ -404,23 +373,18 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 		Image img = new Image(EmoticonUtils.getEmoticons().get(0).url);
 		btnEmoticon.setHTML(img.toString());
 		commandPanel.add(btnEmoticon);
-		commandPanel.setCellVerticalAlignment(btnEmoticon,
-				HasVerticalAlignment.ALIGN_MIDDLE);
+		commandPanel.setCellVerticalAlignment(btnEmoticon, HasVerticalAlignment.ALIGN_MIDDLE);
 
 		btnEmoticon.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				if (emoticonPallette == null) {
-					emoticonPallette = new EmoticonPresenter()
-							.createView(DesktopChatPanel.this);
+					emoticonPallette = new EmoticonPresenter().createView(DesktopChatPanel.this);
 				}
 
 				emoticonPallette.show();
-				emoticonPallette.setPopupPosition(
-						btnEmoticon.getAbsoluteLeft()
-								+ btnEmoticon.getOffsetWidth(),
-						btnEmoticon.getAbsoluteTop()
-								+ btnEmoticon.getOffsetWidth());
+				emoticonPallette.setPopupPosition(btnEmoticon.getAbsoluteLeft() + btnEmoticon.getOffsetWidth(),
+						btnEmoticon.getAbsoluteTop() + btnEmoticon.getOffsetWidth());
 			}
 		});
 
@@ -430,9 +394,7 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 			initCannedMessages(cannedMessages, commandPanel);
 		}
 
-		if (operator
-				|| ClientProperties.getInstance().getBooleanValue(
-						ClientProperties.DISPLAY_FILE_SHARE, false)) {
+		if (operator || ClientProperties.getInstance().getBooleanValue(ClientProperties.DISPLAY_FILE_SHARE, false)) {
 			initFileShareArea(commandPanel);
 		}
 
@@ -460,11 +422,9 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 
 		chatEditTextArea.setEnabled(false);
 
-		sendButton = new Button(ApplicationController.getMessages()
-				.DesktopChatPanel_send());
+		sendButton = new Button(ApplicationController.getMessages().DesktopChatPanel_send());
 		editPanel.add(sendButton);
-		editPanel.setCellHorizontalAlignment(sendButton,
-				HasHorizontalAlignment.ALIGN_LEFT);
+		editPanel.setCellHorizontalAlignment(sendButton, HasHorizontalAlignment.ALIGN_LEFT);
 		sendButton.setSize("100%", "100%");
 		sendButton.addClickHandler(new ClickHandler() {
 
@@ -485,10 +445,8 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 		fileShareFormPanel.setAction(fileSharingUrl());
 		commandButtonsPanel.add(fileShareFormPanel);
 
-		commandButtonsPanel.setCellHorizontalAlignment(fileShareFormPanel,
-				HasHorizontalAlignment.ALIGN_RIGHT);
-		commandButtonsPanel.setCellVerticalAlignment(fileShareFormPanel,
-				HasVerticalAlignment.ALIGN_MIDDLE);
+		commandButtonsPanel.setCellHorizontalAlignment(fileShareFormPanel, HasHorizontalAlignment.ALIGN_RIGHT);
+		commandButtonsPanel.setCellVerticalAlignment(fileShareFormPanel, HasVerticalAlignment.ALIGN_MIDDLE);
 
 		HorizontalPanel fileSharePanel = new HorizontalPanel();
 		fileSharePanel.setSpacing(2);
@@ -501,19 +459,14 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 		fileSharePanel.add(fileShare);
 		fileShare.setName("file");
 
-		fileSharePanel.setCellHorizontalAlignment(fileShare,
-				HasHorizontalAlignment.ALIGN_RIGHT);
-		fileSharePanel.setCellVerticalAlignment(fileShare,
-				HasVerticalAlignment.ALIGN_MIDDLE);
+		fileSharePanel.setCellHorizontalAlignment(fileShare, HasHorizontalAlignment.ALIGN_RIGHT);
+		fileSharePanel.setCellVerticalAlignment(fileShare, HasVerticalAlignment.ALIGN_MIDDLE);
 
-		shareButton = new Button(ApplicationController.getMessages()
-				.DesktopChatPanel_share());
+		shareButton = new Button(ApplicationController.getMessages().DesktopChatPanel_share());
 		fileSharePanel.add(shareButton);
 
-		fileSharePanel.setCellHorizontalAlignment(shareButton,
-				HasHorizontalAlignment.ALIGN_LEFT);
-		fileSharePanel.setCellVerticalAlignment(shareButton,
-				HasVerticalAlignment.ALIGN_MIDDLE);
+		fileSharePanel.setCellHorizontalAlignment(shareButton, HasHorizontalAlignment.ALIGN_LEFT);
+		fileSharePanel.setCellVerticalAlignment(shareButton, HasVerticalAlignment.ALIGN_MIDDLE);
 
 		shareButton.addClickHandler(new ClickHandler() {
 
@@ -528,10 +481,8 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 			public void onSubmit(SubmitEvent event) {
 				if (fileShare.getFilename().trim().length() == 0) {
 					MessageBoxPresenter.getInstance().show(
-							ApplicationController.getMessages()
-									.DesktopChatPanel_fileTransferStatus(),
-							ApplicationController.getMessages()
-									.DesktopChatPanel_noFileName(),
+							ApplicationController.getMessages().DesktopChatPanel_fileTransferStatus(),
+							ApplicationController.getMessages().DesktopChatPanel_noFileName(),
 							MessageBoxPresenter.Severity.WARN, true);
 					event.cancel();
 					return;
@@ -539,74 +490,56 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 
 				sessionField.setValue(Long.toString(presenter.getSessionId()));
 				MessageBoxPresenter.getInstance().show(
-						ApplicationController.getMessages()
-								.DesktopChatPanel_fileTransferStatus(),
-						ApplicationController.getMessages()
-								.DesktopChatPanel_fileTransferInProgress()
-								+ " ...", MessageBoxPresenter.Severity.INFO,
-						true);
+						ApplicationController.getMessages().DesktopChatPanel_fileTransferStatus(),
+						ApplicationController.getMessages().DesktopChatPanel_fileTransferInProgress() + " ...",
+						MessageBoxPresenter.Severity.INFO, true);
 			}
 		});
 
-		fileShareFormPanel
-				.addSubmitCompleteHandler(new FormPanel.SubmitCompleteHandler() {
-					public void onSubmitComplete(SubmitCompleteEvent event) {
-						MessageBoxPresenter.getInstance().hide();
-						String results = event.getResults();
+		fileShareFormPanel.addSubmitCompleteHandler(new FormPanel.SubmitCompleteHandler() {
+			public void onSubmitComplete(SubmitCompleteEvent event) {
+				MessageBoxPresenter.getInstance().hide();
+				String results = event.getResults();
 
-						int index = results.indexOf(",");
-						if (index < 0) {
-							// Should not happen
-							return;
-						}
+				int index = results.indexOf(",");
+				if (index < 0) {
+					// Should not happen
+					return;
+				}
 
-						int status = Integer.parseInt(results.substring(0,
-								index));
-						String param = ApplicationController.getMessages()
-								.DesktopChatPanel_noReasonGiven();
-						if (index + 1 < results.length()) {
-							param = results.substring(index + 1);
-						}
+				int status = Integer.parseInt(results.substring(0, index));
+				String param = ApplicationController.getMessages().DesktopChatPanel_noReasonGiven();
+				if (index + 1 < results.length()) {
+					param = results.substring(index + 1);
+				}
 
-						switch (status) {
-						case ResponseMessage.OK:
-							presenter.notifyFileSharing(param);
-							appendToConveration(
-									null,
-									ApplicationController.getInstance()
-											.timestamp(),
-									ApplicationController.getMessages()
-											.DesktopChatPanel_fileShared(
-													fileShare.getFilename()));
-							break;
-						case ResponseMessage.NO_CONTENT:
-							appendToConveration(null, ApplicationController
-									.getInstance().timestamp(),
-									ApplicationController.getMessages()
-											.DesktopChatPanel_fileNoData());
-							break;
-						case ResponseMessage.NOT_ACCEPTABLE:
-							appendToConveration(null, ApplicationController
-									.getInstance().timestamp(),
-									ApplicationController.getMessages()
-											.DesktopChatPanel_fileTooBig());
-							break;
-						default:
-							appendToConveration(null, ApplicationController
-									.getInstance().timestamp(), param);
-							break;
-						}
-					}
-				});
+				switch (status) {
+				case ResponseMessage.OK:
+					presenter.notifyFileSharing(param);
+					appendToConveration(null, ApplicationController.getInstance().timestamp(),
+							ApplicationController.getMessages().DesktopChatPanel_fileShared(fileShare.getFilename()));
+					break;
+				case ResponseMessage.NO_CONTENT:
+					appendToConveration(null, ApplicationController.getInstance().timestamp(),
+							ApplicationController.getMessages().DesktopChatPanel_fileNoData());
+					break;
+				case ResponseMessage.NOT_ACCEPTABLE:
+					appendToConveration(null, ApplicationController.getInstance().timestamp(),
+							ApplicationController.getMessages().DesktopChatPanel_fileTooBig());
+					break;
+				default:
+					appendToConveration(null, ApplicationController.getInstance().timestamp(), param);
+					break;
+				}
+			}
+		});
 	}
 
 	public String fileSharingUrl() {
 		return GWT.getModuleBaseURL() + "../fileSharing";
 	}
 
-	private void initCannedMessages(
-			CannedMessageElement[] cannedMessages,
-			HorizontalPanel commandButtonsPanel) {
+	private void initCannedMessages(CannedMessageElement[] cannedMessages, HorizontalPanel commandButtonsPanel) {
 		if (cannedMessages != null && cannedMessages.length > 0) {
 			cannedMessageListBox = new ListBox();
 			commandButtonsPanel.add(cannedMessageListBox);
@@ -615,22 +548,18 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 
 			cannedMessageListBox.addItem("");
 			for (int i = 0; i < cannedMessages.length; i++) {
-				cannedMessageListBox
-						.addItem(cannedMessages[i].getDescription());
+				cannedMessageListBox.addItem(cannedMessages[i].getDescription());
 			}
 
-			commandButtonsPanel.setCellHorizontalAlignment(
-					cannedMessageListBox, HasHorizontalAlignment.ALIGN_RIGHT);
-			commandButtonsPanel.setCellVerticalAlignment(cannedMessageListBox,
-					HasVerticalAlignment.ALIGN_MIDDLE);
+			commandButtonsPanel.setCellHorizontalAlignment(cannedMessageListBox, HasHorizontalAlignment.ALIGN_RIGHT);
+			commandButtonsPanel.setCellVerticalAlignment(cannedMessageListBox, HasVerticalAlignment.ALIGN_MIDDLE);
 
 			cannedMessageListBox.addChangeHandler(new ChangeHandler() {
 
 				@Override
 				public void onChange(ChangeEvent event) {
 					if (cannedMessageListBox.getSelectedIndex() > 0) {
-						presenter.cannedMessageSelected(cannedMessageListBox
-								.getSelectedIndex() - 1);
+						presenter.cannedMessageSelected(cannedMessageListBox.getSelectedIndex() - 1);
 						cannedMessageListBox.setSelectedIndex(-1);
 					}
 				}
@@ -639,8 +568,7 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 	}
 
 	@Override
-	public void appendToConveration(String from, long timeStamp, Object obj) {
-
+	public void appendToConveration(String from, long timeStamp, String message) {
 		if (!adjusted) {
 			adjustScrollHeight();
 		}
@@ -651,21 +579,37 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 			transcriptPanel.remove(typing);
 		}
 
-		Widget html = ChatPanel.Util.formatChat(
-				from,
-				timeStamp,
-				(String)obj,
-				me,
-				ClientProperties.getInstance().getBooleanValue(
-						ClientProperties.CONVERSATION_SMALL_SPACE, false));
-		transcriptPanel.add(html);
+		Widget widget =ChatPanel.Util.formatChat(from, timeStamp, message, me,
+				ClientProperties.getInstance().getBooleanValue(ClientProperties.CONVERSATION_SMALL_SPACE, false));
+		transcriptPanel.add(widget);
 
 		if (userTyping) {
 			transcriptPanel.add(typing);
 		}
 
-		transcriptScrollPanel.setVerticalScrollPosition(transcriptPanel
-				.getOffsetHeight());
+		transcriptScrollPanel.setVerticalScrollPosition(transcriptPanel.getOffsetHeight());
+	}
+	
+	@Override
+	public void appendToConveration(String from, long timeStamp, String formId, String formDef) {
+		if (!adjusted) {
+			adjustScrollHeight();
+		}
+		
+		boolean userTyping = false;
+		if (typing != null) {
+			userTyping = true;
+			transcriptPanel.remove(typing);
+		}
+
+		Widget widget = formRenderer.renderForm(from, timeStamp, formId, formDef, from,
+				ClientProperties.getInstance().getBooleanValue(ClientProperties.CONVERSATION_SMALL_SPACE, false),
+				this);
+		transcriptPanel.add(widget);
+
+		if (userTyping) {
+			transcriptPanel.add(typing);
+		}
 	}
 
 	@Override
@@ -712,15 +656,13 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 
 		text = EmoticonUtils.replaceEmoticonText(text);
 
-		appendToConveration(null, ApplicationController.getInstance()
-				.timestamp(), text);
+		appendToConveration(null, ApplicationController.getInstance().timestamp(), text);
 		presenter.sendTextMessage(text);
 	}
 
 	@Override
 	public void emoticonSelected(String url) {
-		chatEditTextArea.getFormatter().insertHTML(
-				"&nbsp;" + EmoticonUtils.getEmoticonTag(url) + "&nbsp;");
+		chatEditTextArea.getFormatter().insertHTML("&nbsp;" + EmoticonUtils.getEmoticonTag(url) + "&nbsp;");
 		chatEditTextArea.setFocus(true);
 		presenter.typing();
 	}
@@ -734,8 +676,7 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 	private void adjustScrollHeight() {
 		int pheight = getOffsetHeight();
 		int dheight = dataEntryPanel.getOffsetHeight();
-		int sessionInfoHeaderSize = chatInfoDetailTable != null ? (int) VISITOR_TITLE_SIZE
-				: 0;
+		int sessionInfoHeaderSize = chatInfoDetailTable != null ? (int) VISITOR_TITLE_SIZE : 0;
 
 		int height = pheight - dheight - sessionInfoHeaderSize - 30;
 		if (operator) {
@@ -750,11 +691,9 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 	}
 
 	@Override
-	public void attach(String me, CallPartyElement otherParty,
-			CannedMessageElement[] cannedMessages, boolean operator,
+	public void attach(String me, CallPartyElement otherParty, CannedMessageElement[] cannedMessages, boolean operator,
 			boolean showOtherPartyInfo, boolean hideAvatar) {
-		init(me, otherParty, cannedMessages, operator, showOtherPartyInfo,
-				hideAvatar);
+		init(me, otherParty, cannedMessages, operator, showOtherPartyInfo, hideAvatar);
 	}
 
 	@Override
@@ -817,8 +756,7 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 			avatar = userInfo.getAvatar();
 		} else {
 			parties = ApplicationController.getMessages()
-					.DesktopChatPanel_numUsersInConference(
-							otherParties.size() + 1 + "");
+					.DesktopChatPanel_numUsersInConference(otherParties.size() + 1 + "");
 		}
 
 		StringBuilder builder = formatOtherParties(parties, avatar);
@@ -878,17 +816,11 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 		}
 
 		if (render) {
-			typing = ChatPanel.Util.formatChat(
-					from,
-					timestamp,
-					ChatPanel.TYPING,
-					me,
-					ClientProperties.getInstance().getBooleanValue(
-							ClientProperties.CONVERSATION_SMALL_SPACE, false));
+			typing = ChatPanel.Util.formatChat(from, timestamp, ChatPanel.TYPING, me,
+					ClientProperties.getInstance().getBooleanValue(ClientProperties.CONVERSATION_SMALL_SPACE, false));
 			typingFrom = from;
 			transcriptPanel.add(typing);
-			transcriptScrollPanel.setVerticalScrollPosition(transcriptPanel
-					.getOffsetHeight());
+			transcriptScrollPanel.setVerticalScrollPosition(transcriptPanel.getOffsetHeight());
 		}
 	}
 
@@ -911,5 +843,11 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel {
 				adjustScrollHeight();
 			}
 		});
+	}
+
+	@Override
+	public boolean formSubmitted(String formId, Map<String,String> result) {
+		presenter.submitForm(formId, result);
+		return true;
 	}
 }

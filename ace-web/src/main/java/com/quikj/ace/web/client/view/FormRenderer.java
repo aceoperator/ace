@@ -21,13 +21,18 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
-import com.quikj.ace.messages.vo.talk.FormDefinitionElement;
-import com.quikj.ace.messages.vo.talk.FormSubmissionElement;
 import com.quikj.ace.web.client.ClientProperties;
+import com.quikj.ace.web.client.presenter.MessageBoxPresenter;
+
+
+//TODO add internationalization
 
 /**
  * @author amit
  *
+ *         Meant to be a base class for rendering to various devices
+ *         (desktop/mobile/tablet), hence the protected methods. At this point,
+ *         it is not needed to extend it
  */
 public class FormRenderer {
 
@@ -35,9 +40,9 @@ public class FormRenderer {
 	private static final String TYPE = "type";
 	private static final String MINLENGTH = "minlength";
 	private static final String REQUIRED = "required";
-	
+
 	public interface FormListener {
-		boolean formSubmitted(FormSubmissionElement response);
+		boolean formSubmitted(String formId, Map<String, String> result);
 	}
 
 	public class SubmitHandler implements ClickHandler {
@@ -49,7 +54,7 @@ public class FormRenderer {
 			this.formId = formId;
 			this.listener = listener;
 		}
-		
+
 		public void addAttribute(Widget widget, String key, String value) {
 			Map<String, String> widgetValidators = validators.get(widget);
 			if (widgetValidators == null) {
@@ -63,11 +68,11 @@ public class FormRenderer {
 		@Override
 		public void onClick(ClickEvent event) {
 			Map<String, String> result = new HashMap<>();
-			
+
 			for (Entry<Widget, Map<String, String>> e : validators.entrySet()) {
 				Widget widget = e.getKey();
 				Map<String, String> attributes = e.getValue();
-				
+
 				String value;
 				if (widget instanceof TextBox) {
 					value = ((TextArea) widget).getValue();
@@ -77,27 +82,27 @@ public class FormRenderer {
 					// Should not happen
 					value = "";
 				}
-				
+
 				value = value.trim();
 
 				if (!validate(attributes, value)) {
 					return;
 				}
-				
+
 				result.put(attributes.get(NAME), value);
 			}
-			
-			FormSubmissionElement response = new FormSubmissionElement(result, formId);
-			if (listener.formSubmitted(response)) {
-				((Button)event.getSource()).setEnabled(false);
+
+			if (listener.formSubmitted(formId, result)) {
+				((Button) event.getSource()).setEnabled(false);
 			}
 		}
 
-		public boolean validate(Map<String, String> attributes, String value) {
+		private boolean validate(Map<String, String> attributes, String value) {
 			// Validate for required
 			String v = attributes.get(REQUIRED);
 			if (v != null && v.equalsIgnoreCase("true") && value.isEmpty()) {
-				// TODO notify error
+				MessageBoxPresenter.getInstance().show("Form Error!", attributes.get(NAME) + " is required",
+						MessageBoxPresenter.Severity.SEVERE, true);
 				return false;
 			}
 
@@ -105,7 +110,9 @@ public class FormRenderer {
 			v = attributes.get(MINLENGTH);
 			int intv = Integer.parseInt(v);
 			if (v != null && value.length() < intv) {
-				// TODO notify error
+				MessageBoxPresenter.getInstance().show("Form Error!",
+						attributes.get(NAME) + " must have at least " + v + " characters",
+						MessageBoxPresenter.Severity.SEVERE, true);
 				return false;
 			}
 
@@ -117,12 +124,13 @@ public class FormRenderer {
 					try {
 						Integer.parseInt(value);
 					} catch (NumberFormatException ex) {
-						// TODO notify error
+						MessageBoxPresenter.getInstance().show("Form Error!", attributes.get(NAME) + " must be numeric",
+								MessageBoxPresenter.Severity.SEVERE, true);
 						return false;
 					}
 				} else if (v.equalsIgnoreCase("currency")) {
-					int decimalIndex = value.indexOf(ClientProperties.getInstance()
-							.getStringValue(ClientProperties.CURRENCY_DELIMITER, "."));
+					int decimalIndex = value.indexOf(
+							ClientProperties.getInstance().getStringValue(ClientProperties.CURRENCY_DELIMITER, "."));
 					String dollars = value;
 					String cents = "0";
 					if (decimalIndex == 0) {
@@ -137,7 +145,12 @@ public class FormRenderer {
 						Integer.parseInt(dollars);
 						Integer.parseInt(cents);
 					} catch (NumberFormatException ex) {
-						// TODO notify error
+						MessageBoxPresenter.getInstance().show("Form Error!",
+								attributes.get(NAME) + " must be in DD"
+										+ ClientProperties.getInstance()
+												.getStringValue(ClientProperties.CURRENCY_DELIMITER, ".")
+										+ " format",
+								MessageBoxPresenter.Severity.SEVERE, true);
 						return false;
 					}
 				} else if (v.equalsIgnoreCase("date")) {
@@ -146,7 +159,12 @@ public class FormRenderer {
 					try {
 						DateTimeFormat.getFormat(pattern).parse(value);
 					} catch (IllegalArgumentException ex) {
-						// TODO notify error
+						MessageBoxPresenter.getInstance().show("Form Error!",
+								attributes.get(NAME) + " must be in "
+										+ ClientProperties.getInstance().getStringValue(ClientProperties.DATE_FORMAT,
+												ClientProperties.DEFAULT_DATE_FORMAT)
+										+ " format",
+								MessageBoxPresenter.Severity.SEVERE, true);
 						return false;
 					}
 				}
@@ -155,12 +173,13 @@ public class FormRenderer {
 		}
 	}
 
-	public Widget renderForm(String from, long timeStamp, FormDefinitionElement form, String me, boolean smallSpace, FormListener listener) {
+	public Widget renderForm(String from, long timeStamp, String formId, String formDef, String me, boolean smallSpace,
+			FormListener listener) {
 		Panel panel = renderPanel();
 
-		SubmitHandler validator = new SubmitHandler(form.getFormId(), listener);
+		SubmitHandler validator = new SubmitHandler(formId, listener);
 
-		String[] lines = form.getFormDef().split("(\\r\\n|\\r|\\n)");
+		String[] lines = formDef.split("(\\r\\n|\\r|\\n)");
 		for (String line : lines) {
 			line = line.trim();
 			if (line.isEmpty()) {
@@ -238,7 +257,6 @@ public class FormRenderer {
 		// column 4 = type (text/numeric/date/currency)
 		// column 5 = size
 
-		// TODO add a mandatory marker to the label
 		renderLabel(columns, panel);
 
 		TextBox textBox;
@@ -270,7 +288,6 @@ public class FormRenderer {
 		// column 4 = minimum length
 		// column 5 = rows
 
-		// TODO add a mandatory marker to the label
 		renderLabel(columns, panel);
 
 		TextArea textArea = new TextArea();
@@ -292,8 +309,6 @@ public class FormRenderer {
 		// column 1 = label
 		// column 2 = name
 		// column 3,4,5.... drop down items
-
-		// TODO add a mandatory marker to the label
 		renderLabel(columns, panel);
 
 		ListBox listBox = new ListBox();

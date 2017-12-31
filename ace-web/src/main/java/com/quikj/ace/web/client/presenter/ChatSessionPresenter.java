@@ -27,6 +27,8 @@ import com.quikj.ace.messages.vo.talk.ConferenceInformationMessage;
 import com.quikj.ace.messages.vo.talk.ConferencePartyInfo;
 import com.quikj.ace.messages.vo.talk.DisconnectMessage;
 import com.quikj.ace.messages.vo.talk.DisconnectReasonElement;
+import com.quikj.ace.messages.vo.talk.FormDefinitionElement;
+import com.quikj.ace.messages.vo.talk.FormSubmissionElement;
 import com.quikj.ace.messages.vo.talk.HtmlElement;
 import com.quikj.ace.messages.vo.talk.JoinRequestMessage;
 import com.quikj.ace.messages.vo.talk.MailElement;
@@ -487,7 +489,7 @@ public class ChatSessionPresenter {
 		UserChatsPresenter.getCurrentInstance().addMissedChat(image, ViewUtils.formatName(caller), caller.getEmail());
 	}
 
-	public void processRTPMessage(RTPMessage msg) {
+	private void processRTPMessage(RTPMessage msg) {
 		MediaElements media = msg.getMediaElements();
 		CallPartyElement from = msg.getFrom();
 		processMedia(media, from);
@@ -505,12 +507,18 @@ public class ChatSessionPresenter {
 		for (int i = 0; i < size; i++) {
 			MediaElementInterface element = media.getElements().get(i);
 			if (element instanceof HtmlElement) {
-				HtmlElement text = (HtmlElement) element;
+				HtmlElement text = (HtmlElement)element;
 				cancelTyping();
 
 				view.appendToConveration(formattedName, ApplicationController.getInstance().timestamp(),
 						text.getHtml());
 				playChime = true;
+			} else if (element instanceof FormDefinitionElement) {
+				FormDefinitionElement form = (FormDefinitionElement)element;
+				view.appendToConveration(formattedName, ApplicationController.getInstance().timestamp(),
+						form.getFormId(), form.getFormDef());
+			} else if (element instanceof FormSubmissionElement) {
+				// TODO
 			} else if (element instanceof TypingElement) {
 				if (typingTimer != null) {
 					cancelTyping();
@@ -525,8 +533,6 @@ public class ChatSessionPresenter {
 					}
 				};
 				typingTimer.schedule(TYPING_TIMEOUT);
-			} else if (element instanceof HtmlElement) {
-				// TODO
 			} else {
 				logger.warning("Media element of type " + element.getClass().getName() + " is not supported");
 			}
@@ -553,18 +559,27 @@ public class ChatSessionPresenter {
 
 	public void sendTextMessage(String text) {
 		lastTypingTime = null;
+		HtmlElement element = new HtmlElement();
+		element.setHtml(text);		
+		sendRTPMessage(element);
+	}
 
+	private void sendRTPMessage(MediaElementInterface element) {
 		RTPMessage rtp = new RTPMessage();
 		rtp.setSessionId(chatInfo.getSessionId());
 		MediaElements elements = new MediaElements();
-		rtp.setMediaElements(elements);
-		HtmlElement element = new HtmlElement();
+		rtp.setMediaElements(elements);		
 		elements.getElements().add(element);
-		element.setHtml(text);
+		
 		CallPartyElement cp = (CallPartyElement) SessionInfo.getInstance().get(SessionInfo.USER_INFO);
 		rtp.setFrom(cloneCallPartyElement(cp));
 
 		CommunicationsFactory.getServerCommunications().sendRequest(rtp, Message.CONTENT_TYPE_XML, false, 0L, null);
+	}
+	
+	public void submitForm(String formId, Map<String,String> result) {
+		lastTypingTime = null;		
+		sendRTPMessage(new FormSubmissionElement(result, formId));
 	}
 
 	public void userDisconnected(int reasonCode, String reasonText) {
