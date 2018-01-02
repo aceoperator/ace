@@ -580,6 +580,9 @@ public class ChatSessionPresenter {
 	public void submitForm(String formId, Map<String,String> result) {
 		lastTypingTime = null;		
 		sendRTPMessage(new FormSubmissionElement(result, formId));
+		// TODO internationalize
+		view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
+				"Your input has been submitted. Thank you");
 	}
 
 	public void userDisconnected(int reasonCode, String reasonText) {

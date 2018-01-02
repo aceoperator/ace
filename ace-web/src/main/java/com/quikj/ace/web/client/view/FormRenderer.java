@@ -16,14 +16,13 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.PasswordTextBox;
-import com.google.gwt.user.client.ui.ResetButton;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.TextBoxBase;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.quikj.ace.web.client.ClientProperties;
 import com.quikj.ace.web.client.presenter.MessageBoxPresenter;
-
 
 //TODO add internationalization
 
@@ -46,9 +45,10 @@ public class FormRenderer {
 	}
 
 	public class SubmitHandler implements ClickHandler {
-		Map<Widget, Map<String, String>> validators = new HashMap<Widget, Map<String, String>>();
+		Map<Widget, Map<String, String>> attributes = new HashMap<Widget, Map<String, String>>();
 		private String formId;
 		private FormListener listener;
+		private Button submitButton;
 
 		public SubmitHandler(String formId, FormListener listener) {
 			this.formId = formId;
@@ -56,26 +56,33 @@ public class FormRenderer {
 		}
 
 		public void addAttribute(Widget widget, String key, String value) {
-			Map<String, String> widgetValidators = validators.get(widget);
-			if (widgetValidators == null) {
-				widgetValidators = new HashMap<String, String>();
-				validators.put(widget, widgetValidators);
+			Map<String, String> widgetAttributes = attributes.get(widget);
+			if (widgetAttributes == null) {
+				widgetAttributes = new HashMap<String, String>();
+				attributes.put(widget, widgetAttributes);
 			}
 
-			widgetValidators.put(key, value);
+			widgetAttributes.put(key, value);
 		}
 
-		@Override
-		public void onClick(ClickEvent event) {
+		private void reset() {
+			for (Widget widget : attributes.keySet()) {
+				if (widget instanceof TextBoxBase) {
+					((TextBoxBase) widget).setValue("");
+				}
+			}
+		}
+
+		private void submit() {
 			Map<String, String> result = new HashMap<>();
 
-			for (Entry<Widget, Map<String, String>> e : validators.entrySet()) {
+			for (Entry<Widget, Map<String, String>> e : attributes.entrySet()) {
 				Widget widget = e.getKey();
 				Map<String, String> attributes = e.getValue();
 
 				String value;
-				if (widget instanceof TextBox) {
-					value = ((TextArea) widget).getValue();
+				if (widget instanceof TextBoxBase) {
+					value = ((TextBoxBase) widget).getValue();
 				} else if (widget instanceof ListBox) {
 					value = ((ListBox) widget).getSelectedValue();
 				} else {
@@ -93,33 +100,43 @@ public class FormRenderer {
 			}
 
 			if (listener.formSubmitted(formId, result)) {
-				((Button) event.getSource()).setEnabled(false);
+				submitButton.setEnabled(false);
+			}
+		}
+
+		@Override
+		public void onClick(ClickEvent event) {
+			if (event.getSource() == submitButton) {
+				submit();
+			} else {
+				// Reset button
+				reset();
 			}
 		}
 
 		private boolean validate(Map<String, String> attributes, String value) {
 			// Validate for required
 			String v = attributes.get(REQUIRED);
-			if (v != null && v.equalsIgnoreCase("true") && value.isEmpty()) {
-				MessageBoxPresenter.getInstance().show("Form Error!", attributes.get(NAME) + " is required",
-						MessageBoxPresenter.Severity.SEVERE, true);
-				return false;
+			if (v != null && v.equalsIgnoreCase("true")) {
+				if (value.isEmpty()) {
+					MessageBoxPresenter.getInstance().show("Form Error!", attributes.get(NAME) + " is required",
+							MessageBoxPresenter.Severity.SEVERE, true);
+					return false;
+				}
+				
+				// Validate for minimum length
+				v = attributes.get(MINLENGTH);
+				if (v != null && value.length() < Integer.parseInt(v)) {
+					MessageBoxPresenter.getInstance().show("Form Error!",
+							attributes.get(NAME) + " must have at least " + v + " characters",
+							MessageBoxPresenter.Severity.SEVERE, true);
+					return false;
+				}
 			}
-
-			// Validate for minimum length
-			v = attributes.get(MINLENGTH);
-			int intv = Integer.parseInt(v);
-			if (v != null && value.length() < intv) {
-				MessageBoxPresenter.getInstance().show("Form Error!",
-						attributes.get(NAME) + " must have at least " + v + " characters",
-						MessageBoxPresenter.Severity.SEVERE, true);
-				return false;
-			}
-
+			
 			// Validate for type
 			v = attributes.get(TYPE);
-			if (v != null) {
-				// (text/numeric/date[format]/currency)
+			if (v != null && !value.isEmpty()) {
 				if (v.equalsIgnoreCase("numeric")) {
 					try {
 						Integer.parseInt(value);
@@ -171,6 +188,10 @@ public class FormRenderer {
 			}
 			return true;
 		}
+
+		public void setSubmitButton(Button submitButton) {
+			this.submitButton = submitButton;
+		}
 	}
 
 	public Widget renderForm(String from, long timeStamp, String formId, String formDef, String me, boolean smallSpace,
@@ -179,7 +200,7 @@ public class FormRenderer {
 
 		SubmitHandler validator = new SubmitHandler(formId, listener);
 
-		String[] lines = formDef.split("(\\r\\n|\\r|\\n)");
+		String[] lines = formDef.split("\\r?\\n");
 		for (String line : lines) {
 			line = line.trim();
 			if (line.isEmpty()) {
@@ -211,23 +232,25 @@ public class FormRenderer {
 		// column 1 = submit button label
 		// column 2 = reset button label
 		HorizontalPanel buttonPanel = new HorizontalPanel();
-		buttonPanel.setWidth("100%");
 		panel.add(buttonPanel);
 
 		Button submit = new Button(getColumn(columns, 1, "Submit"));
+		submitter.setSubmitButton(submit);
 		submit.addClickHandler(submitter);
 		buttonPanel.add(submit);
 
 		if (columns.length >= 3) {
-			ResetButton reset = new ResetButton(getColumn(columns, 2, "Reset"));
+			Button reset = new Button(getColumn(columns, 2, "Reset"));
 			buttonPanel.add(reset);
+
+			reset.addClickHandler(submitter);
 		}
 	}
 
 	protected Panel renderPanel() {
 		VerticalPanel panel = new VerticalPanel();
 		panel.setSpacing(5);
-		panel.setWidth("100%");
+		panel.setWidth("90%");
 		return panel;
 	}
 
@@ -321,7 +344,6 @@ public class FormRenderer {
 			}
 		}
 
-		listBox.setWidth("100%");
 		submitter.addAttribute(listBox, NAME, getColumn(columns, 2, "dropdown"));
 	}
 }

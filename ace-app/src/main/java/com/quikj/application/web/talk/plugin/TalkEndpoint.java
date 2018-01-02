@@ -1,13 +1,16 @@
 package com.quikj.application.web.talk.plugin;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,6 +24,7 @@ import com.quikj.ace.messages.vo.talk.ConferenceInformationMessage;
 import com.quikj.ace.messages.vo.talk.DisconnectMessage;
 import com.quikj.ace.messages.vo.talk.DisconnectReasonElement;
 import com.quikj.ace.messages.vo.talk.FormDefinitionElement;
+import com.quikj.ace.messages.vo.talk.FormSubmissionElement;
 import com.quikj.ace.messages.vo.talk.HtmlElement;
 import com.quikj.ace.messages.vo.talk.JoinRequestMessage;
 import com.quikj.ace.messages.vo.talk.JoinResponseMessage;
@@ -103,16 +107,14 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		}
 	}
 
-	private boolean checkRequestMessage(String content_type, WebMessage body) {
+	private boolean checkRequestMessage(String contentType, WebMessage body) {
 		if (body == null) {
-			// print error message
 			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
 					+ "- TalkEndoint.checkRequestMessage() -- Request message does not have a body");
 			return false;
 		}
 
-		if (!content_type.equalsIgnoreCase(Message.CONTENT_TYPE_XML)) {
-			// print error message
+		if (!contentType.equalsIgnoreCase(Message.CONTENT_TYPE_XML)) {
 			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
 					+ "- TalkEndoint.checkRequestMessage() -- Content type of a request message is not application/xml");
 			return false;
@@ -120,10 +122,9 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		return true;
 	}
 
-	private boolean checkResponseMessage(String content_type, WebMessage body) {
+	private boolean checkResponseMessage(String contentType, WebMessage body) {
 		if (body != null) {
-			if (!content_type.equalsIgnoreCase(Message.CONTENT_TYPE_XML)) {
-				// print error message
+			if (!contentType.equalsIgnoreCase(Message.CONTENT_TYPE_XML)) {
 				AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
 						+ "- TalkEndoint.checkResponseMessage() -- Content type of a response message is not application/xml");
 				return false;
@@ -638,8 +639,6 @@ public class TalkEndpoint implements PluginAppClientInterface {
 
 		if (!sessionInfo.isConnected()) {
 			// we do not expect any setup response
-
-			// print error message
 			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
 					+ "- TalkEndoint.processRTPMessage() -- An RTP message is received for a call that is not connected");
 			// and ignore
@@ -647,6 +646,8 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		}
 
 		List<Integer> cannedList = resolveCannedMediaElements(message);
+
+		handleSpecialContent(message);
 
 		if (!registered) {
 			scrubMessage(message, cannedList);
@@ -727,7 +728,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 				if (canned.getMessage() == null) {
 					String result = SynchronousDbOperations.getInstance().queryCannedMessages(canned.getId());
 					if (result != null) {
-						html = resolveMedia(canned.getId(), result);
+						html = resolveContent(canned.getId(), result);
 					} else {
 						AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
 								Thread.currentThread().getName()
@@ -752,13 +753,24 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		return cannedList;
 	}
 
-	private MediaElementInterface resolveMedia(long id, String content) {
-		MediaElementInterface element = null;
+	private String[] tokenizeFormDef(String content) {
 		Matcher matcher = Pattern.compile("^#form\\|(.*)\\r?\\n((?s:.)*)", Pattern.CASE_INSENSITIVE).matcher(content);
-		if (matcher.matches()) {
+		if (!matcher.matches()) {
+			return null;
+		}
+
+		return new String[] { matcher.group(1), matcher.group(2) };
+	}
+
+	private MediaElementInterface resolveContent(long id, String content) {
+		MediaElementInterface element = null;
+
+		String[] tokens = tokenizeFormDef(content);
+		if (tokens != null) {
 			FormDefinitionElement form = new FormDefinitionElement();
+			element = form;
 			form.setFormId(Long.toString(id));
-			form.setFormDef(matcher.group(2));
+			form.setFormDef(tokens[1]);
 		}
 
 		if (element == null) {
@@ -782,7 +794,64 @@ public class TalkEndpoint implements PluginAppClientInterface {
 				e.setHtml(contentFilter.scrubHtml(e.getHtml()));
 			}
 		}
+	}
 
+	private void handleSpecialContent(RTPMessage message) {
+		Iterator<MediaElementInterface> i = message.getMediaElements().getElements().iterator();
+		List<MediaElementInterface> replacements = new ArrayList<>();
+		while (i.hasNext()) {
+			MediaElementInterface e = i.next();
+			if (e instanceof FormSubmissionElement) {
+				HtmlElement replacement = processFormSubmission((FormSubmissionElement) e);
+				replacements.add(replacement);
+				i.remove();
+			}
+		}
+		
+		if (!replacements.isEmpty()) {
+			message.getMediaElements().getElements().addAll(replacements);
+		}
+	}
+
+	private HtmlElement processFormSubmission(FormSubmissionElement form) {
+		String formId = form.getFormId();
+		String result = SynchronousDbOperations.getInstance().queryCannedMessages(Long.parseLong(formId));
+		String[] tokens = tokenizeFormDef(result);
+		if (tokens != null) {
+			String[] splits = tokens[0].split("\\|");
+			if (splits.length > 2) {
+				// TODO send out email
+			} // else - should not happen
+		}
+
+		List<String> list = new ArrayList<>();
+
+		for (Entry<String, String> e : form.getResponse().entrySet()) {
+			StringBuilder b = new StringBuilder("<li><b>");
+			b.append(e.getKey());
+			b.append("</b>: ");
+			b.append(e.getValue());
+			b.append("</li>");
+			list.add(b.toString());
+		}
+		
+		list.sort(new Comparator<String>() {
+			@Override
+			public int compare(String s1, String s2) {
+				return s1.compareTo(s2);
+			}
+		});
+		
+		// TODO internationalize
+		StringBuilder builder = new StringBuilder("Form data:<ul>");
+		for (String e: list) {
+			builder.append(e);
+		}
+		builder.append("</ul>");
+		
+		HtmlElement html = new HtmlElement();
+		html.setHtml(builder.toString());
+		return html;
 	}
 
 	private void saveTranscript(String transcriptFile, Object message, MessageDirection direction, Integer status,
@@ -1331,13 +1400,12 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		}
 	}
 
-	private void removeFromCallList(long session_id) {
-		removeFromCallList(session_id, true);
+	private void removeFromCallList(long sessionId) {
+		removeFromCallList(sessionId, true);
 	}
 
-	public boolean requestReceived(int request_id, String content_type, WebMessage body) {
-
-		if (!checkRequestMessage(content_type, body)) {
+	public boolean requestReceived(int requestId, String contentType, WebMessage body) {
+		if (!checkRequestMessage(contentType, body)) {
 			return true;
 		}
 
@@ -1352,7 +1420,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
 					+ "- TalkEndoint.requestReceived() -- The first request received from the client is not a setup or a registration request");
 
-			if (!parent.sendResponseMessageToClient(request_id, ResponseMessage.FORBIDDEN, "Bad sequence",
+			if (!parent.sendResponseMessageToClient(requestId, ResponseMessage.FORBIDDEN, "Bad sequence",
 					Message.CONTENT_TYPE_XML, null)) {
 				// print error message
 				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
@@ -1363,15 +1431,15 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		firstReqRcvd = true;
 
 		if (message instanceof RegistrationRequestMessage) {
-			return processRegistrationRequestMessage(request_id, (RegistrationRequestMessage) message);
+			return processRegistrationRequestMessage(requestId, (RegistrationRequestMessage) message);
 		} else if (message instanceof SetupRequestMessage) {
-			return processSetupRequestMessage(request_id, (SetupRequestMessage) message);
+			return processSetupRequestMessage(requestId, (SetupRequestMessage) message);
 		} else if (message instanceof RTPMessage) {
 			return processRTPMessage((RTPMessage) message);
 		} else if (message instanceof DisconnectMessage) {
 			return processDisconnectMessage((DisconnectMessage) message);
 		} else if (message instanceof UserToUserMessage) {
-			return processUserToUserRequestMessage(request_id, (UserToUserMessage) message);
+			return processUserToUserRequestMessage(requestId, (UserToUserMessage) message);
 		} else {
 			if (message instanceof JoinRequestMessage) {
 				JoinRequestMessage join = (JoinRequestMessage) message;
@@ -1380,7 +1448,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			}
 
 			// unknown type of message, send it to the service controller
-			MessageEvent me = new MessageEvent(MessageEvent.CLIENT_REQUEST_MESSAGE, parent, message, null, request_id);
+			MessageEvent me = new MessageEvent(MessageEvent.CLIENT_REQUEST_MESSAGE, parent, message, null, requestId);
 			if (!ServiceController.Instance().sendMessage(me)) {
 				// print error message
 				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
