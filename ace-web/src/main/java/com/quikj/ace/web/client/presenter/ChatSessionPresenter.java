@@ -4,10 +4,12 @@
 package com.quikj.ace.web.client.presenter;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -507,18 +509,18 @@ public class ChatSessionPresenter {
 		for (int i = 0; i < size; i++) {
 			MediaElementInterface element = media.getElements().get(i);
 			if (element instanceof HtmlElement) {
-				HtmlElement text = (HtmlElement)element;
+				HtmlElement text = (HtmlElement) element;
 				cancelTyping();
 
 				view.appendToConveration(formattedName, ApplicationController.getInstance().timestamp(),
 						text.getHtml());
 				playChime = true;
 			} else if (element instanceof FormDefinitionElement) {
-				FormDefinitionElement form = (FormDefinitionElement)element;
+				FormDefinitionElement form = (FormDefinitionElement) element;
 				view.appendToConveration(formattedName, ApplicationController.getInstance().timestamp(),
 						form.getFormId(), form.getFormDef());
 			} else if (element instanceof FormSubmissionElement) {
-				// TODO
+				processFormResponse(formattedName, (FormSubmissionElement) element);
 			} else if (element instanceof TypingElement) {
 				if (typingTimer != null) {
 					cancelTyping();
@@ -543,6 +545,35 @@ public class ChatSessionPresenter {
 		}
 	}
 
+	private void processFormResponse(String from, FormSubmissionElement form) {
+		List<String> list = new ArrayList<>();
+
+		for (Entry<String, String> e : form.getResponse().entrySet()) {
+			StringBuilder b = new StringBuilder("<li><b>");
+			b.append(e.getKey());
+			b.append("</b>: ");
+			b.append(e.getValue());
+			b.append("</li>");
+			list.add(b.toString());
+		}
+
+		list.sort(new Comparator<String>() {
+			@Override
+			public int compare(String s1, String s2) {
+				return s1.compareTo(s2);
+			}
+		});
+
+		// TODO internationalize
+		StringBuilder builder = new StringBuilder("Form data:<ul>");
+		for (String e : list) {
+			builder.append(e);
+		}
+		builder.append("</ul>");
+
+		view.appendToConveration(from, ApplicationController.getInstance().timestamp(), builder.toString());
+	}
+
 	public static void rtpReceived(RTPMessage msg) {
 		Map<Long, ChatSessionInfo> chats = SessionInfo.getInstance().getChatList();
 		ChatSessionInfo chat = (ChatSessionInfo) chats.get(msg.getSessionId());
@@ -560,7 +591,7 @@ public class ChatSessionPresenter {
 	public void sendTextMessage(String text) {
 		lastTypingTime = null;
 		HtmlElement element = new HtmlElement();
-		element.setHtml(text);		
+		element.setHtml(text);
 		sendRTPMessage(element);
 	}
 
@@ -568,21 +599,24 @@ public class ChatSessionPresenter {
 		RTPMessage rtp = new RTPMessage();
 		rtp.setSessionId(chatInfo.getSessionId());
 		MediaElements elements = new MediaElements();
-		rtp.setMediaElements(elements);		
+		rtp.setMediaElements(elements);
 		elements.getElements().add(element);
-		
+
 		CallPartyElement cp = (CallPartyElement) SessionInfo.getInstance().get(SessionInfo.USER_INFO);
 		rtp.setFrom(cloneCallPartyElement(cp));
 
 		CommunicationsFactory.getServerCommunications().sendRequest(rtp, Message.CONTENT_TYPE_XML, false, 0L, null);
 	}
-	
-	public void submitForm(String formId, Map<String,String> result) {
-		lastTypingTime = null;		
-		sendRTPMessage(new FormSubmissionElement(result, formId));
-		// TODO internationalize
-		view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
-				"Your input has been submitted. Thank you");
+
+	public void submitForm(String formId, Map<String, String> result) {
+		lastTypingTime = null;
+
+		if (chatInfo.getStatus() == ChatStatus.CONNECTED) {
+			sendRTPMessage(new FormSubmissionElement(result, formId));
+			// TODO internationalize
+			view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
+					"Your input has been submitted. Thank you");
+		}
 	}
 
 	public void userDisconnected(int reasonCode, String reasonText) {

@@ -1,16 +1,13 @@
 package com.quikj.application.web.talk.plugin;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -797,23 +794,14 @@ public class TalkEndpoint implements PluginAppClientInterface {
 	}
 
 	private void handleSpecialContent(RTPMessage message) {
-		Iterator<MediaElementInterface> i = message.getMediaElements().getElements().iterator();
-		List<MediaElementInterface> replacements = new ArrayList<>();
-		while (i.hasNext()) {
-			MediaElementInterface e = i.next();
+		for (MediaElementInterface e : message.getMediaElements().getElements()) {
 			if (e instanceof FormSubmissionElement) {
-				HtmlElement replacement = processFormSubmission((FormSubmissionElement) e);
-				replacements.add(replacement);
-				i.remove();
+				processFormSubmission((FormSubmissionElement) e);
 			}
-		}
-		
-		if (!replacements.isEmpty()) {
-			message.getMediaElements().getElements().addAll(replacements);
 		}
 	}
 
-	private HtmlElement processFormSubmission(FormSubmissionElement form) {
+	private void processFormSubmission(FormSubmissionElement form) {
 		String formId = form.getFormId();
 		String result = SynchronousDbOperations.getInstance().queryCannedMessages(Long.parseLong(formId));
 		String[] tokens = tokenizeFormDef(result);
@@ -821,37 +809,8 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			String[] splits = tokens[0].split("\\|");
 			if (splits.length > 2) {
 				// TODO send out email
-			} // else - should not happen
-		}
-
-		List<String> list = new ArrayList<>();
-
-		for (Entry<String, String> e : form.getResponse().entrySet()) {
-			StringBuilder b = new StringBuilder("<li><b>");
-			b.append(e.getKey());
-			b.append("</b>: ");
-			b.append(e.getValue());
-			b.append("</li>");
-			list.add(b.toString());
-		}
-		
-		list.sort(new Comparator<String>() {
-			@Override
-			public int compare(String s1, String s2) {
-				return s1.compareTo(s2);
 			}
-		});
-		
-		// TODO internationalize
-		StringBuilder builder = new StringBuilder("Form data:<ul>");
-		for (String e: list) {
-			builder.append(e);
 		}
-		builder.append("</ul>");
-		
-		HtmlElement html = new HtmlElement();
-		html.setHtml(builder.toString());
-		return html;
 	}
 
 	private void saveTranscript(String transcriptFile, Object message, MessageDirection direction, Integer status,
