@@ -27,7 +27,7 @@ public interface ChatPanel {
 
 	void appendToConveration(String from, long timeStamp, String message);
 	
-	void appendToConveration(String from, long timeStamp, String formId, String formDef);
+	void appendToConveration(String from, long timeStamp, long formId, String formDef);
 
 	void setPresenter(ChatSessionPresenter presenter);
 

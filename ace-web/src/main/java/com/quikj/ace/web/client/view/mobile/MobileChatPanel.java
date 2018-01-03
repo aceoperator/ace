@@ -398,7 +398,7 @@ public class MobileChatPanel extends StackLayoutPanel implements ChatPanel {
 	}
 
 	@Override
-	public void appendToConveration(String from, long timeStamp, String formId, String formDef) {
+	public void appendToConveration(String from, long timeStamp, long formId, String formDef) {
 		// TODO Auto-generated method stub
 	}
 }

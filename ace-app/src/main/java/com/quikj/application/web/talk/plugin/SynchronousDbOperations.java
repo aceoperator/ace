@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,13 +46,11 @@ public class SynchronousDbOperations {
 		instance = null;
 	}
 
-	public synchronized CannedMessageElement[] listCannedMessages(
-			String[] groups, boolean fetchContent) {
+	public synchronized CannedMessageElement[] listCannedMessages(String[] groups, boolean fetchContent) {
 		Connection c = null;
 
 		try {
-			StringBuilder query = new StringBuilder(
-					"select id, description, grp");
+			StringBuilder query = new StringBuilder("select id, description, grp");
 			if (fetchContent) {
 				query.append(", message");
 			}
@@ -74,8 +73,7 @@ public class SynchronousDbOperations {
 
 			query.append(" order by grp, description");
 
-			c = ApplicationServer.getInstance().getBean(DataSource.class)
-					.getConnection();
+			c = ApplicationServer.getInstance().getBean(DataSource.class).getConnection();
 			PreparedStatement pstmt = c.prepareStatement(query.toString());
 			for (int i = 0; i < groups.length; i++) {
 				pstmt.setString(i + 1, groups[i]);
@@ -99,24 +97,17 @@ public class SynchronousDbOperations {
 
 			return lst.toArray(new CannedMessageElement[lst.size()]);
 		} catch (Exception e) {
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							"SynchronousDBOperations.listCannedMessages() -- an exception occured while querying database",
-							e);
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"SynchronousDBOperations.listCannedMessages() -- an exception occured while querying database", e);
 			return null;
 		} finally {
 			if (c != null) {
 				try {
 					c.close();
 				} catch (SQLException e) {
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									"SynchronousDBOperations.listCannedMessages() -- Exception occured while closing connection",
-									e);
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							"SynchronousDBOperations.listCannedMessages() -- Exception occured while closing connection",
+							e);
 				}
 			}
 		}
@@ -127,8 +118,7 @@ public class SynchronousDbOperations {
 
 		Connection c = null;
 		try {
-			c = ApplicationServer.getInstance().getBean(DataSource.class)
-					.getConnection();
+			c = ApplicationServer.getInstance().getBean(DataSource.class).getConnection();
 			PreparedStatement pstmt = c.prepareStatement(query);
 			pstmt.setLong(1, id);
 			ResultSet rslt = pstmt.executeQuery();
@@ -138,23 +128,17 @@ public class SynchronousDbOperations {
 				return new String(blob.getBytes(1, (int) blob.length()));
 			}
 		} catch (Exception ex) {
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							"SynchronousDBOperations.queryCannedMessages() -- an exception occured while querying database "
-									+ ex.getMessage());
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"SynchronousDBOperations.queryCannedMessages() -- an exception occured while querying database "
+							+ ex.getMessage());
 		} finally {
 			if (c != null) {
 				try {
 					c.close();
 				} catch (SQLException e) {
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									"SynchronousDBOperations.queryCannedMessages() -- Exception occured while closing connection",
-									e);
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							"SynchronousDBOperations.queryCannedMessages() -- Exception occured while closing connection",
+							e);
 				}
 			}
 		}
@@ -166,13 +150,10 @@ public class SynchronousDbOperations {
 		List<String> ret = new ArrayList<String>();
 		Connection c = null;
 		try {
-			c = ApplicationServer.getInstance().getBean(DataSource.class)
-					.getConnection();
+			c = ApplicationServer.getInstance().getBean(DataSource.class).getConnection();
 
-			String query = "select go.userid"
-					+ " from group_member_tbl gm, group_owner_tbl go"
-					+ " where" + " gm.groupid = go.groupid"
-					+ " and gm.userid = ?";
+			String query = "select go.userid" + " from group_member_tbl gm, group_owner_tbl go" + " where"
+					+ " gm.groupid = go.groupid" + " and gm.userid = ?";
 
 			PreparedStatement pstmt = c.prepareStatement(query);
 			pstmt.setString(1, userName);
@@ -182,23 +163,17 @@ public class SynchronousDbOperations {
 				ret.add(rslt.getString(1));
 			}
 		} catch (Exception ex) {
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							"SynchronousDBOperations.getGroupOwners() -- an exception occured while querying database "
-									+ ex.getMessage());
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"SynchronousDBOperations.getGroupOwners() -- an exception occured while querying database "
+							+ ex.getMessage());
 		} finally {
 			if (c != null) {
 				try {
 					c.close();
 				} catch (SQLException e) {
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									"SynchronousDBOperations.getGroupOwners() -- Exception occured while closing connection",
-									e);
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							"SynchronousDBOperations.getGroupOwners() -- Exception occured while closing connection",
+							e);
 				}
 			}
 		}
@@ -206,15 +181,13 @@ public class SynchronousDbOperations {
 		return ret;
 	}
 
-	public synchronized HashMap<Integer, String> getSecurityQuestions(
-			String userid) throws Exception {
+	public synchronized HashMap<Integer, String> getSecurityQuestions(String userid) throws Exception {
 		String query = "select question_id, question_value from user_tbl as u"
 				+ " left join user_security_questions_tbl as q on u.id = q.user_id"
 				+ " where address is not null and address != '' and u.userid = ?";
 		Connection c = null;
 		try {
-			c = ApplicationServer.getInstance().getBean(DataSource.class)
-					.getConnection();
+			c = ApplicationServer.getInstance().getBean(DataSource.class).getConnection();
 
 			PreparedStatement pstmt = c.prepareStatement(query);
 			pstmt.setString(1, userid);
@@ -233,48 +206,38 @@ public class SynchronousDbOperations {
 			return questions;
 
 		} catch (Exception ex) {
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							"SynchronousDBOperations.getSecurityQuestions() -- An exception occured while retrieving security questions for user '"
-									+ userid + "': " + ex.getMessage());
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"SynchronousDBOperations.getSecurityQuestions() -- An exception occured while retrieving security questions for user '"
+							+ userid + "': " + ex.getMessage());
 			throw ex;
 		} finally {
 			if (c != null) {
 				try {
 					c.close();
 				} catch (SQLException e) {
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									"SynchronousDBOperations.getSecurityQuestions() -- Exception occured while closing connection",
-									e);
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							"SynchronousDBOperations.getSecurityQuestions() -- Exception occured while closing connection",
+							e);
 				}
 			}
 		}
 	}
 
-	public synchronized boolean resetPassword(String userid, String password,
-			HashMap<Integer, String> securityAnswers) throws Exception {
+	public synchronized boolean resetPassword(String userid, String password, HashMap<Integer, String> securityAnswers)
+			throws Exception {
 
 		Connection c = null;
 		try {
-			c = ApplicationServer.getInstance().getBean(DataSource.class)
-					.getConnection();
+			c = ApplicationServer.getInstance().getBean(DataSource.class).getConnection();
 
-			PreparedStatement pstmt = c
-					.prepareStatement("select id from user_tbl where userid =?");
+			PreparedStatement pstmt = c.prepareStatement("select id from user_tbl where userid =?");
 			pstmt.setString(1, userid);
 			ResultSet rs = pstmt.executeQuery();
 			rs.next();
 			long id = rs.getLong(1);
 
-			StringBuffer update = new StringBuffer(
-					"update user_tbl set password=password(?)"
-							+ " where id = ?"
-							+ " and ? = (select count(*) from user_security_questions_tbl q where q.user_id = ?)");
+			StringBuffer update = new StringBuffer("update user_tbl set password=password(?)" + " where id = ?"
+					+ " and ? = (select count(*) from user_security_questions_tbl q where q.user_id = ?)");
 			for (int i = 0; i < securityAnswers.size(); i++) {
 				update.append(" and ? = (select answer_value from user_security_questions_tbl q where q.user_id = ?"
 						+ " and question_id = ?)");
@@ -301,24 +264,17 @@ public class SynchronousDbOperations {
 			return false;
 
 		} catch (Exception ex) {
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							"SynchronousDBOperations.resetPassword() -- An exception occured while resetting password for user '"
-									+ userid + "': " + ex.getMessage());
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"SynchronousDBOperations.resetPassword() -- An exception occured while resetting password for user '"
+							+ userid + "': " + ex.getMessage());
 			throw ex;
 		} finally {
 			if (c != null) {
 				try {
 					c.close();
 				} catch (SQLException e) {
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									"SynchronousDBOperations.resetPassword() -- Exception occured while closing connection",
-									e);
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							"SynchronousDBOperations.resetPassword() -- Exception occured while closing connection", e);
 				}
 			}
 		}
@@ -329,8 +285,7 @@ public class SynchronousDbOperations {
 
 		Connection c = null;
 		try {
-			c = ApplicationServer.getInstance().getBean(DataSource.class)
-					.getConnection();
+			c = ApplicationServer.getInstance().getBean(DataSource.class).getConnection();
 
 			PreparedStatement pstmt = c.prepareStatement(query);
 			pstmt.setString(1, userid);
@@ -343,37 +298,29 @@ public class SynchronousDbOperations {
 			return rslt.getString(1);
 
 		} catch (Exception ex) {
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							"SynchronousDBOperations.getEmailAddress() --  An exception occured while retrieving email address for user '"
-									+ userid + "': " + ex.getMessage());
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"SynchronousDBOperations.getEmailAddress() --  An exception occured while retrieving email address for user '"
+							+ userid + "': " + ex.getMessage());
 			throw ex;
 		} finally {
 			if (c != null) {
 				try {
 					c.close();
 				} catch (SQLException e) {
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									"SynchronousDBOperations.getEmailAddress() -- Exception occured while closing connection",
-									e);
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							"SynchronousDBOperations.getEmailAddress() -- Exception occured while closing connection",
+							e);
 				}
 			}
 		}
 	}
 
-	public synchronized List<String> findUserByEmailAddress(String address)
-			throws Exception {
+	public synchronized List<String> findUserByEmailAddress(String address) throws Exception {
 		String query = "select userid from user_tbl where address = ?";
 
 		Connection c = null;
 		try {
-			c = ApplicationServer.getInstance().getBean(DataSource.class)
-					.getConnection();
+			c = ApplicationServer.getInstance().getBean(DataSource.class).getConnection();
 
 			PreparedStatement pstmt = c.prepareStatement(query);
 			pstmt.setString(1, address);
@@ -387,24 +334,92 @@ public class SynchronousDbOperations {
 			return users;
 
 		} catch (Exception ex) {
-			AceLogger
-					.Instance()
-					.log(AceLogger.ERROR,
-							AceLogger.SYSTEM_LOG,
-							"SynchronousDBOperations.findUserByEmailAddress() -- An exception occured while retrieving user name for email address '"
-									+ address + "': " + ex.getMessage());
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"SynchronousDBOperations.findUserByEmailAddress() -- An exception occured while retrieving user name for email address '"
+							+ address + "': " + ex.getMessage());
 			throw ex;
 		} finally {
 			if (c != null) {
 				try {
 					c.close();
 				} catch (SQLException e) {
-					AceLogger
-							.Instance()
-							.log(AceLogger.ERROR,
-									AceLogger.SYSTEM_LOG,
-									"SynchronousDBOperations.findUserByEmailAddress() -- Exception occured while closing connection",
-									e);
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							"SynchronousDBOperations.findUserByEmailAddress() -- Exception occured while closing connection",
+							e);
+				}
+			}
+		}
+	}
+
+	public long createFormRecord(String session, long cannedMessageId) {
+		Connection c = null;
+		try {
+			String statement = "insert into form_tbl(session, canned_msg_id) values(?, ?)";
+
+			c = ApplicationServer.getInstance().getBean(DataSource.class).getConnection();
+
+			PreparedStatement pstmt = c.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS);
+			pstmt.setString(1, session);
+			pstmt.setLong(2, cannedMessageId);
+			pstmt.executeUpdate();
+
+			ResultSet rs = pstmt.getGeneratedKeys();
+			rs.next();
+			return rs.getLong(1);
+
+		} catch (Exception ex) {
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"SynchronousDBOperations.getFormId() --  An exception occured while inserting form record for session '"
+							+ session + "': " + ex.getMessage());
+			return -1L;
+		} finally {
+			if (c != null) {
+				try {
+					c.close();
+				} catch (SQLException e) {
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							"SynchronousDBOperations.getFormId() -- Exception occured while closing connection",
+							e);
+				}
+			}
+		}
+	}
+	
+	public long retrieveFormRecord(long formId) {
+		Connection c = null;
+		try {			
+			String statement = "update form_tbl set status = 1 where status = 0 and id = ?";
+
+			c = ApplicationServer.getInstance().getBean(DataSource.class).getConnection();
+
+			PreparedStatement pstmt = c.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS);
+			pstmt.setLong(1, formId);
+			int affected = pstmt.executeUpdate();
+			if (affected == 0) {
+				return -1L;
+			}
+
+			statement = "select canned_msg_id from form_tbl where id = ?"; 
+			pstmt = c.prepareStatement(statement);
+			pstmt.setLong(1, formId);
+			
+			ResultSet rs = pstmt.executeQuery();
+			rs.next();
+			return rs.getLong(1);
+
+		} catch (Exception ex) {
+			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+					"SynchronousDBOperations.retrieveFormRecord() --  An exception occured while form retrieving record '"
+							+ formId + "': " + ex.getMessage());
+			return -1;
+		} finally {
+			if (c != null) {
+				try {
+					c.close();
+				} catch (SQLException e) {
+					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+							"SynchronousDBOperations.retrieveFormRecord() -- Exception occured while closing connection",
+							e);
 				}
 			}
 		}

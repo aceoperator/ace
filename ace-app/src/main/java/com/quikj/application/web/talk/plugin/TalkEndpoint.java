@@ -725,7 +725,12 @@ public class TalkEndpoint implements PluginAppClientInterface {
 				if (canned.getMessage() == null) {
 					String result = SynchronousDbOperations.getInstance().queryCannedMessages(canned.getId());
 					if (result != null) {
-						html = resolveContent(canned.getId(), result);
+						// TODO fix the session id
+						long formId = SynchronousDbOperations.getInstance().createFormRecord("SESSIONID", canned.getId());
+						if (formId == -1L) {
+							// TODO handle error
+						}
+						html = resolveContent(formId, result);
 					} else {
 						AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
 								Thread.currentThread().getName()
@@ -766,7 +771,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		if (tokens != null) {
 			FormDefinitionElement form = new FormDefinitionElement();
 			element = form;
-			form.setFormId(Long.toString(id));
+			form.setFormId(id);
 			form.setFormDef(tokens[1]);
 		}
 
@@ -802,13 +807,18 @@ public class TalkEndpoint implements PluginAppClientInterface {
 	}
 
 	private void processFormSubmission(FormSubmissionElement form) {
-		String formId = form.getFormId();
-		String result = SynchronousDbOperations.getInstance().queryCannedMessages(Long.parseLong(formId));
+		long cannedMessageId = SynchronousDbOperations.getInstance().retrieveFormRecord(form.getFormId());
+		if (cannedMessageId == -1L) {
+			// The form has already been submitted
+			// TODO print warning message
+			return;
+		}
+		String result = SynchronousDbOperations.getInstance().queryCannedMessages(cannedMessageId);
 		String[] tokens = tokenizeFormDef(result);
 		if (tokens != null) {
 			String[] splits = tokens[0].split("\\|");
 			if (splits.length > 2) {
-				// TODO send out email
+				// TODO send out email, etc
 			}
 		}
 	}

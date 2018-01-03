@@ -41,16 +41,16 @@ public class FormRenderer {
 	private static final String REQUIRED = "required";
 
 	public interface FormListener {
-		boolean formSubmitted(String formId, Map<String, String> result);
+		boolean formSubmitted(long formId, Map<String, String> result);
 	}
 
 	public class SubmitHandler implements ClickHandler {
 		Map<Widget, Map<String, String>> attributes = new HashMap<Widget, Map<String, String>>();
-		private String formId;
+		private long formId;
 		private FormListener listener;
 		private Button submitButton;
 
-		public SubmitHandler(String formId, FormListener listener) {
+		public SubmitHandler(long formId, FormListener listener) {
 			this.formId = formId;
 			this.listener = listener;
 		}
@@ -194,7 +194,7 @@ public class FormRenderer {
 		}
 	}
 
-	public Widget renderForm(String from, long timeStamp, String formId, String formDef, String me, boolean smallSpace,
+	public Widget renderForm(String from, long timeStamp, long formId, String formDef, String me, boolean smallSpace,
 			FormListener listener) {
 		Panel panel = renderPanel();
 

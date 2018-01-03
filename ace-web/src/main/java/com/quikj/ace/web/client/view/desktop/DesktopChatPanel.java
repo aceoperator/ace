@@ -591,7 +591,7 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel, For
 	}
 	
 	@Override
-	public void appendToConveration(String from, long timeStamp, String formId, String formDef) {
+	public void appendToConveration(String from, long timeStamp, long formId, String formDef) {
 		if (!adjusted) {
 			adjustScrollHeight();
 		}
@@ -846,7 +846,7 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel, For
 	}
 
 	@Override
-	public boolean formSubmitted(String formId, Map<String,String> result) {
+	public boolean formSubmitted(long formId, Map<String,String> result) {
 		presenter.submitForm(formId, result);
 		return true;
 	}

@@ -16,12 +16,12 @@ public class FormSubmissionElement implements MediaElementInterface {
 
 	private Map<String, String> response = new HashMap<>();
 	
-	private String formId;
+	private long formId;
 	
 	public FormSubmissionElement() {		
 	}
 	
-	public FormSubmissionElement(Map<String, String> response, String formId) {
+	public FormSubmissionElement(Map<String, String> response, long formId) {
 		super();
 		this.response = response;
 		this.formId = formId;
@@ -35,11 +35,11 @@ public class FormSubmissionElement implements MediaElementInterface {
 		this.response = response;
 	}
 
-	public String getFormId() {
+	public long getFormId() {
 		return formId;
 	}
 
-	public void setFormId(String formId) {
+	public void setFormId(long formId) {
 		this.formId = formId;
 	}
 

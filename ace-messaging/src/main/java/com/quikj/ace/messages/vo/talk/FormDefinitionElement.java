@@ -12,7 +12,7 @@ public class FormDefinitionElement implements MediaElementInterface {
 
 	private String formDef;
 	
-	private String formId;
+	private long formId;
 	
 	private String[] toEmail;
 	
@@ -25,7 +25,7 @@ public class FormDefinitionElement implements MediaElementInterface {
 	public FormDefinitionElement() {		
 	}
 	
-	public FormDefinitionElement(String formDef, String formId, String[] toEmail, String fromEmail, String[] ccEmail,
+	public FormDefinitionElement(String formDef, long formId, String[] toEmail, String fromEmail, String[] ccEmail,
 			String subject) {
 		super();
 		this.formDef = formDef;
@@ -36,11 +36,11 @@ public class FormDefinitionElement implements MediaElementInterface {
 		this.subject = subject;
 	}
 	
-	public String getFormId() {
+	public long getFormId() {
 		return formId;
 	}
 
-	public void setFormId(String formId) {
+	public void setFormId(long formId) {
 		this.formId = formId;
 	}
 

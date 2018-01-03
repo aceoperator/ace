@@ -233,7 +233,16 @@ CREATE TABLE  user_security_questions_tbl (
   FOREIGN KEY (user_id) REFERENCES user_tbl(id) ON DELETE CASCADE 
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = latin1;
 
-
+CREATE TABLE form_tbl (
+  id BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  session VARCHAR(255) binary NOT NULL,
+  canned_msg_id BIGINT UNSIGNED NOT NULL,
+  send_time TIMESTAMP NOT NULL,
+  status TINYINT NOT NULL DEFAULT 0,
+  
+  INDEX(send_time)
+) ENGINE = InnoDB;
+  
 INSERT INTO account_tbl (userid, password, addnl_info) VALUES ('ace', PASSWORD('a1b2c3d4'), 'Ace Super User');
 
 INSERT INTO group_tbl VALUES ('operator-group','ace',0,3,3,0,0);

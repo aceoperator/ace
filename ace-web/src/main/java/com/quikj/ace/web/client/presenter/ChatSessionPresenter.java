@@ -608,7 +608,7 @@ public class ChatSessionPresenter {
 		CommunicationsFactory.getServerCommunications().sendRequest(rtp, Message.CONTENT_TYPE_XML, false, 0L, null);
 	}
 
-	public void submitForm(String formId, Map<String, String> result) {
+	public void submitForm(long formId, Map<String, String> result) {
 		lastTypingTime = null;
 
 		if (chatInfo.getStatus() == ChatStatus.CONNECTED) {
