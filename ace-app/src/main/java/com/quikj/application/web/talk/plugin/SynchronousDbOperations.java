@@ -351,7 +351,7 @@ public class SynchronousDbOperations {
 		}
 	}
 
-	public long createFormRecord(String session, long cannedMessageId) {
+	public long createFormRecord(long sessionId, long cannedMessageId) {
 		Connection c = null;
 		try {
 			String statement = "insert into form_tbl(session, canned_msg_id) values(?, ?)";
@@ -359,7 +359,7 @@ public class SynchronousDbOperations {
 			c = ApplicationServer.getInstance().getBean(DataSource.class).getConnection();
 
 			PreparedStatement pstmt = c.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS);
-			pstmt.setString(1, session);
+			pstmt.setLong(1, sessionId);
 			pstmt.setLong(2, cannedMessageId);
 			pstmt.executeUpdate();
 
@@ -370,7 +370,7 @@ public class SynchronousDbOperations {
 		} catch (Exception ex) {
 			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
 					"SynchronousDBOperations.getFormId() --  An exception occured while inserting form record for session '"
-							+ session + "': " + ex.getMessage());
+							+ sessionId + "': " + ex.getMessage());
 			return -1L;
 		} finally {
 			if (c != null) {

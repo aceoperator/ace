@@ -235,7 +235,7 @@ CREATE TABLE  user_security_questions_tbl (
 
 CREATE TABLE form_tbl (
   id BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  session VARCHAR(255) binary NOT NULL,
+  session BIGINT UNSIGNED NOT NULL,
   canned_msg_id BIGINT UNSIGNED NOT NULL,
   send_time TIMESTAMP NOT NULL,
   status TINYINT NOT NULL DEFAULT 0,
