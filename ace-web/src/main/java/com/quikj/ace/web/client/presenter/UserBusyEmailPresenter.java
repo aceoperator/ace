@@ -3,7 +3,8 @@
  */
 package com.quikj.ace.web.client.presenter;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import com.google.gwt.core.client.GWT;
@@ -75,7 +76,7 @@ public class UserBusyEmailPresenter {
 		MailElement melement = new MailElement();
 		mail.setMailElement(melement);
 
-		Vector<String> to = new Vector<String>();
+		List<String> to = new ArrayList<>();
 		to.add(ClientProperties.getInstance().getStringValue(
 				ClientProperties.ALL_OPERATOR_BUSY_EMAIL, null));
 		melement.setTo(to);

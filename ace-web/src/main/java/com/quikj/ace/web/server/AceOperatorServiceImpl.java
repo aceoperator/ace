@@ -13,6 +13,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.quikj.ace.messages.vo.adapter.GroupInfo;
 import com.quikj.ace.messages.vo.app.Message;
 import com.quikj.ace.messages.vo.talk.CannedMessageElement;
+import com.quikj.ace.messages.vo.talk.FormSubmissionElement;
 import com.quikj.ace.messages.vo.talk.MailElement;
 import com.quikj.ace.messages.vo.talk.SendMailRequestMessage;
 import com.quikj.ace.web.client.AceOperatorService;
@@ -201,7 +202,7 @@ public class AceOperatorServiceImpl extends RemoteServiceServlet implements
 		MailElement rcvd = mail.getMailElement();
 		AceMailMessage send = new AceMailMessage();
 
-		send.setSubType(rcvd.getSubype());
+		send.setSubType(rcvd.getSubType());
 
 		int num_items = rcvd.numBcc();
 		for (int i = 0; i < num_items; i++) {
@@ -306,5 +307,15 @@ public class AceOperatorServiceImpl extends RemoteServiceServlet implements
 			e.printStackTrace();
 			throw formatServerException(e);
 		}
+	}
+
+	@Override
+	public void submitForm(FormSubmissionElement form) throws AceServerException {
+		try {
+			PolledAppServerAdapter.getInstance().submitForm(form);
+		} catch (AppServerAdapterException e) {
+			e.printStackTrace();
+			throw formatServerException(e);
+		}		
 	}
 }

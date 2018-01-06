@@ -8,8 +8,6 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.quikj.ace.messages.vo.app.Message;
 import com.quikj.ace.messages.vo.app.ResponseMessage;
@@ -42,6 +40,7 @@ import com.quikj.server.framework.AceConfigFileHelper;
 import com.quikj.server.framework.AceLogger;
 import com.quikj.server.framework.AceMessageInterface;
 import com.quikj.server.framework.AceNetworkAccess;
+import com.quikj.server.framework.FormUtil;
 
 public class TalkEndpoint implements PluginAppClientInterface {
 
@@ -758,26 +757,14 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		return cannedList;
 	}
 
-	private String[] tokenizeFormDef(String content) {
-		Matcher matcher = Pattern.compile("^#form\\|(.*)\\r?\\n((?s:.)*)", Pattern.CASE_INSENSITIVE).matcher(content);
-		if (!matcher.matches()) {
-			return null;
-		}
-
-		return new String[] { matcher.group(1), matcher.group(2) };
-	}
-
 	private MediaElementInterface resolveContent(String content) {
-		MediaElementInterface element = null;
-
-		String[] tokens = tokenizeFormDef(content);
+		MediaElementInterface element;
+		String[] tokens = FormUtil.tokenizeFormDef(content);
 		if (tokens != null) {
 			FormDefinitionElement form = new FormDefinitionElement();
 			element = form;
 			form.setFormDef(tokens[1]);
-		}
-
-		if (element == null) {
+		} else {
 			element = new HtmlElement(content);
 		}
 
@@ -812,19 +799,15 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		long cannedMessageId = SynchronousDbOperations.getInstance().retrieveFormRecord(form.getFormId());
 		if (cannedMessageId == -1L) {
 			// The form has already been submitted
-			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
-					+ "- TalkEndoint.processFormSubmission() -- Could not retrieve form record for " + form.getFormId());
+			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
+					Thread.currentThread().getName()
+							+ "- TalkEndoint.processFormSubmission() -- Could not retrieve form record for "
+							+ form.getFormId());
 			return;
 		}
-		
-		String result = SynchronousDbOperations.getInstance().queryCannedMessages(cannedMessageId);
-		String[] tokens = tokenizeFormDef(result);
-		if (tokens != null) {
-			String[] splits = tokens[0].split("\\|");
-			if (splits.length > 2) {
-				// TODO send out email, etc
-			}
-		}
+
+		String cannedMessageContent = SynchronousDbOperations.getInstance().queryCannedMessages(cannedMessageId);
+		FormUtil.processFormSubmission(cannedMessageContent, form.getResponse());
 	}
 
 	private void saveTranscript(String transcriptFile, Object message, MessageDirection direction, Integer status,

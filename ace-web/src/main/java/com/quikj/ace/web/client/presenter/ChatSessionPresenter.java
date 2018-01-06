@@ -15,9 +15,12 @@ import java.util.logging.Logger;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestException;
 import com.google.gwt.i18n.shared.DateTimeFormat;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Widget;
 import com.quikj.ace.messages.vo.app.Message;
 import com.quikj.ace.messages.vo.app.ResponseMessage;
@@ -41,6 +44,7 @@ import com.quikj.ace.messages.vo.talk.SendMailRequestMessage;
 import com.quikj.ace.messages.vo.talk.SetupRequestMessage;
 import com.quikj.ace.messages.vo.talk.SetupResponseMessage;
 import com.quikj.ace.messages.vo.talk.TypingElement;
+import com.quikj.ace.web.client.AceOperatorService;
 import com.quikj.ace.web.client.ApplicationController;
 import com.quikj.ace.web.client.AudioUtils;
 import com.quikj.ace.web.client.ChatSessionInfo;
@@ -611,11 +615,37 @@ public class ChatSessionPresenter {
 	public void submitForm(long formId, Map<String, String> result) {
 		lastTypingTime = null;
 
+		FormSubmissionElement formSubmission = new FormSubmissionElement(result, formId);
 		if (chatInfo.getStatus() == ChatStatus.CONNECTED) {
-			sendRTPMessage(new FormSubmissionElement(result, formId));
+			sendRTPMessage(formSubmission);
 			// TODO internationalize
 			view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
 					"Your input has been submitted. Thank you");
+		} else {
+			RequestBuilder builder = AceOperatorService.Util.getInstance().submitForm(formSubmission,
+					new AsyncCallback<Void>() {
+						@Override
+						public void onSuccess(Void result) {
+							// TODO internationalize - same as the one above
+							view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
+									"Your input has been submitted. Thank you");
+						}
+
+						@Override
+						public void onFailure(Throwable caught) {
+							String error = caught.getMessage();
+							if ("noFormFound".equals(error)) {
+								// TODO internationalize
+								view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
+										"The form has already been submitted");
+							}
+						}
+					});
+			try {
+				CommunicationsFactory.sendMessageToServer(builder);
+			} catch (RequestException e) {
+				logger.severe("Error sending message to the server - " + e.getMessage());
+			}
 		}
 	}
 
@@ -745,7 +775,7 @@ public class ChatSessionPresenter {
 			melement.addTo(to);
 		}
 
-		melement.setSubype("html");
+		melement.setSubType("html");
 
 		if (ClientProperties.getInstance().getBooleanValue(ClientProperties.COOKIE_IN_TRANSCRIPT_SUBJECT,
 				DEFAULT_COOKIE_IN_SUBJECT)) {
