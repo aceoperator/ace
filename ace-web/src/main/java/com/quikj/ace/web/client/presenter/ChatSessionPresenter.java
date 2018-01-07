@@ -568,8 +568,8 @@ public class ChatSessionPresenter {
 			}
 		});
 
-		// TODO internationalize
-		StringBuilder builder = new StringBuilder("Form data:<ul>");
+		StringBuilder builder = new StringBuilder(
+				ApplicationController.getMessages().ChatSessionPresenter_formReceived() + ":<ul>");
 		for (String e : list) {
 			builder.append(e);
 		}
@@ -618,26 +618,24 @@ public class ChatSessionPresenter {
 		FormSubmissionElement formSubmission = new FormSubmissionElement(result, formId);
 		if (chatInfo.getStatus() == ChatStatus.CONNECTED) {
 			sendRTPMessage(formSubmission);
-			// TODO internationalize
 			view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
-					"Your input has been submitted. Thank you");
+					ApplicationController.getMessages().ChatSessionPresenter_userInputSubmitted());
 		} else {
 			RequestBuilder builder = AceOperatorService.Util.getInstance().submitForm(formSubmission,
 					new AsyncCallback<Void>() {
 						@Override
 						public void onSuccess(Void result) {
-							// TODO internationalize - same as the one above
 							view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
-									"Your input has been submitted. Thank you");
+									ApplicationController.getMessages().ChatSessionPresenter_userInputSubmitted());
 						}
 
 						@Override
 						public void onFailure(Throwable caught) {
 							String error = caught.getMessage();
 							if ("noFormFound".equals(error)) {
-								// TODO internationalize
 								view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
-										"The form has already been submitted");
+										ApplicationController.getMessages()
+												.ChatSessionPresenter_userInputAlreadySubmitted());
 							}
 						}
 					});
@@ -830,8 +828,7 @@ public class ChatSessionPresenter {
 
 		buffer.append("<br>");
 
-		// TODO internationalize the string
-		buffer.append("Disconnect status: ");
+		buffer.append(ApplicationController.getMessages().ChatSessionPresenter_disconnectStatus() + ": ");
 		if (reasonText != null && reasonText.length() > 0) {
 			buffer.append(reasonText);
 			buffer.append(" - ");

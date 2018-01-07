@@ -579,7 +579,7 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel, For
 			transcriptPanel.remove(typing);
 		}
 
-		Widget widget =ChatPanel.Util.formatChat(from, timeStamp, message, me,
+		Widget widget = ChatPanel.Util.formatChat(from, timeStamp, message, me,
 				ClientProperties.getInstance().getBooleanValue(ClientProperties.CONVERSATION_SMALL_SPACE, false));
 		transcriptPanel.add(widget);
 

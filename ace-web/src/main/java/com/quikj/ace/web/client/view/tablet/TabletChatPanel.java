@@ -5,6 +5,7 @@ package com.quikj.ace.web.client.view.tablet;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Unit;
@@ -46,13 +47,15 @@ import com.quikj.ace.web.client.Images;
 import com.quikj.ace.web.client.presenter.ChatSessionPresenter;
 import com.quikj.ace.web.client.view.ChatPanel;
 import com.quikj.ace.web.client.view.EmoticonUtils;
+import com.quikj.ace.web.client.view.FormRenderer;
+import com.quikj.ace.web.client.view.FormRenderer.FormListener;
 import com.quikj.ace.web.client.view.ViewUtils;
 
 /**
  * @author amit
  * 
  */
-public class TabletChatPanel extends StackLayoutPanel implements ChatPanel {
+public class TabletChatPanel extends StackLayoutPanel implements ChatPanel, FormListener {
 
 	private static final double VISITOR_TITLE_SIZE = 30.0;
 	private static final double TITLE_SIZE = 45.0;
@@ -86,6 +89,8 @@ public class TabletChatPanel extends StackLayoutPanel implements ChatPanel {
 	private HTML controlSeparator;
 	private boolean hideAvatar;
 
+	private FormRenderer formRenderer = new FormRenderer();
+	
 	public TabletChatPanel() {
 		super(Unit.PX);
 		setSize("100%", "100%");
@@ -669,7 +674,27 @@ public class TabletChatPanel extends StackLayoutPanel implements ChatPanel {
 
 	@Override
 	public void appendToConveration(String from, long timeStamp, long formId, String formDef) {
-		// TODO Auto-generated method stub
-		
+		if (!adjusted) {
+			adjustScrollHeight();
+		}
+
+		boolean userTyping = false;
+		if (typing != null) {
+			userTyping = true;
+			transcriptPanel.remove(typing);
+		}
+
+		Widget widget = formRenderer.renderForm(from, timeStamp, formId, formDef, from, ClientProperties.getInstance().getBooleanValue(ClientProperties.CONVERSATION_SMALL_SPACE, false), this);
+		transcriptPanel.add(widget);
+
+		if (userTyping) {
+			transcriptPanel.add(typing);
+		}
+	}
+
+	@Override
+	public boolean formSubmitted(long formId, Map<String, String> result) {
+		presenter.submitForm(formId, result);
+		return true;
 	}
 }
