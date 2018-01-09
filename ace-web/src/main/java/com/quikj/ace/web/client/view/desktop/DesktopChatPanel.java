@@ -589,22 +589,22 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel, For
 
 		transcriptScrollPanel.setVerticalScrollPosition(transcriptPanel.getOffsetHeight());
 	}
-	
+
 	@Override
 	public void appendToConveration(String from, long timeStamp, long formId, String formDef) {
 		if (!adjusted) {
 			adjustScrollHeight();
 		}
-		
+
 		boolean userTyping = false;
 		if (typing != null) {
 			userTyping = true;
 			transcriptPanel.remove(typing);
 		}
 
-		Widget widget = formRenderer.renderForm(from, timeStamp, formId, formDef, from,
-				ClientProperties.getInstance().getBooleanValue(ClientProperties.CONVERSATION_SMALL_SPACE, false),
-				this);
+		transcriptPanel.add(ChatPanel.Util.formatChat(from, timeStamp, "", me, true));
+
+		Widget widget = formRenderer.renderForm(formId, formDef, this);
 		transcriptPanel.add(widget);
 
 		if (userTyping) {
@@ -846,7 +846,7 @@ public class DesktopChatPanel extends StackLayoutPanel implements ChatPanel, For
 	}
 
 	@Override
-	public boolean formSubmitted(long formId, Map<String,String> result) {
+	public boolean formSubmitted(long formId, Map<String, String> result) {
 		presenter.submitForm(formId, result);
 		return true;
 	}

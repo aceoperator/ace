@@ -389,7 +389,8 @@ public class MobileChatPanel extends StackLayoutPanel implements ChatPanel, Form
 			transcriptPanel.remove(typing);
 		}
 
-		Widget widget = formRenderer.renderForm(from, timeStamp, formId, formDef, from, true, this);
+		transcriptPanel.add(ChatPanel.Util.formatChat(from, timeStamp, "", me, true));
+		Widget widget = formRenderer.renderForm(formId, formDef, this);
 		transcriptPanel.add(widget);
 
 		if (userTyping) {

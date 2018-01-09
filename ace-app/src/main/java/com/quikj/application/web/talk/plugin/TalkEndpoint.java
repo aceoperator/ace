@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -638,6 +639,11 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		List<Integer> cannedList = resolveCannedMediaElements(message);
 
 		handleSpecialContent(message);
+		
+		if (message.getMediaElements().getElements().isEmpty()) {
+			// Special content handling has stripped out all media elements
+			return true;
+		}
 
 		if (!registered) {
 			scrubMessage(message, cannedList);
@@ -788,14 +794,19 @@ public class TalkEndpoint implements PluginAppClientInterface {
 	}
 
 	private void handleSpecialContent(RTPMessage message) {
-		for (MediaElementInterface e : message.getMediaElements().getElements()) {
+		Iterator<MediaElementInterface> i = message.getMediaElements().getElements().iterator();
+		while(i.hasNext()) {
+			MediaElementInterface e = i.next();
 			if (e instanceof FormSubmissionElement) {
-				processFormSubmission((FormSubmissionElement) e);
+				boolean toTranscript = processFormSubmission((FormSubmissionElement) e);
+				if (!toTranscript) {
+					i.remove(); // strip out from processing
+				}
 			}
 		}
 	}
 
-	private void processFormSubmission(FormSubmissionElement form) {
+	private boolean processFormSubmission(FormSubmissionElement form) {
 		long cannedMessageId = SynchronousDbOperations.getInstance().retrieveFormRecord(form.getFormId());
 		if (cannedMessageId == -1L) {
 			// The form has already been submitted
@@ -803,11 +814,11 @@ public class TalkEndpoint implements PluginAppClientInterface {
 					Thread.currentThread().getName()
 							+ "- TalkEndoint.processFormSubmission() -- Could not retrieve form record for "
 							+ form.getFormId());
-			return;
+			return false;
 		}
 
 		String cannedMessageContent = SynchronousDbOperations.getInstance().queryCannedMessages(cannedMessageId);
-		FormUtil.processFormSubmission(cannedMessageContent, form.getResponse());
+		return FormUtil.processFormSubmission(cannedMessageContent, form.getResponse());
 	}
 
 	private void saveTranscript(String transcriptFile, Object message, MessageDirection direction, Integer status,

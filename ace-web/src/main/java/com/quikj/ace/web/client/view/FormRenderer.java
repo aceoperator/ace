@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.HTML;
@@ -34,11 +35,34 @@ import com.quikj.ace.web.client.presenter.MessageBoxPresenter;
  *         it is not needed to extend it
  */
 public class FormRenderer {
+	private static final int IDX_WIDGET = 0;
+	private static final int IDX_DROPDOWN_LABEL = 1;
+	private static final int IDX_DROPDOWN_NAME = 2;
+	private static final int IDX_DROPDOWN_ITEMS = 3;
+
+	private static final int IDX_TEXTAREA_LABEL = 1;
+	private static final int IDX_TEXTAREA_NAME = 2;
+	private static final int IDX_TEXTAREA_REQUIRED = 3;
+	private static final int IDX_TEXTAREA_MINLEN = 4;
+	private static final int IDX_TEXTAREA_MAXLEN = 5;
+	private static final int IDX_TEXTAREA_ROWS = 6;
+
+	private static final int IDX_TEXTBOX_LABEL = 1;
+	private static final int IDX_TEXTBOX_NAME = 2;
+	private static final int IDX_TEXTBOX_REQUIRED = 3;
+	private static final int IDX_TEXTBOX_TYPE = 4;
+	private static final int IDX_TEXTBOX_MINLEN = 5;
+	private static final int IDX_TEXTBOX_MAXLEN = 6;
+
+	private static final int IDX_LABEL_LABEL = 1;
+
+	private static final int IDX_SUBMIT_LABEL = 1;
+	private static final int IDX_RESET_LABEL = 2;
 
 	private static final String NAME = "name";
 	private static final String TYPE = "type";
-	private static final String MINLENGTH = "minlength";
-	private static final String MAXLENGTH = "maxlength";
+	private static final String MINLEN = "minlength";
+	private static final String MAXLEN = "maxlength";
 	private static final String REQUIRED = "required";
 
 	public interface FormListener {
@@ -137,7 +161,7 @@ public class FormRenderer {
 
 			if (!value.isEmpty()) {
 				// Validate for minimum length
-				v = attributes.get(MINLENGTH);
+				v = attributes.get(MINLEN);
 				if (v != null && value.length() < Integer.parseInt(v)) {
 					MessageBoxPresenter.getInstance().show(ApplicationController.getMessages().FormRenderer_formError(),
 							ApplicationController.getMessages().FormRenderer_minLength(attributes.get(NAME), v),
@@ -146,7 +170,7 @@ public class FormRenderer {
 				}
 
 				// Validate for maximum length
-				v = attributes.get(MAXLENGTH);
+				v = attributes.get(MAXLEN);
 				if (v != null && value.length() > Integer.parseInt(v)) {
 					MessageBoxPresenter.getInstance().show(ApplicationController.getMessages().FormRenderer_formError(),
 							ApplicationController.getMessages().FormRenderer_maxLength(attributes.get(NAME), v),
@@ -170,10 +194,9 @@ public class FormRenderer {
 					} else if (v.equalsIgnoreCase("currency")) {
 						int decimalIndex = value.indexOf(ClientProperties.getInstance()
 								.getStringValue(ClientProperties.CURRENCY_DELIMITER, "."));
-						String dollars = value;
+						String dollars = "0";
 						String cents = "00";
-						if (decimalIndex == 0) {
-							dollars = "0";
+						if (decimalIndex <= 0) {
 							cents = value;
 						} else if (decimalIndex > 0) {
 							dollars = value.substring(0, decimalIndex);
@@ -239,54 +262,57 @@ public class FormRenderer {
 		}
 	}
 
-	public Widget renderForm(String from, long timeStamp, long formId, String formDef, String me, boolean smallSpace,
-			FormListener listener) {
-		Panel panel = renderPanel();
+	public Widget renderForm(long formId, String formDef, FormListener listener) {
+		try {
+			Panel panel = renderPanel();
 
-		SubmitHandler submitHandler = new SubmitHandler(formId, listener);
+			SubmitHandler submitHandler = new SubmitHandler(formId, listener);
 
-		String[] lines = formDef.split("\\r?\\n");
-		for (String line : lines) {
-			line = line.trim();
-			if (line.isEmpty()) {
-				continue;
+			String[] lines = formDef.split("\\r?\\n");
+			for (String line : lines) {
+				line = line.trim();
+				if (line.isEmpty()) {
+					continue;
+				}
+
+				String[] columns = line.split("\\|");
+				if (columns[IDX_WIDGET].equalsIgnoreCase("label")) {
+					renderLabel(columns, panel);
+				} else if (columns[IDX_WIDGET].equalsIgnoreCase("text")) {
+					renderTextField(columns, panel, false, submitHandler);
+				} else if (columns[IDX_WIDGET].equalsIgnoreCase("password")) {
+					renderTextField(columns, panel, true, submitHandler);
+				} else if (columns[IDX_WIDGET].equalsIgnoreCase("textarea")) {
+					renderTextArea(columns, panel, true, submitHandler);
+				} else if (columns[IDX_WIDGET].equalsIgnoreCase("dropdown")) {
+					renderDropdown(columns, panel, submitHandler);
+				} else if (columns[IDX_WIDGET].equalsIgnoreCase("buttons")) {
+					renderButtons(columns, panel, submitHandler);
+					// This is the last line. Will ignore any more lines
+					break;
+				}
 			}
 
-			String[] columns = line.split("\\|");
-			if (columns[0].equalsIgnoreCase("label")) {
-				renderLabel(columns, panel);
-			} else if (columns[0].equalsIgnoreCase("text")) {
-				renderTextField(columns, panel, false, submitHandler);
-			} else if (columns[0].equalsIgnoreCase("password")) {
-				renderTextField(columns, panel, true, submitHandler);
-			} else if (columns[0].equalsIgnoreCase("textarea")) {
-				renderTextArea(columns, panel, true, submitHandler);
-			} else if (columns[0].equalsIgnoreCase("dropdown")) {
-				renderDropdown(columns, panel, submitHandler);
-			} else if (columns[0].equalsIgnoreCase("buttons")) {
-				renderButtons(columns, panel, submitHandler);
-				// This is the last line. Will ignore any more lines
-				break;
-			}
+			submitHandler.focus();
+			return panel;
+		} catch (Exception e) {
+			// Any error processing this form is a result of bad form definition
+			// (and bug - should not happen :-)). Just render the text
+			return new HTML(new SafeHtmlBuilder().appendEscaped(formDef).toSafeHtml());
 		}
-
-		submitHandler.focus();
-		return panel;
 	}
 
 	protected void renderButtons(String[] columns, Panel panel, SubmitHandler submitter) {
-		// column 1 = submit button label
-		// column 2 = reset button label
 		HorizontalPanel buttonPanel = new HorizontalPanel();
 		panel.add(buttonPanel);
 
-		Button submit = new Button(getColumn(columns, 1, "Submit"));
+		Button submit = new Button(getColumn(columns, IDX_SUBMIT_LABEL, "Submit"));
 		submitter.setSubmitButton(submit);
 		submit.addClickHandler(submitter);
 		buttonPanel.add(submit);
 
-		if (columns.length >= 3) {
-			Button reset = new Button(getColumn(columns, 2, "Reset"));
+		if (columns.length > IDX_RESET_LABEL) {
+			Button reset = new Button(getColumn(columns, IDX_RESET_LABEL, "Reset"));
 			buttonPanel.add(reset);
 
 			reset.addClickHandler(submitter);
@@ -301,8 +327,12 @@ public class FormRenderer {
 	}
 
 	protected void renderLabel(String[] columns, Panel panel) {
-		// column 1 = label
-		String label = getColumn(columns, 1, "");
+		String label = getColumn(columns, IDX_LABEL_LABEL, "");
+		panel.add(new HTML(label));
+	}
+
+	private void drawFieldLabel(String[] columns, int index, Panel panel) {
+		String label = getColumn(columns, index, "");
 
 		if (!label.isEmpty()) {
 			panel.add(new HTML(label));
@@ -310,24 +340,18 @@ public class FormRenderer {
 	}
 
 	private String getColumn(String[] columns, int index, String defaultValue) {
-		String value = defaultValue;
-
 		if (columns.length > index) {
-			value = columns[index].trim();
+			String value = columns[index].trim();
+			if (!value.isEmpty()) {
+				return value;
+			}
 		}
 
-		return value;
+		return defaultValue;
 	}
 
 	protected void renderTextField(String[] columns, Panel panel, boolean password, SubmitHandler submitter) {
-		// column 1 = label
-		// column 2 = name
-		// column 3 = required (true/false)
-		// column 4 = type (text/numeric/date/currency)
-		// column 5 = maximum length
-		// column 6 = minimum length
-
-		renderLabel(columns, panel);
+		drawFieldLabel(columns, IDX_TEXTBOX_LABEL, panel);
 
 		TextBox textBox;
 
@@ -338,84 +362,73 @@ public class FormRenderer {
 		}
 		panel.add(textBox);
 
-		String size = getColumn(columns, 5, null);
-		if (size != null) {
-			textBox.setVisibleLength(Integer.parseInt(size));
-		} else {
-			textBox.setWidth("100%");
-		}
+		submitter.addAttribute(textBox, NAME, getColumn(columns, IDX_TEXTBOX_NAME, "text"));
 
-		submitter.addAttribute(textBox, NAME, getColumn(columns, 2, "text"));
-		String column = getColumn(columns, 3, null);
+		String column = getColumn(columns, IDX_TEXTBOX_REQUIRED, null);
 		if (column != null) {
 			submitter.addAttribute(textBox, REQUIRED, column);
 		}
 
-		submitter.addAttribute(textBox, TYPE, getColumn(columns, 4, "text"));
+		submitter.addAttribute(textBox, TYPE, getColumn(columns, IDX_TEXTBOX_TYPE, "text"));
 
-		column = getColumn(columns, 5, null);
+		column = getColumn(columns, IDX_TEXTBOX_MINLEN, null);
 		if (column != null) {
-			submitter.addAttribute(textBox, MAXLENGTH, column);
+			submitter.addAttribute(textBox, MINLEN, column);
 		}
-
-		column = getColumn(columns, 6, null);
+		
+		column = getColumn(columns, IDX_TEXTBOX_MAXLEN, null);
 		if (column != null) {
-			submitter.addAttribute(textBox, MINLENGTH, column);
+			textBox.setVisibleLength(Integer.parseInt(column));
+			submitter.addAttribute(textBox, MAXLEN, column);
+		} else {
+			textBox.setWidth("100%");
 		}
 	}
 
 	protected void renderTextArea(String[] columns, Panel panel, boolean password, SubmitHandler submitter) {
-		// column 1 = label
-		// column 2 = name
-		// column 3 = required (true/false)
-		// column 4 = minimum length
-		// column 5 = rows
-		// column 6 = maximum length
-
-		renderLabel(columns, panel);
+		drawFieldLabel(columns, IDX_TEXTAREA_LABEL, panel);
 
 		TextArea textArea = new TextArea();
 		panel.add(textArea);
 
-		String rows = getColumn(columns, 5, null);
-		if (rows != null) {
-			textArea.setVisibleLines(Integer.parseInt(rows));
+		submitter.addAttribute(textArea, NAME, getColumn(columns, IDX_TEXTAREA_NAME, "textarea"));
+
+		String column = getColumn(columns, IDX_TEXTAREA_REQUIRED, "false");
+		if (column != null) {
+			submitter.addAttribute(textArea, REQUIRED, column);
+		}
+
+		column = getColumn(columns, IDX_TEXTAREA_MINLEN, null);
+		if (column != null) {
+			submitter.addAttribute(textArea, MINLEN, column);
+		}
+
+		column = getColumn(columns, IDX_TEXTAREA_ROWS, null);
+		if (column != null) {
+			textArea.setVisibleLines(Integer.parseInt(column));
 		}
 
 		textArea.setWidth("100%");
 
-		submitter.addAttribute(textArea, NAME, getColumn(columns, 2, "textarea"));
-
-		String column = getColumn(columns, 3, "false");
+		column = getColumn(columns, IDX_TEXTAREA_MAXLEN, null);
 		if (column != null) {
-			submitter.addAttribute(textArea, REQUIRED, column);
-		}
-		column = getColumn(columns, 4, null);
-		if (column != null) {
-			submitter.addAttribute(textArea, MINLENGTH, column);
-		}
-		column = getColumn(columns, 6, null);
-		if (column != null) {
-			submitter.addAttribute(textArea, MAXLENGTH, column);
+			submitter.addAttribute(textArea, MAXLEN, column);
 		}
 	}
 
 	protected void renderDropdown(String[] columns, Panel panel, SubmitHandler submitter) {
-		// column 1 = label
-		// column 2 = name
-		// column 3,4,5.... drop down items
-		renderLabel(columns, panel);
+		drawFieldLabel(columns, IDX_DROPDOWN_LABEL, panel);
 
 		ListBox listBox = new ListBox();
 		panel.add(listBox);
 
-		for (int i = 3; i < columns.length; i++) {
+		for (int i = IDX_DROPDOWN_ITEMS; i < columns.length; i++) {
 			String item = columns[i].trim();
 			if (!item.isEmpty()) {
 				listBox.addItem(item);
 			}
 		}
 
-		submitter.addAttribute(listBox, NAME, getColumn(columns, 2, "dropdown"));
+		submitter.addAttribute(listBox, NAME, getColumn(columns, IDX_DROPDOWN_NAME, "dropdown"));
 	}
 }
