@@ -69,14 +69,14 @@ public class FormRenderer {
 		boolean formSubmitted(long formId, Map<String, String> result);
 	}
 
-	public class SubmitHandler implements ClickHandler {
+	public class FormHandler implements ClickHandler {
 		private Map<Widget, Map<String, String>> attributes = new HashMap<Widget, Map<String, String>>();
 		private long formId;
 		private FormListener listener;
 		private Button submitButton;
 		private FocusWidget firstWidget;
 
-		public SubmitHandler(long formId, FormListener listener) {
+		public FormHandler(long formId, FormListener listener) {
 			this.formId = formId;
 			this.listener = listener;
 		}
@@ -266,7 +266,7 @@ public class FormRenderer {
 		try {
 			Panel panel = renderPanel();
 
-			SubmitHandler submitHandler = new SubmitHandler(formId, listener);
+			FormHandler submitHandler = new FormHandler(formId, listener);
 
 			String[] lines = formDef.split("\\r?\\n");
 			for (String line : lines) {
@@ -302,7 +302,7 @@ public class FormRenderer {
 		}
 	}
 
-	protected void renderButtons(String[] columns, Panel panel, SubmitHandler submitter) {
+	protected void renderButtons(String[] columns, Panel panel, FormHandler submitter) {
 		HorizontalPanel buttonPanel = new HorizontalPanel();
 		panel.add(buttonPanel);
 
@@ -350,7 +350,7 @@ public class FormRenderer {
 		return defaultValue;
 	}
 
-	protected void renderTextField(String[] columns, Panel panel, boolean password, SubmitHandler submitter) {
+	protected void renderTextField(String[] columns, Panel panel, boolean password, FormHandler submitter) {
 		drawFieldLabel(columns, IDX_TEXTBOX_LABEL, panel);
 
 		TextBox textBox;
@@ -385,7 +385,7 @@ public class FormRenderer {
 		}
 	}
 
-	protected void renderTextArea(String[] columns, Panel panel, boolean password, SubmitHandler submitter) {
+	protected void renderTextArea(String[] columns, Panel panel, boolean password, FormHandler submitter) {
 		drawFieldLabel(columns, IDX_TEXTAREA_LABEL, panel);
 
 		TextArea textArea = new TextArea();
@@ -416,7 +416,7 @@ public class FormRenderer {
 		}
 	}
 
-	protected void renderDropdown(String[] columns, Panel panel, SubmitHandler submitter) {
+	protected void renderDropdown(String[] columns, Panel panel, FormHandler submitter) {
 		drawFieldLabel(columns, IDX_DROPDOWN_LABEL, panel);
 
 		ListBox listBox = new ListBox();
