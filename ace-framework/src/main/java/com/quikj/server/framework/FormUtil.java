@@ -231,20 +231,17 @@ public class FormUtil {
 	}
 
 	private static String validateDropDownSegment(String[] columns, int lineNum) {
-		if (columns.length <= IDX_DROPDOWN_ITEMS) {
-			return formatErrorMessage(lineNum, "The name field and at least one dropdown item must be specified");
-		}
-
 		if (columns[IDX_DROPDOWN_NAME].trim().isEmpty()) {
 			return formatErrorMessage(lineNum, "The name field must not be empty");
 		}
-
+		
 		int itemCount = 0;
 		for (int i = IDX_DROPDOWN_ITEMS; i < columns.length; i++) {
 			if (!columns[i].trim().isEmpty()) {
 				itemCount++;
 			}
 		}
+		
 		if (itemCount == 0) {
 			return formatErrorMessage(lineNum, "The dropdown must have at least one item");
 		}

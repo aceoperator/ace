@@ -100,7 +100,6 @@
 			<scope>test</scope>
 		</dependency>
 
-
 		<dependency>
 			<groupId>com.google.gwt</groupId>
 			<artifactId>gwt-user</artifactId>
