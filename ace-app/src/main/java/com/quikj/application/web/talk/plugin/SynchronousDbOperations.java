@@ -46,7 +46,7 @@ public class SynchronousDbOperations {
 		instance = null;
 	}
 
-	public synchronized CannedMessageElement[] listCannedMessages(String[] groups, boolean fetchContent) {
+	public CannedMessageElement[] listCannedMessages(String[] groups, boolean fetchContent) {
 		Connection c = null;
 
 		try {
@@ -113,7 +113,7 @@ public class SynchronousDbOperations {
 		}
 	}
 
-	public synchronized String queryCannedMessages(long id) {
+	public String queryCannedMessages(long id) {
 		String query = "select message from canned_message_tbl where id = ?";
 
 		Connection c = null;
@@ -146,7 +146,7 @@ public class SynchronousDbOperations {
 		return null;
 	}
 
-	public synchronized List<String> getGroupOwners(String userName) {
+	public List<String> getGroupOwners(String userName) {
 		List<String> ret = new ArrayList<String>();
 		Connection c = null;
 		try {
@@ -181,7 +181,7 @@ public class SynchronousDbOperations {
 		return ret;
 	}
 
-	public synchronized HashMap<Integer, String> getSecurityQuestions(String userid) throws Exception {
+	public HashMap<Integer, String> getSecurityQuestions(String userid) throws Exception {
 		String query = "select question_id, question_value from user_tbl as u"
 				+ " left join user_security_questions_tbl as q on u.id = q.user_id"
 				+ " where address is not null and address != '' and u.userid = ?";
@@ -223,7 +223,7 @@ public class SynchronousDbOperations {
 		}
 	}
 
-	public synchronized boolean resetPassword(String userid, String password, HashMap<Integer, String> securityAnswers)
+	public boolean resetPassword(String userid, String password, HashMap<Integer, String> securityAnswers)
 			throws Exception {
 
 		Connection c = null;
@@ -280,7 +280,7 @@ public class SynchronousDbOperations {
 		}
 	}
 
-	public synchronized String getEmailAddress(String userid) throws Exception {
+	public String getEmailAddress(String userid) throws Exception {
 		String query = "select address from user_tbl where userid = ?";
 
 		Connection c = null;
@@ -315,7 +315,7 @@ public class SynchronousDbOperations {
 		}
 	}
 
-	public synchronized List<String> findUserByEmailAddress(String address) throws Exception {
+	public List<String> findUserByEmailAddress(String address) throws Exception {
 		String query = "select userid from user_tbl where address = ?";
 
 		Connection c = null;
