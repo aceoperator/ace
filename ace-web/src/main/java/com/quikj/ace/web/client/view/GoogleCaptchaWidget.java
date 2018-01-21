@@ -51,4 +51,14 @@ public class GoogleCaptchaWidget implements CaptchaWidget {
 		}
 		RecaptchaWidget.setLanguage(lang);
 	}
+
+	@Override
+	public String getType() {
+		return "RECAPTCHA";
+	}
+
+	@Override
+	public Widget getWidget() {
+		return recaptcha;
+	}
 }

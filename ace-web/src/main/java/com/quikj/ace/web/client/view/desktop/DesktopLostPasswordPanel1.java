@@ -24,6 +24,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.quikj.ace.web.client.ApplicationController;
 import com.quikj.ace.web.client.ClientProperties;
 import com.quikj.ace.web.client.presenter.LostPasswordPresenter;
+import com.quikj.ace.web.client.view.CaptchaFactory;
 import com.quikj.ace.web.client.view.CaptchaWidget;
 import com.quikj.ace.web.client.view.CaptchaWidget.CaptchaListener;
 import com.quikj.ace.web.client.view.LostPasswordPanel;
@@ -32,8 +33,7 @@ import com.quikj.ace.web.client.view.LostPasswordPanel;
  * @author becky
  * 
  */
-public class DesktopLostPasswordPanel1 extends LayoutPanel implements
-		LostPasswordPanel, CaptchaListener {
+public class DesktopLostPasswordPanel1 extends LayoutPanel implements LostPasswordPanel, CaptchaListener {
 
 	private VerticalPanel collectUsernameForm;
 	private TextBox name;
@@ -48,8 +48,7 @@ public class DesktopLostPasswordPanel1 extends LayoutPanel implements
 		setSize("100%", "100%");
 
 		boolean fromLoginPage = true;
-		String startPage = ClientProperties.getInstance().getStringValue(
-				ClientProperties.ONCLICK_START_PAGE, null);
+		String startPage = ClientProperties.getInstance().getStringValue(ClientProperties.ONCLICK_START_PAGE, null);
 		if (startPage != null) {
 			fromLoginPage = false;
 		}
@@ -66,13 +65,11 @@ public class DesktopLostPasswordPanel1 extends LayoutPanel implements
 		collectUsernameForm.setSpacing(5);
 		scrollPanel.setWidget(collectUsernameForm);
 
-		caption = new HTML("<p>"
-				+ ApplicationController.getMessages()
-						.DesktopLostPasswordPanel1_usernameFormInstructions());
+		caption = new HTML(
+				"<p>" + ApplicationController.getMessages().DesktopLostPasswordPanel1_usernameFormInstructions());
 		collectUsernameForm.add(caption);
 
-		nameLabel = new Label(ApplicationController.getMessages()
-				.DesktopLostPasswordPanel1_name());
+		nameLabel = new Label(ApplicationController.getMessages().DesktopLostPasswordPanel1_name());
 		collectUsernameForm.add(nameLabel);
 
 		name = new TextBox();
@@ -96,17 +93,16 @@ public class DesktopLostPasswordPanel1 extends LayoutPanel implements
 
 		collectUsernameForm.add(new HTML("<p>"));
 
-		captcha = DesktopCaptchaRenderer.create();
+		captcha = CaptchaFactory.create();
 		collectUsernameForm.add(captcha.render(this));
-		
+
 		buttonPanel = new HorizontalPanel();
 		collectUsernameForm.add(buttonPanel);
 		buttonPanel.setSpacing(5);
 		buttonPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		buttonPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 
-		Button submitButton = new Button(ApplicationController.getMessages()
-				.DesktopLostPasswordPanel1_submit());
+		Button submitButton = new Button(ApplicationController.getMessages().DesktopLostPasswordPanel1_submit());
 		buttonPanel.add(submitButton);
 		submitButton.addClickHandler(new ClickHandler() {
 
@@ -116,8 +112,7 @@ public class DesktopLostPasswordPanel1 extends LayoutPanel implements
 			}
 		});
 
-		Button resetButton = new Button(ApplicationController.getMessages()
-				.DesktopLostPasswordPanel_reset());
+		Button resetButton = new Button(ApplicationController.getMessages().DesktopLostPasswordPanel_reset());
 		buttonPanel.add(resetButton);
 		resetButton.addClickHandler(new ClickHandler() {
 
@@ -128,8 +123,7 @@ public class DesktopLostPasswordPanel1 extends LayoutPanel implements
 		});
 
 		if (fromLoginPage) {
-			Button cancelButton = new Button(ApplicationController
-					.getMessages().DesktopLostPasswordPanel_cancel());
+			Button cancelButton = new Button(ApplicationController.getMessages().DesktopLostPasswordPanel_cancel());
 			buttonPanel.add(cancelButton);
 			cancelButton.addClickHandler(new ClickHandler() {
 
@@ -149,7 +143,7 @@ public class DesktopLostPasswordPanel1 extends LayoutPanel implements
 	}
 
 	public void processSubmit() {
-		presenter.userNameSubmitted(name.getText(), captcha.getCaptcha());
+		presenter.userNameSubmitted(name.getText(), captcha.getCaptcha(), captcha.getCaptcha());
 	}
 
 	@Override
@@ -158,7 +152,7 @@ public class DesktopLostPasswordPanel1 extends LayoutPanel implements
 	}
 
 	@Override
-	public void captchaEntered(String captcha) {
-		processSubmit();		
+	public void captchaEntered(String captcha, String type) {
+		processSubmit();
 	}
 }

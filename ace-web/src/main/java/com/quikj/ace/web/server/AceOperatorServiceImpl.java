@@ -24,9 +24,9 @@ import com.quikj.server.app.adapter.PolledAppServerAdapter;
 import com.quikj.server.framework.AceMailMessage;
 import com.quikj.server.framework.AceMailService;
 import com.quikj.server.framework.CaptchaService;
+import com.quikj.server.framework.CaptchaService.CaptchaType;
 
-public class AceOperatorServiceImpl extends RemoteServiceServlet implements
-		AceOperatorService {
+public class AceOperatorServiceImpl extends RemoteServiceServlet implements AceOperatorService {
 
 	private static final long serialVersionUID = -911958659581871687L;
 
@@ -34,11 +34,9 @@ public class AceOperatorServiceImpl extends RemoteServiceServlet implements
 	private Long cookieSeed = 0L;
 
 	@Override
-	public List<Message> exchangeMessages(Message incoming)
-			throws AceServerException {
+	public List<Message> exchangeMessages(Message incoming) throws AceServerException {
 		try {
-			return PolledAppServerAdapter.getInstance().exchangeMessages(
-					incoming);
+			return PolledAppServerAdapter.getInstance().exchangeMessages(incoming);
 		} catch (AppServerAdapterException e) {
 			e.printStackTrace();
 			throw formatServerException(e);
@@ -46,8 +44,7 @@ public class AceOperatorServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public List<Message> exchangeMessages(List<Message> incoming)
-			throws AceServerException {
+	public List<Message> exchangeMessages(List<Message> incoming) throws AceServerException {
 		List<Message> ret = new ArrayList<Message>();
 		AceServerException exceptionThrown = null;
 		for (Message message : incoming) {
@@ -77,8 +74,7 @@ public class AceOperatorServiceImpl extends RemoteServiceServlet implements
 		try {
 			String ip = getThreadLocalRequest().getRemoteAddr();
 			Cookie cookie = manageCookie(ip);
-			return PolledAppServerAdapter.getInstance().clientConnected(ip,
-					cookie.getValue());
+			return PolledAppServerAdapter.getInstance().clientConnected(ip, cookie.getValue());
 		} catch (AppServerAdapterException e) {
 			e.printStackTrace();
 			throw formatServerException(e);
@@ -123,11 +119,9 @@ public class AceOperatorServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public CannedMessageElement[] listCannedMessages(String[] groups, boolean fetchContent)
-			throws AceServerException {
+	public CannedMessageElement[] listCannedMessages(String[] groups, boolean fetchContent) throws AceServerException {
 		try {
-			return PolledAppServerAdapter.getInstance().listCannedMessages(
-					groups, fetchContent);
+			return PolledAppServerAdapter.getInstance().listCannedMessages(groups, fetchContent);
 		} catch (AppServerAdapterException e) {
 			e.printStackTrace();
 			throw formatServerException(e);
@@ -135,11 +129,9 @@ public class AceOperatorServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public HashMap<String, String> getProfile(String profileName,
-			String browserType) throws AceServerException {
+	public HashMap<String, String> getProfile(String profileName, String browserType) throws AceServerException {
 		try {
-			Properties properties = PolledAppServerAdapter.getInstance()
-					.getProfile(profileName, browserType);
+			Properties properties = PolledAppServerAdapter.getInstance().getProfile(profileName, browserType);
 			HashMap<String, String> ret = new HashMap<String, String>();
 			for (Entry<Object, Object> prop : properties.entrySet()) {
 				ret.put((String) prop.getKey(), (String) prop.getValue());
@@ -155,8 +147,7 @@ public class AceOperatorServiceImpl extends RemoteServiceServlet implements
 	public boolean allOperatorBusy(String group) throws AceServerException {
 		try {
 			String val = PolledAppServerAdapter.getInstance().getParam(
-					"com.quikj.application.web.talk.feature.operator.Operator:"
-							+ group, "all-operators-busy");
+					"com.quikj.application.web.talk.feature.operator.Operator:" + group, "all-operators-busy");
 
 			boolean busy;
 			if (val == null) {
@@ -185,11 +176,11 @@ public class AceOperatorServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public String sendMail(SendMailRequestMessage mail, String captcha,
-			String captchaType) {
+	public String sendMail(SendMailRequestMessage mail, String captcha, String captchaType) {
 		String salt = getThreadLocalRequest().getSession().getId();
+		String remoteIp = getThreadLocalRequest().getRemoteAddr();
 		try {
-			boolean correct = CaptchaService.getInstance().verify(salt, captcha);
+			boolean correct = CaptchaService.getInstance().verify(salt, captcha, remoteIp, CaptchaType.IMAGE);
 			if (!correct) {
 				return "NoMatch";
 			}
@@ -252,13 +243,12 @@ public class AceOperatorServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public HashMap<Integer, String> getSecurityQuestions(String userid,
-			String captcha, String captchaType) throws AceServerException {
+	public HashMap<Integer, String> getSecurityQuestions(String userid, String captcha, String captchaType)
+			throws AceServerException {
 		validateCaptcha(captcha, captchaType);
 
 		try {
-			return PolledAppServerAdapter.getInstance().getSecurityQuestions(
-					userid);
+			return PolledAppServerAdapter.getInstance().getSecurityQuestions(userid);
 		} catch (AppServerAdapterException e) {
 			e.printStackTrace();
 			throw formatServerException(e);
@@ -266,25 +256,24 @@ public class AceOperatorServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public void resetPassword(String userid, String captcha,
-			String captchaType, HashMap<Integer, String> securityAnswers,
-			String locale) throws AceServerException {
+	public void resetPassword(String userid, String captcha, String captchaType,
+			HashMap<Integer, String> securityAnswers, String locale) throws AceServerException {
 		validateCaptcha(captcha, captchaType);
 
 		try {
-			PolledAppServerAdapter.getInstance().resetPassword(userid,
-					securityAnswers, locale);
+			PolledAppServerAdapter.getInstance().resetPassword(userid, securityAnswers, locale);
 		} catch (AppServerAdapterException e) {
 			e.printStackTrace();
 			throw formatServerException(e);
 		}
 	}
 
-	private void validateCaptcha(String captcha, String captchaType)
-			throws AceServerException {
+	private void validateCaptcha(String captcha, String captchaType) throws AceServerException {
 		String salt = getThreadLocalRequest().getSession().getId();
+		String remoteIp = getThreadLocalRequest().getRemoteAddr();
 		try {
-			boolean correct = CaptchaService.getInstance().verify(salt, captcha);
+			boolean correct = CaptchaService.getInstance().verify(salt, captcha, remoteIp,
+					CaptchaType.valueOf(captchaType));
 			if (!correct) {
 				throw new AceServerException("unmatchedCapchaChars", true);
 			}
@@ -296,13 +285,12 @@ public class AceOperatorServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public void recoverLostUsername(String address, String captcha,
-			String captchaType, String locale) throws AceServerException {
+	public void recoverLostUsername(String address, String captcha, String captchaType, String locale)
+			throws AceServerException {
 		validateCaptcha(captcha, captchaType);
 
 		try {
-			PolledAppServerAdapter.getInstance().recoverLostUsername(address,
-					locale);
+			PolledAppServerAdapter.getInstance().recoverLostUsername(address, locale);
 		} catch (AppServerAdapterException e) {
 			e.printStackTrace();
 			throw formatServerException(e);
@@ -316,6 +304,6 @@ public class AceOperatorServiceImpl extends RemoteServiceServlet implements
 		} catch (AppServerAdapterException e) {
 			e.printStackTrace();
 			throw formatServerException(e);
-		}		
+		}
 	}
 }

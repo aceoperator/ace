@@ -21,7 +21,7 @@ public class CaptchaServlet extends HttpServlet {
 	public void init(ServletConfig servletConfig) throws ServletException {
 		super.init(servletConfig);
 
-		new CaptchaService().init();
+		new CaptchaService();
 	}
 
 	@Override

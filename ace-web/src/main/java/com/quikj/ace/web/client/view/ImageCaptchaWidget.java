@@ -35,21 +35,23 @@ public class ImageCaptchaWidget implements CaptchaWidget {
 	private Image captchaImg;
 	private TextBox captchaText;
 
+	private VerticalPanel panel;
+
 	@Override
 	public Widget render(CaptchaListener listener) {
 		this.listener = listener;
 
-		VerticalPanel legacyCaptchaPanel = new VerticalPanel();
-		legacyCaptchaPanel.setSpacing(5);
+		panel = new VerticalPanel();
+		panel.setSpacing(5);
 
 		Label captchaLabel = new Label(ApplicationController.getMessages().DesktopUserBusyEmailPanel_typeChars());
-		legacyCaptchaPanel.add(captchaLabel);
+		panel.add(captchaLabel);
 
 		captchaImg = new Image(GWT.getModuleBaseURL() + "../jcaptcha?nocache=" + new Date().getTime());
-		legacyCaptchaPanel.add(captchaImg);
+		panel.add(captchaImg);
 
 		HorizontalPanel captchaPanel = new HorizontalPanel();
-		legacyCaptchaPanel.add(captchaPanel);
+		panel.add(captchaPanel);
 
 		captchaText = new TextBox();
 		captchaPanel.add(captchaText);
@@ -58,7 +60,7 @@ public class ImageCaptchaWidget implements CaptchaWidget {
 			@Override
 			public void onKeyUp(KeyUpEvent event) {
 				if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
-					ImageCaptchaWidget.this.listener.captchaEntered(captchaText.getText());
+					ImageCaptchaWidget.this.listener.captchaEntered(captchaText.getText(), getType());
 				}
 			}
 		});
@@ -91,7 +93,7 @@ public class ImageCaptchaWidget implements CaptchaWidget {
 		captchaPanel.setCellVerticalAlignment(captchaHelp, HasVerticalAlignment.ALIGN_MIDDLE);
 		captchaHelp.setTitle(CAPTCHA_HELP);
 
-		return legacyCaptchaPanel;
+		return panel;
 	}
 
 	@Override
@@ -108,5 +110,15 @@ public class ImageCaptchaWidget implements CaptchaWidget {
 	@Override
 	public String getCaptcha() {
 		return captchaText.getText().trim();
+	}
+
+	@Override
+	public String getType() {
+		return "IMAGE";
+	}
+
+	@Override
+	public Widget getWidget() {
+		return panel;
 	}
 }

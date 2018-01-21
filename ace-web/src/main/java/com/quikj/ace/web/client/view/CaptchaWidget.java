@@ -11,11 +11,13 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public interface CaptchaWidget {
 	public interface CaptchaListener {
-		void captchaEntered(String captcha);
+		void captchaEntered(String captcha, String captchaType);
 	}
 	
 	Widget render(CaptchaListener listener);
 	void focus();
 	void reset();
 	String getCaptcha();
+	String getType();
+	Widget getWidget();
 }

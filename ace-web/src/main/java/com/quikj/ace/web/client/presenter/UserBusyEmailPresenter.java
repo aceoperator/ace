@@ -40,8 +40,8 @@ public class UserBusyEmailPresenter {
 	}
 
 	public void informationSubmitted(String name, String email, String message,
-			String captcha) {
-		if (name == null || name.trim().length() == 0) {
+			String captcha, String captchaType) {
+		if (name == null || name.trim().isEmpty()) {
 			MessageBoxPresenter.getInstance().show(
 					ApplicationController.getMessages()
 							.UserBusyEmailPresenter_error(),
@@ -51,7 +51,7 @@ public class UserBusyEmailPresenter {
 			return;
 		}
 
-		if (message == null || message.trim().length() == 0) {
+		if (message == null || message.trim().isEmpty()) {
 			MessageBoxPresenter.getInstance().show(
 					ApplicationController.getMessages()
 							.UserBusyEmailPresenter_error(),
@@ -61,7 +61,7 @@ public class UserBusyEmailPresenter {
 			return;
 		}
 
-		if (captcha == null || captcha.trim().length() == 0) {
+		if (captcha == null || captcha.trim().isEmpty()) {
 			MessageBoxPresenter.getInstance().show(
 					ApplicationController.getMessages()
 							.UserBusyEmailPresenter_error(),
@@ -109,7 +109,7 @@ public class UserBusyEmailPresenter {
 		melement.setBody(buffer.toString());
 
 		RequestBuilder builder = AceOperatorService.Util.getInstance()
-				.sendMail(mail, captcha.trim(), view.getCaptchaType(), new AsyncCallback<String>() {
+				.sendMail(mail, captcha.trim(), captchaType, new AsyncCallback<String>() {
 
 					@Override
 					public void onSuccess(String result) {

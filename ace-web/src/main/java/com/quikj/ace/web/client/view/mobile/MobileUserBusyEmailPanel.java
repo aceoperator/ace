@@ -232,11 +232,6 @@ public class MobileUserBusyEmailPanel extends LayoutPanel implements
 
 	public void processSubmit() {
 		presenter.informationSubmitted(name.getText(), email.getText(),
-				message.getText(), captchaText.getText());
-	}
-
-	@Override
-	public String getCaptchaType() {
-		return "small";
+				message.getText(), captchaText.getText(), "IMAGE");
 	}
 }

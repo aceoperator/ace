@@ -29,8 +29,7 @@ public class LostUsernamePresenter {
 
 	public LostUsernamePresenter() {
 		logger = Logger.getLogger(getClass().getName());
-		String startPage = ClientProperties.getInstance().getStringValue(
-				ClientProperties.ONCLICK_START_PAGE, null);
+		String startPage = ClientProperties.getInstance().getStringValue(ClientProperties.ONCLICK_START_PAGE, null);
 		if (startPage != null) {
 			fromLoginPage = false;
 		}
@@ -63,12 +62,9 @@ public class LostUsernamePresenter {
 		LoginPresenter.getCurrentInstance().show();
 	}
 
-	public void finishedLostUsername(String message,
-			MessageBoxPresenter.Severity sev) {
-		MessageBoxPresenter.getInstance().show(
-				ApplicationController.getMessages()
-						.LostUsernamePresenter_findUsername(), message, sev,
-				new MessageCloseListener() {
+	public void finishedLostUsername(String message, MessageBoxPresenter.Severity sev) {
+		MessageBoxPresenter.getInstance().show(ApplicationController.getMessages().LostUsernamePresenter_findUsername(),
+				message, sev, new MessageCloseListener() {
 
 					@Override
 					public void closed() {
@@ -81,91 +77,74 @@ public class LostUsernamePresenter {
 				}, true);
 	}
 
-	public void emailAddressSubmitted(final String address, String captcha) {
-		if (address == null || address.trim().length() == 0) {
-			validationError(ApplicationController.getMessages()
-					.LostUsernamePresenter_addressMissing());
+	public void emailAddressSubmitted(final String address, String captcha, String captchaType) {
+		if (address == null || address.trim().isEmpty()) {
+			validationError(ApplicationController.getMessages().LostUsernamePresenter_addressMissing());
 			return;
 		}
 
-		if (captcha == null || captcha.trim().length() == 0) {
-			validationError(ApplicationController.getMessages()
-					.UserBusyEmailPresenter_imagePasscodeMissing());
+		if (captcha == null || captcha.trim().isEmpty()) {
+			validationError(ApplicationController.getMessages().UserBusyEmailPresenter_imagePasscodeMissing());
 			return;
 		}
 
 		String[] addressTokens = address.trim().split("@");
 		String domain = addressTokens[addressTokens.length - 1];
 		if ((addressTokens.length < 2) || (domain.indexOf(".") == -1)) {
-			validationError(ApplicationController.getMessages()
-					.LostUsernamePresenter_addressInvalid());
+			validationError(ApplicationController.getMessages().LostUsernamePresenter_addressInvalid());
 			return;
 		}
 
-		RequestBuilder builder = AceOperatorService.Util.getInstance()
-				.recoverLostUsername(address.trim(), captcha.trim(), null,
-						ApplicationController.getInstance().getLocale(),
-						new AsyncCallback<Void>() {
+		RequestBuilder builder = AceOperatorService.Util.getInstance().recoverLostUsername(address.trim(),
+				captcha.trim(), captchaType, ApplicationController.getInstance().getLocale(),
+				new AsyncCallback<Void>() {
 
-							@Override
-							public void onSuccess(Void result) {
-								finishedLostUsername(
-										ApplicationController
-												.getMessages()
-												.LostUsernamePresenter_successfulUsernameRecovery(),
-										MessageBoxPresenter.Severity.INFO);
-							}
+					@Override
+					public void onSuccess(Void result) {
+						finishedLostUsername(
+								ApplicationController.getMessages().LostUsernamePresenter_successfulUsernameRecovery(),
+								MessageBoxPresenter.Severity.INFO);
+					}
 
-							@Override
-							public void onFailure(Throwable caught) {
-								handleError(caught);
-							}
-						});
+					@Override
+					public void onFailure(Throwable caught) {
+						handleError(caught);
+					}
+				});
 
 		try {
 			CommunicationsFactory.sendMessageToServer(builder);
 		} catch (RequestException e) {
-			logger.severe("Error sending message to the server - "
-					+ e.getMessage());
+			logger.severe("Error sending message to the server - " + e.getMessage());
 		}
 	}
 
 	private void handleError(Throwable caught) {
 		String error = caught.getMessage();
 		if ("databaseError".equals(error)) {
-			errorResult(ApplicationController.getMessages()
-					.LostUsernamePresenter_databaseError());
+			errorResult(ApplicationController.getMessages().LostUsernamePresenter_databaseError());
 		} else if ("unmatchedCapchaChars".equals(error)) {
-			errorResult(ApplicationController.getMessages()
-					.UserBusyEmailPresenter_unmatchedCapchaChars());
+			errorResult(ApplicationController.getMessages().UserBusyEmailPresenter_unmatchedCapchaChars());
 		} else if ("imagePasscodeErrorTryAgain".equals(error)) {
-			errorResult(ApplicationController.getMessages()
-					.Captcha_imagePasscodeErrorTryAgain());
+			errorResult(ApplicationController.getMessages().Captcha_imagePasscodeErrorTryAgain());
 		} else if ("usernameEmailFailed".equals(error)) {
-			finishedLostUsername(ApplicationController.getMessages()
-					.LostUsernamePresenter_usernameEmailFailed(),
+			finishedLostUsername(ApplicationController.getMessages().LostUsernamePresenter_usernameEmailFailed(),
 					MessageBoxPresenter.Severity.SEVERE);
 		} else if ("userNotFound".equals(error)) {
-			errorResult(ApplicationController.getMessages()
-					.LostUsernamePresenter_userNotFound());
+			errorResult(ApplicationController.getMessages().LostUsernamePresenter_userNotFound());
 		} else {
-			errorResult(ApplicationController.getMessages()
-					.LostUsernamePresenter_findFailed(error));
+			errorResult(ApplicationController.getMessages().LostUsernamePresenter_findFailed(error));
 		}
 	}
 
 	public void errorResult(String message) {
-		MessageBoxPresenter.getInstance().show(
-				ApplicationController.getMessages()
-						.LostUsernamePresenter_warning(), message,
-				MessageBoxPresenter.Severity.WARN, true);
+		MessageBoxPresenter.getInstance().show(ApplicationController.getMessages().LostUsernamePresenter_warning(),
+				message, MessageBoxPresenter.Severity.WARN, true);
 	}
 
 	public void validationError(String message) {
-		MessageBoxPresenter.getInstance().show(
-				ApplicationController.getMessages()
-						.LostUsernamePresenter_error(), message,
-				MessageBoxPresenter.Severity.WARN, true);
+		MessageBoxPresenter.getInstance().show(ApplicationController.getMessages().LostUsernamePresenter_error(),
+				message, MessageBoxPresenter.Severity.WARN, true);
 	}
 
 }

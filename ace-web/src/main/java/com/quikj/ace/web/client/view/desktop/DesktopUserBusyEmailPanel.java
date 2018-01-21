@@ -18,7 +18,6 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
@@ -27,6 +26,9 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.quikj.ace.web.client.ApplicationController;
 import com.quikj.ace.web.client.presenter.UserBusyEmailPresenter;
+import com.quikj.ace.web.client.view.CaptchaFactory;
+import com.quikj.ace.web.client.view.CaptchaWidget;
+import com.quikj.ace.web.client.view.CaptchaWidget.CaptchaListener;
 import com.quikj.ace.web.client.view.UserBusyEmailPanel;
 
 /**
@@ -34,10 +36,7 @@ import com.quikj.ace.web.client.view.UserBusyEmailPanel;
  * 
  */
 public class DesktopUserBusyEmailPanel extends LayoutPanel implements
-		UserBusyEmailPanel {
-
-	private static final String CAPTCHA_HELP = ApplicationController
-			.getMessages().DesktopUserBusyEmailPanel_capchaHelp();
+		UserBusyEmailPanel, CaptchaListener {
 	private VerticalPanel messageForm;
 	private TextBox name;
 	private TextArea message;
@@ -48,11 +47,7 @@ public class DesktopUserBusyEmailPanel extends LayoutPanel implements
 	private HorizontalPanel buttonPanel;
 	private Label emailLabel;
 	private TextBox email;
-	private Image captchaImg;
-	private TextBox captchaText;
-	private HorizontalPanel captchaPanel;
-	private Label captchaLabel;
-	private HTML captchaHelp;
+	private CaptchaWidget captcha;
 
 	public DesktopUserBusyEmailPanel() {
 		super();
@@ -124,56 +119,9 @@ public class DesktopUserBusyEmailPanel extends LayoutPanel implements
 
 		messageForm.add(new HTML("<p>"));
 
-		captchaLabel = new Label(ApplicationController.getMessages()
-				.DesktopUserBusyEmailPanel_typeChars());
-		messageForm.add(captchaLabel);
-
-		captchaImg = new Image(captchaImageUrl());
-		messageForm.add(captchaImg);
-
-		captchaPanel = new HorizontalPanel();
-		messageForm.add(captchaPanel);
-
-		captchaText = new TextBox();
-		captchaPanel.add(captchaText);
-		captchaText.addKeyUpHandler(new KeyUpHandler() {
-
-			@Override
-			public void onKeyUp(KeyUpEvent event) {
-				if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
-					processSubmit();
-				}
-			}
-		});
+		captcha = CaptchaFactory.create();
+		messageForm.add(captcha.render(this));
 		
-		HTML sp = new HTML("&nbsp;");
-		captchaPanel.add(sp);
-
-		Button captchaResetButton = new Button(ApplicationController
-				.getMessages().DesktopUserBusyEmailPanel_regenPicture());
-		captchaPanel.add(captchaResetButton);
-		captchaResetButton.setTitle(ApplicationController.getMessages()
-				.DesktopUserBusyEmailPanel_instructionsToRegen());
-
-		captchaResetButton.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				captchaImg.setUrl(captchaImageUrl());
-			}
-		});
-
-		sp = new HTML("&nbsp;");
-		captchaPanel.add(sp);
-
-		captchaHelp = new HTML("<smallest>"
-				+ ApplicationController.getMessages()
-						.DesktopUserBusyEmailPanel_whatIsThis() + "</smallest>");
-		captchaPanel.add(captchaHelp);
-
-		captchaPanel.setCellVerticalAlignment(captchaHelp,
-				HasVerticalAlignment.ALIGN_MIDDLE);
-		captchaHelp.setTitle(CAPTCHA_HELP);
-
 		messageForm.add(new HTML("<p>"));
 		buttonPanel = new HorizontalPanel();
 		messageForm.add(buttonPanel);
@@ -233,10 +181,8 @@ public class DesktopUserBusyEmailPanel extends LayoutPanel implements
 		messageForm.remove(message);
 		messageForm.remove(email);
 		messageForm.remove(buttonPanel);
-		messageForm.remove(captchaImg);
-		messageForm.remove(captchaPanel);
-		messageForm.remove(captchaLabel);
-		messageForm.remove(captchaHelp);
+		
+		messageForm.remove(captcha.getWidget());
 	}
 
 	@Override
@@ -246,11 +192,11 @@ public class DesktopUserBusyEmailPanel extends LayoutPanel implements
 
 	public void processSubmit() {
 		presenter.informationSubmitted(name.getText(), email.getText(),
-				message.getText(), captchaText.getText());
+				message.getText(), captcha.getCaptcha(), captcha.getType());
 	}
 
 	@Override
-	public String getCaptchaType() {
-		return "large";
+	public void captchaEntered(String captcha, String captchaType) {
+		processSubmit();		
 	}
 }

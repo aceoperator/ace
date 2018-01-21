@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.quikj.server.framework.AceMailMessage;
 import com.quikj.server.framework.AceMailService;
 import com.quikj.server.framework.CaptchaService;
+import com.quikj.server.framework.CaptchaService.CaptchaType;
 
 /**
  * @author amit
@@ -59,8 +60,8 @@ public class FormMailerServlet extends HttpServlet {
 		
 		try {
 			captcha = captcha.trim();
-			boolean correct = CaptchaService.getInstance().verify(request.getSession().getId(),
-							captcha);
+			boolean correct = CaptchaService.getInstance().verify(request.getSession().getId(),  
+							captcha, request.getRemoteAddr(), CaptchaType.IMAGE);
 			if (!correct) {
 				showResult(request, response,
 						messages.getString("unmatchedCapchaChars"));
