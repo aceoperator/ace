@@ -118,7 +118,7 @@ public class CaptchaService {
 		if (type == CaptchaType.IMAGE) {
 			return verifyImageCaptcha(sessionId, input);
 		} else {
-			return recaptchaSecret(input, remoteIp);
+			return verifyRecaptcha(input, remoteIp);
 		}
 	}
 
@@ -139,7 +139,7 @@ public class CaptchaService {
 	}
 
 	// Copied from salesfront/gwt-recaptcha github code
-	private boolean recaptchaSecret(String input, String remoteIp) {
+	private boolean verifyRecaptcha(String input, String remoteIp) {
 		try {
 			if (secretKey == null) {
 				System.out.println("Warning! attempt to validate recaptcha with no secret key set");

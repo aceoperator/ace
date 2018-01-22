@@ -91,7 +91,7 @@ public class LostPasswordPresenter {
 			return;
 		}
 
-		if (captcha == null || captcha.trim().length() == 0) {
+		if (captcha == null || captcha.trim().isEmpty()) {
 			validationError(ApplicationController.getMessages().UserBusyEmailPresenter_imagePasscodeMissing());
 			return;
 		}

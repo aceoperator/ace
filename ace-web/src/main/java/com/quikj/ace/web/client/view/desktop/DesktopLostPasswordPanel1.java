@@ -143,7 +143,7 @@ public class DesktopLostPasswordPanel1 extends LayoutPanel implements LostPasswo
 	}
 
 	public void processSubmit() {
-		presenter.userNameSubmitted(name.getText(), captcha.getCaptcha(), captcha.getCaptcha());
+		presenter.userNameSubmitted(name.getText(), captcha.getCaptcha(), captcha.getType());
 	}
 
 	@Override

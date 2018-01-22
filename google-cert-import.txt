@@ -1,0 +1,2 @@
+keytool -printcert -rfc -sslserver www.google.com/recaptcha/api/siteverify > recaptcha.pem
+keytool -importcert -file ./recaptcha.pem –keystore ~/.keystore
