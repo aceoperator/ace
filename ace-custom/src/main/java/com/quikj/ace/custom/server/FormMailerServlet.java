@@ -33,38 +33,45 @@ public class FormMailerServlet extends HttpServlet {
 	private static final long serialVersionUID = -2391000119541064116L;
 
 	@Override
-	protected void doPost(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 
-		ResourceBundle messages = ResourceBundle.getBundle(
-				"com.quikj.ace.custom.server.CustomResources",
+		ResourceBundle messages = ResourceBundle.getBundle("com.quikj.ace.custom.server.CustomResources",
 				getLocale(request));
 
 		String group = request.getParameter("group");
 		if (group == null) {
-			throw new ServletException(
-					"The mandatory parameter 'group' has not been specified");
+			throw new ServletException("The mandatory parameter 'group' has not been specified");
 		}
 
-		String captcha = request.getParameter("captcha");
-		if (captcha == null) {
-			throw new ServletException(
-					"The mandatory parameter 'captcha' has not been specified");
+		CaptchaType captchaType = CaptchaType.IMAGE;
+		String type = request.getParameter("captchaType");
+		if (type != null) {
+			captchaType = CaptchaType.valueOf(type);
 		}
 
-		if (captcha.trim().isEmpty()) {
-			showResult(request, response,
-					messages.getString("imagePasscodeMissing"));
-			return;
-		}
-		
-		try {
+		String captcha;
+		if (captchaType == CaptchaType.IMAGE) {
+			captcha = request.getParameter("captcha");
+			if (captcha == null) {
+				throw new ServletException("The mandatory parameter 'captcha' has not been specified");
+			}
+
 			captcha = captcha.trim();
-			boolean correct = CaptchaService.getInstance().verify(request.getSession().getId(),  
-							captcha, request.getRemoteAddr(), CaptchaType.IMAGE);
+			if (captcha.isEmpty()) {
+				showResult(request, response, messages.getString("imagePasscodeMissing"));
+				return;
+			}
+		} else {
+			// assume recaptcha
+			captcha = request.getParameter("g-recaptcha-response");
+		}
+
+		try {
+			boolean correct = CaptchaService.getInstance().verify(request.getSession().getId(), captcha,
+					request.getRemoteAddr(), captchaType);
 			if (!correct) {
-				showResult(request, response,
-						messages.getString("unmatchedCapchaChars"));
+				showResult(request, response, messages.getString("unmatchedCapchaChars"));
 				return;
 			}
 		} catch (Exception e) {
@@ -79,8 +86,7 @@ public class FormMailerServlet extends HttpServlet {
 			form = "default";
 		}
 
-		String path = request.getServletContext().getRealPath(
-				"groups/" + group + "/form_" + form + ".properties");
+		String path = request.getServletContext().getRealPath("groups/" + group + "/form_" + form + ".properties");
 		FileInputStream fis = new FileInputStream(path);
 		Properties props = new Properties();
 		props.load(fis);
@@ -164,10 +170,10 @@ public class FormMailerServlet extends HttpServlet {
 			sortedList.add(params.nextElement());
 		}
 		Collections.sort(sortedList);
-		
+
 		StringBuilder buffer = new StringBuilder();
 		buffer.append("The following information was submitted\n\n");
-		for (String param: sortedList) {
+		for (String param : sortedList) {
 			String value = request.getParameter(param);
 			if (value != null && value.trim().length() > 0) {
 				buffer.append(param);
@@ -179,14 +185,12 @@ public class FormMailerServlet extends HttpServlet {
 		return buffer.toString();
 	}
 
-	private void showResult(HttpServletRequest request,
-			HttpServletResponse response, String error)
+	private void showResult(HttpServletRequest request, HttpServletResponse response, String error)
 			throws ServletException, IOException {
 		if (error != null) {
 			request.setAttribute("error", error);
 		}
 
-		request.getRequestDispatcher("/form_result.jsp").forward(request,
-				response);
+		request.getRequestDispatcher("/form_result.jsp").forward(request, response);
 	}
 }
