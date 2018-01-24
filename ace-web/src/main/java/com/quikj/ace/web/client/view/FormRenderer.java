@@ -204,14 +204,16 @@ public class FormRenderer {
 						}
 
 						if (cents.length() > 2) {
-							MessageBoxPresenter.getInstance()
-									.show(ApplicationController.getMessages().FormRenderer_formError(),
-											ApplicationController.getMessages().FormRenderer_currency(
-													attributes.get(NAME), "$$",
-													ClientProperties.getInstance().getStringValue(
-															ClientProperties.CURRENCY_DELIMITER, "."),
-													"cc"),
-											MessageBoxPresenter.Severity.SEVERE, true);
+							MessageBoxPresenter.getInstance().show(
+									ApplicationController.getMessages().FormRenderer_formError(),
+									ApplicationController.getMessages().FormRenderer_currency(attributes.get(NAME),
+											ClientProperties.getInstance()
+													.getStringValue(ClientProperties.CURRENCY_DOLLAR, "$$"),
+											ClientProperties.getInstance()
+													.getStringValue(ClientProperties.CURRENCY_DELIMITER, "."),
+											ClientProperties.getInstance()
+													.getStringValue(ClientProperties.CURRENCY_DOLLAR, "cc")),
+									MessageBoxPresenter.Severity.SEVERE, true);
 							return false;
 						}
 
@@ -219,18 +221,20 @@ public class FormRenderer {
 							Integer.parseInt(dollars);
 							Integer.parseInt(cents);
 						} catch (NumberFormatException ex) {
-							MessageBoxPresenter.getInstance()
-									.show(ApplicationController.getMessages().FormRenderer_formError(),
-											ApplicationController.getMessages().FormRenderer_currency(
-													attributes.get(NAME), "$$",
-													ClientProperties.getInstance().getStringValue(
-															ClientProperties.CURRENCY_DELIMITER, "."),
-													"cc"),
-											MessageBoxPresenter.Severity.SEVERE, true);
+							MessageBoxPresenter.getInstance().show(
+									ApplicationController.getMessages().FormRenderer_formError(),
+									ApplicationController.getMessages().FormRenderer_currency(attributes.get(NAME),
+											ClientProperties.getInstance()
+													.getStringValue(ClientProperties.CURRENCY_DOLLAR, "$$"),
+											ClientProperties.getInstance()
+													.getStringValue(ClientProperties.CURRENCY_DELIMITER, "."),
+											ClientProperties.getInstance()
+													.getStringValue(ClientProperties.CURRENCY_DOLLAR, "cc")),
+									MessageBoxPresenter.Severity.SEVERE, true);
 							return false;
 						}
 					} else if (v.equalsIgnoreCase("date")) {
-						String pattern = ClientProperties.getInstance().getStringValue(ClientProperties.DATE_FORMAT,
+						String pattern = ClientProperties.getInstance().getStringValue(ClientProperties.FORM_DATE_FORMAT,
 								ClientProperties.DEFAULT_DATE_FORMAT);
 						try {
 							DateTimeFormat.getFormat(pattern).parseStrict(value);
@@ -238,7 +242,7 @@ public class FormRenderer {
 							MessageBoxPresenter.getInstance().show(
 									ApplicationController.getMessages().FormRenderer_formError(),
 									ApplicationController.getMessages().FormRenderer_date(attributes.get(NAME),
-											ClientProperties.getInstance().getStringValue(ClientProperties.DATE_FORMAT,
+											ClientProperties.getInstance().getStringValue(ClientProperties.FORM_DATE_FORMAT,
 													ClientProperties.DEFAULT_DATE_FORMAT)),
 									MessageBoxPresenter.Severity.SEVERE, true);
 							return false;
@@ -375,7 +379,7 @@ public class FormRenderer {
 		if (column != null) {
 			submitter.addAttribute(textBox, MINLEN, column);
 		}
-		
+
 		column = getColumn(columns, IDX_TEXTBOX_MAXLEN, null);
 		if (column != null) {
 			textBox.setVisibleLength(Integer.parseInt(column));

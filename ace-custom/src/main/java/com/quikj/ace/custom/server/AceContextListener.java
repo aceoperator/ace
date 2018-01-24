@@ -82,9 +82,16 @@ public class AceContextListener implements ServletContextListener {
 			AceLogger.Instance().log(AceLogger.INFORMATIONAL,
 					AceLogger.SYSTEM_LOG, "Mail service started");
 			
+			fis = new FileInputStream(
+					AceConfigFileHelper.getAcePath("config/properties",
+							"captcha.properties"));
+			Properties captchaProperties = new Properties();
+			captchaProperties.load(fis);
+			fis.close();
+			
 			CaptchaService captchaService = new CaptchaService();
-			String captchaSecret = customProperties.getProperty(RECAPTCHA_SECRET_KEY);
-			if (captchaSecret != null) {
+			String captchaSecret = captchaProperties.getProperty(RECAPTCHA_SECRET_KEY);
+			if (captchaSecret != null && !captchaSecret.trim().isEmpty()) {
 				captchaService.setSecretKey(captchaSecret);
 				AceLogger.Instance().log(AceLogger.INFORMATIONAL,
 						AceLogger.SYSTEM_LOG, "Captcha service initialized");
