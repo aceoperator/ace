@@ -108,6 +108,7 @@
 	</build>
 
 	<modules>
+		<module>ace-ui-common</module>
 		<module>ace-messaging</module>
 		<module>ace-framework</module>
 		<module>ace-db</module>

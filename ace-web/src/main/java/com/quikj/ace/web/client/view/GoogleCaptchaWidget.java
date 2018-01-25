@@ -4,9 +4,9 @@
 package com.quikj.ace.web.client.view;
 
 import com.google.gwt.user.client.ui.Widget;
+import com.quikj.ace.common.client.salesfront.recaptcha.RecaptchaWidget;
 import com.quikj.ace.web.client.ApplicationController;
 import com.quikj.ace.web.client.ClientProperties;
-import com.quikj.ace.web.client.salesfront.recaptcha.RecaptchaWidget;
 
 /**
  * @author amit

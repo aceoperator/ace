@@ -162,6 +162,12 @@
 
 		<dependency>
 			<groupId>com.quikj.ace</groupId>
+			<artifactId>ace-ui-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.quikj.ace</groupId>
 			<artifactId>ace-messaging</artifactId>
 			<version>${project.version}</version>
 		</dependency>

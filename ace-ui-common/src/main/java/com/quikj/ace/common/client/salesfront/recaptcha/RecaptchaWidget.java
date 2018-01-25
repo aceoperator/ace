@@ -1,4 +1,4 @@
-package com.quikj.ace.web.client.salesfront.recaptcha;
+package com.quikj.ace.common.client.salesfront.recaptcha;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -125,14 +125,14 @@ public class RecaptchaWidget extends Composite {
             'type' : type,
             'tabindex' : tabIndex,
             'callback' : function(){
-                that.@com.quikj.ace.web.client.salesfront.recaptcha.RecaptchaWidget::fireCallback()();
+                that.@com.quikj.ace.common.client.salesfront.recaptcha.RecaptchaWidget::fireCallback()();
             },
             'expired-callback' : function(){
-                that.@com.quikj.ace.web.client.salesfront.recaptcha.RecaptchaWidget::fireExpiredCallback()();
+                that.@com.quikj.ace.common.client.salesfront.recaptcha.RecaptchaWidget::fireExpiredCallback()();
             }
         });
-        this.@com.quikj.ace.web.client.salesfront.recaptcha.RecaptchaWidget::isRendered=true;
-        this.@com.quikj.ace.web.client.salesfront.recaptcha.RecaptchaWidget::widgetId=widget;
+        this.@com.quikj.ace.common.client.salesfront.recaptcha.RecaptchaWidget::isRendered=true;
+        this.@com.quikj.ace.common.client.salesfront.recaptcha.RecaptchaWidget::widgetId=widget;
     }-*/;
 
 
@@ -155,8 +155,8 @@ public class RecaptchaWidget extends Composite {
     private native void registerCallback() /*-{
         var that=this;
         $wnd.comSalesfrontGwtrecaptchaRecaptchaWidgetCallback = new function(){
-            that.@com.quikj.ace.web.client.salesfront.recaptcha.RecaptchaWidget::isLoaded=true;
-            that.@com.quikj.ace.web.client.salesfront.recaptcha.RecaptchaWidget::render()();
+            that.@com.quikj.ace.common.client.salesfront.recaptcha.RecaptchaWidget::isLoaded=true;
+            that.@com.quikj.ace.common.client.salesfront.recaptcha.RecaptchaWidget::render()();
         };
     }-*/;
 

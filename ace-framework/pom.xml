@@ -77,6 +77,12 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>com.quikj.ace</groupId>
+			<artifactId>ace-ui-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
 			<version>1.4.2</version>

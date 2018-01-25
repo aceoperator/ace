@@ -11,159 +11,14 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.quikj.ace.common.client.form.FormConstants;
+
 /**
  * @author amit
  *
  */
 public class FormUtil {
-	private static final int IDX_FORM_ACTION = 0;
-	private static final int IDX_FORM_ADD_TO_TRANSCRIPT = 1;
-	private static final int IDX_FORM_EMAIL_TO = 2;
-	private static final int IDX_FORM_EMAIL_SUBJECT = 3;
-	private static final int IDX_FORM_EMAIL_CC = 4;
-
-	private static final int IDX_WIDGET = 0;
-	@SuppressWarnings("unused")
-	private static final int IDX_DROPDOWN_LABEL = 1;
-	private static final int IDX_DROPDOWN_NAME = 2;
-	private static final int IDX_DROPDOWN_ITEMS = 3;
-
-	@SuppressWarnings("unused")
-	private static final int IDX_TEXTAREA_LABEL = 1;
-	private static final int IDX_TEXTAREA_NAME = 2;
-	private static final int IDX_TEXTAREA_REQUIRED = 3;
-	private static final int IDX_TEXTAREA_MINLEN = 4;
-	private static final int IDX_TEXTAREA_MAXLEN = 5;
-	private static final int IDX_TEXTAREA_ROWS = 6;
-
-	@SuppressWarnings("unused")
-	private static final int IDX_TEXTBOX_LABEL = 1;
-	private static final int IDX_TEXTBOX_NAME = 2;
-	private static final int IDX_TEXTBOX_REQUIRED = 3;
-	private static final int IDX_TEXTBOX_TYPE = 4;
-	private static final int IDX_TEXTBOX_MINLEN = 5;
-	private static final int IDX_TEXTBOX_MAXLEN = 6;
-
-	private static final int IDX_LABEL_LABEL = 1;
-
-	@SuppressWarnings("unused")
-	private static final int IDX_SUBMIT_LABEL = 1;
-	@SuppressWarnings("unused")
-	private static final int IDX_RESET_LABEL = 2;
-
-	private static final String SEGMENT_DELIMITER = "\\r?\\n";
-	private static final String COLUMN_DELIMITER = "\\|";
-	private static final String EMAIL_SEPARATOR = ",";
-	private static final String EMAIL_PATTERN = "^[a-zA-Z0-9_\\-\\.]*@[a-zA-Z0-9_\\-\\.]*\\.[a-zA-Z]{2,3}$";
-
-	public enum Action {
-		EMAIL("email"), NONE("none");
-
-		String value;
-
-		Action(String value) {
-			this.value = value;
-		}
-
-		public String value() {
-			return value;
-		}
-
-		public static Action getByValue(String value) {
-			for (Action action : values()) {
-				if (action.value.equalsIgnoreCase(value)) {
-					return action;
-				}
-			}
-
-			throw new IllegalArgumentException("action not found");
-		}
-
-		public static String valuesToString() {
-			StringBuilder builder = new StringBuilder();
-			for (Action item : values()) {
-				if (builder.length() > 0) {
-					builder.append("/");
-				}
-				builder.append(item.value());
-			}
-
-			return builder.toString();
-		}
-	}
-
-	public enum Widget {
-		LABEL("label"), TEXT("text"), PASSWORD("password"), TEXTAREA("textarea"), DROPDOWN("dropdown"), BUTTONS(
-				"buttons");
-
-		String value;
-
-		Widget(String value) {
-			this.value = value;
-		}
-
-		public String value() {
-			return value;
-		}
-
-		public static Widget getByValue(String value) {
-			for (Widget widget : values()) {
-				if (widget.value.equalsIgnoreCase(value)) {
-					return widget;
-				}
-			}
-
-			throw new IllegalArgumentException("widget not found");
-		}
-
-		public static String valuesToString() {
-			StringBuilder builder = new StringBuilder();
-			for (Widget item : values()) {
-				if (builder.length() > 0) {
-					builder.append("/");
-				}
-				builder.append(item.value());
-			}
-
-			return builder.toString();
-		}
-	}
-
-	public enum TextType {
-		TEXT("text"), NUMERIC("numeric"), CURRENCY("currency"), DATE("date"), EMAIL("email");
-
-		String value;
-
-		TextType(String value) {
-			this.value = value;
-		}
-
-		public String value() {
-			return value;
-		}
-
-		public static TextType getByValue(String value) {
-			for (TextType type : values()) {
-				if (type.value.equalsIgnoreCase(value)) {
-					return type;
-				}
-			}
-
-			throw new IllegalArgumentException("action not found");
-		}
-
-		public static String valuesToString() {
-			StringBuilder builder = new StringBuilder();
-			for (TextType item : values()) {
-				if (builder.length() > 0) {
-					builder.append("/");
-				}
-				builder.append(item.value());
-			}
-
-			return builder.toString();
-		}
-	}
+	public static final String EMAIL_PATTERN = "^[a-zA-Z0-9_\\-\\.]*@[a-zA-Z0-9_\\-\\.]*\\.[a-zA-Z]{2,3}$";
 
 	private static String formatErrorMessage(int lineNum, String message) {
 		return "Line " + lineNum + ": " + message;
@@ -176,12 +31,12 @@ public class FormUtil {
 		}
 
 		int lineNum = 1;
-		String result = validateFormSegment(tokens[0].split(COLUMN_DELIMITER), lineNum);
+		String result = validateFormSegment(tokens[0].split(FormConstants.COLUMN_DELIMITER), lineNum);
 		if (!result.isEmpty()) {
 			return result;
 		}
 
-		String[] lines = tokens[1].split(SEGMENT_DELIMITER);
+		String[] lines = tokens[1].split(FormConstants.SEGMENT_DELIMITER);
 		for (String line : lines) {
 			line = line.trim();
 			lineNum++;
@@ -189,13 +44,13 @@ public class FormUtil {
 				continue;
 			}
 
-			String[] columns = line.split(COLUMN_DELIMITER);
-			Widget widget = null;
+			String[] columns = line.split(FormConstants.COLUMN_DELIMITER);
+			FormConstants.Widget widget = null;
 			try {
-				widget = Widget.getByValue(columns[IDX_WIDGET].trim());
+				widget = FormConstants.Widget.getByValue(columns[FormConstants.IDX_WIDGET].trim());
 			} catch (IllegalArgumentException e) {
 				return formatErrorMessage(lineNum,
-						"Unknown object " + columns[IDX_WIDGET] + ". The valid values are " + Widget.valuesToString());
+						"Unknown object " + columns[FormConstants.IDX_WIDGET] + ". The valid values are " + FormConstants.Widget.valuesToString());
 			}
 
 			switch (widget) {
@@ -219,7 +74,7 @@ public class FormUtil {
 			default:
 				// Should not happen, exception is going to be thrown before
 				// this
-				return formatErrorMessage(lineNum, "Unknown form element " + columns[IDX_WIDGET]);
+				return formatErrorMessage(lineNum, "Unknown form element " + columns[FormConstants.IDX_WIDGET]);
 			}
 
 			if (!result.isEmpty()) {
@@ -231,12 +86,12 @@ public class FormUtil {
 	}
 
 	private static String validateDropDownSegment(String[] columns, int lineNum) {
-		if (columns[IDX_DROPDOWN_NAME].trim().isEmpty()) {
+		if (columns[FormConstants.IDX_DROPDOWN_NAME].trim().isEmpty()) {
 			return formatErrorMessage(lineNum, "The name field must not be empty");
 		}
 		
 		int itemCount = 0;
-		for (int i = IDX_DROPDOWN_ITEMS; i < columns.length; i++) {
+		for (int i = FormConstants.IDX_DROPDOWN_ITEMS; i < columns.length; i++) {
 			if (!columns[i].trim().isEmpty()) {
 				itemCount++;
 			}
@@ -249,26 +104,26 @@ public class FormUtil {
 	}
 
 	private static String validateTextFieldSegment(String[] columns, int lineNum) {
-		if (columns.length <= IDX_TEXTBOX_NAME || columns[IDX_TEXTBOX_NAME].trim().isEmpty()) {
+		if (columns.length <= FormConstants.IDX_TEXTBOX_NAME || columns[FormConstants.IDX_TEXTBOX_NAME].trim().isEmpty()) {
 			return formatErrorMessage(lineNum, "The name field must be specified");
 		}
 
-		if (columns.length > IDX_TEXTBOX_REQUIRED && !validBooleanValue(columns[IDX_TEXTBOX_REQUIRED])) {
+		if (columns.length > FormConstants.IDX_TEXTBOX_REQUIRED && !validBooleanValue(columns[FormConstants.IDX_TEXTBOX_REQUIRED])) {
 			return formatErrorMessage(lineNum, "The required field must have a value of true or false");
 		}
 
-		if (columns.length > IDX_TEXTBOX_TYPE) {
-			String type = columns[IDX_TEXTBOX_TYPE].trim();
+		if (columns.length > FormConstants.IDX_TEXTBOX_TYPE) {
+			String type = columns[FormConstants.IDX_TEXTBOX_TYPE].trim();
 			try {
-				TextType.getByValue(type);
+				FormConstants.TextType.getByValue(type);
 			} catch (IllegalArgumentException e) {
 				return formatErrorMessage(lineNum,
-						"The type field has invalid values. The valid values are " + TextType.valuesToString());
+						"The type field has invalid values. The valid values are " + FormConstants.TextType.valuesToString());
 			}
 		}
 
-		if (columns.length > IDX_TEXTBOX_MINLEN) {
-			String minLength = columns[IDX_TEXTBOX_MINLEN].trim();
+		if (columns.length > FormConstants.IDX_TEXTBOX_MINLEN) {
+			String minLength = columns[FormConstants.IDX_TEXTBOX_MINLEN].trim();
 			if (!minLength.isEmpty()) {
 				try {
 					Integer.parseInt(minLength);
@@ -278,8 +133,8 @@ public class FormUtil {
 			}
 		}
 
-		if (columns.length > IDX_TEXTBOX_MAXLEN) {
-			String maxLength = columns[IDX_TEXTBOX_MAXLEN].trim();
+		if (columns.length > FormConstants.IDX_TEXTBOX_MAXLEN) {
+			String maxLength = columns[FormConstants.IDX_TEXTBOX_MAXLEN].trim();
 			if (!maxLength.isEmpty()) {
 				try {
 					Integer.parseInt(maxLength);
@@ -293,16 +148,16 @@ public class FormUtil {
 	}
 
 	private static String validateTextAreaSegment(String[] columns, int lineNum) {
-		if (columns.length <= IDX_TEXTAREA_NAME || columns[IDX_TEXTAREA_NAME].trim().isEmpty()) {
+		if (columns.length <= FormConstants.IDX_TEXTAREA_NAME || columns[FormConstants.IDX_TEXTAREA_NAME].trim().isEmpty()) {
 			return formatErrorMessage(lineNum, "The name field must be specified");
 		}
 
-		if (columns.length > IDX_TEXTAREA_REQUIRED && !validBooleanValue(columns[IDX_TEXTAREA_REQUIRED])) {
+		if (columns.length > FormConstants.IDX_TEXTAREA_REQUIRED && !validBooleanValue(columns[FormConstants.IDX_TEXTAREA_REQUIRED])) {
 			return formatErrorMessage(lineNum, "The required field must have a value of true or false");
 		}
 
-		if (columns.length > IDX_TEXTAREA_MINLEN) {
-			String minLength = columns[IDX_TEXTAREA_MINLEN].trim();
+		if (columns.length > FormConstants.IDX_TEXTAREA_MINLEN) {
+			String minLength = columns[FormConstants.IDX_TEXTAREA_MINLEN].trim();
 			if (!minLength.isEmpty()) {
 				try {
 					Integer.parseInt(minLength);
@@ -312,8 +167,8 @@ public class FormUtil {
 			}
 		}
 
-		if (columns.length > IDX_TEXTAREA_MAXLEN) {
-			String maxLength = columns[IDX_TEXTAREA_MAXLEN].trim();
+		if (columns.length > FormConstants.IDX_TEXTAREA_MAXLEN) {
+			String maxLength = columns[FormConstants.IDX_TEXTAREA_MAXLEN].trim();
 			if (!maxLength.isEmpty()) {
 				try {
 					Integer.parseInt(maxLength);
@@ -323,8 +178,8 @@ public class FormUtil {
 			}
 		}
 
-		if (columns.length > IDX_TEXTAREA_ROWS) {
-			String rows = columns[IDX_TEXTAREA_ROWS].trim();
+		if (columns.length > FormConstants.IDX_TEXTAREA_ROWS) {
+			String rows = columns[FormConstants.IDX_TEXTAREA_ROWS].trim();
 			if (!rows.isEmpty()) {
 				try {
 					Integer.parseInt(rows);
@@ -338,7 +193,7 @@ public class FormUtil {
 	}
 
 	private static String validateLabelSegment(String[] columns, int lineNum) {
-		if (columns.length <= IDX_LABEL_LABEL || columns[IDX_LABEL_LABEL].trim().isEmpty()) {
+		if (columns.length <= FormConstants.IDX_LABEL_LABEL || columns[FormConstants.IDX_LABEL_LABEL].trim().isEmpty()) {
 			return formatErrorMessage(lineNum, "A label field must be specified");
 		}
 		return "";
@@ -349,16 +204,16 @@ public class FormUtil {
 			return formatErrorMessage(lineNum, "The action field must not be blank");
 		}
 
-		Action action = null;
+		FormConstants.Action action = null;
 		try {
-			action = Action.getByValue(columns[IDX_FORM_ACTION].trim());
+			action = FormConstants.Action.getByValue(columns[FormConstants.IDX_FORM_ACTION].trim());
 		} catch (IllegalArgumentException e) {
 			return formatErrorMessage(lineNum,
-					"The action field is invalid. The possible values are " + Action.valuesToString());
+					"The action field is invalid. The possible values are " + FormConstants.Action.valuesToString());
 		}
 
-		if (columns.length > IDX_FORM_ADD_TO_TRANSCRIPT) {
-			String add = columns[IDX_FORM_ADD_TO_TRANSCRIPT].trim();
+		if (columns.length > FormConstants.IDX_FORM_ADD_TO_TRANSCRIPT) {
+			String add = columns[FormConstants.IDX_FORM_ADD_TO_TRANSCRIPT].trim();
 			if (!add.isEmpty() && !validBooleanValue(add)) {
 				return formatErrorMessage(lineNum, "The transcript field has invalid value - must be true or false");
 			}
@@ -366,17 +221,17 @@ public class FormUtil {
 
 		switch (action) {
 		case EMAIL:
-			if (columns.length <= IDX_FORM_EMAIL_TO || columns[IDX_FORM_EMAIL_TO].trim().isEmpty()) {
+			if (columns.length <= FormConstants.IDX_FORM_EMAIL_TO || columns[FormConstants.IDX_FORM_EMAIL_TO].trim().isEmpty()) {
 				return formatErrorMessage(lineNum, "The email to field must be specified");
 			}
 
-			if (!validEmailList(columns[IDX_FORM_EMAIL_TO].trim())) {
+			if (!validEmailList(columns[FormConstants.IDX_FORM_EMAIL_TO].trim())) {
 				return formatErrorMessage(lineNum,
 						"The email to field must have valid email addresses seperated by comma");
 			}
 
-			if (columns.length > IDX_FORM_EMAIL_CC) {
-				String cc = columns[IDX_FORM_EMAIL_CC].trim();
+			if (columns.length > FormConstants.IDX_FORM_EMAIL_CC) {
+				String cc = columns[FormConstants.IDX_FORM_EMAIL_CC].trim();
 				if (!cc.isEmpty() && !validEmailList(cc)) {
 					return formatErrorMessage(lineNum,
 							"The email cc field must have valid email addresses seperated by comma");
@@ -392,7 +247,7 @@ public class FormUtil {
 	}
 
 	private static boolean validEmailList(String value) {
-		String[] tokens = value.split(EMAIL_SEPARATOR);
+		String[] tokens = value.split(FormConstants.EMAIL_SEPARATOR);
 		for (String token : tokens) {
 			if (!token.matches(EMAIL_PATTERN)) {
 				return false;
@@ -419,33 +274,33 @@ public class FormUtil {
 		boolean toTranscript = true;
 		String[] tokens = tokenizeFormDef(formDef);
 		if (tokens != null) {
-			String[] splits = tokens[0].split(COLUMN_DELIMITER);
+			String[] splits = tokens[0].split(FormConstants.COLUMN_DELIMITER);
 			String action = null;
-			if (splits.length > IDX_FORM_ACTION) {
-				action = splits[IDX_FORM_ACTION];
+			if (splits.length > FormConstants.IDX_FORM_ACTION) {
+				action = splits[FormConstants.IDX_FORM_ACTION];
 			}
 
-			if (splits.length > IDX_FORM_ADD_TO_TRANSCRIPT) {
-				String sendToTranscript = splits[IDX_FORM_ADD_TO_TRANSCRIPT];
+			if (splits.length > FormConstants.IDX_FORM_ADD_TO_TRANSCRIPT) {
+				String sendToTranscript = splits[FormConstants.IDX_FORM_ADD_TO_TRANSCRIPT];
 				if (sendToTranscript.equalsIgnoreCase("false")) {
 					toTranscript = false;
 				}
 			}
 
-			Action actionEnum = Action.getByValue(action);
+			FormConstants.Action actionEnum = FormConstants.Action.getByValue(action);
 			switch (actionEnum) {
 			case EMAIL:
-				String[] toList = splits[IDX_FORM_EMAIL_TO].split(EMAIL_SEPARATOR);
+				String[] toList = splits[FormConstants.IDX_FORM_EMAIL_TO].split(FormConstants.EMAIL_SEPARATOR);
 
 				String subject = "Form Response";
 				String[] ccList = new String[0];
 
-				if (splits.length > IDX_FORM_EMAIL_SUBJECT) {
-					subject = splits[IDX_FORM_EMAIL_SUBJECT];
+				if (splits.length > FormConstants.IDX_FORM_EMAIL_SUBJECT) {
+					subject = splits[FormConstants.IDX_FORM_EMAIL_SUBJECT];
 				}
 
-				if (splits.length > IDX_FORM_EMAIL_CC) {
-					ccList = splits[IDX_FORM_EMAIL_CC].split(EMAIL_SEPARATOR);
+				if (splits.length > FormConstants.IDX_FORM_EMAIL_CC) {
+					ccList = splits[FormConstants.IDX_FORM_EMAIL_CC].split(FormConstants.EMAIL_SEPARATOR);
 				}
 
 				AceMailMessage mail = new AceMailMessage();
