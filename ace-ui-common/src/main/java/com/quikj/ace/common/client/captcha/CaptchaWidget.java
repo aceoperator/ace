@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.quikj.ace.web.client.view;
+package com.quikj.ace.common.client.captcha;
 
 import com.google.gwt.user.client.ui.Widget;
 

@@ -24,11 +24,12 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.quikj.ace.common.client.captcha.CaptchaFactory;
+import com.quikj.ace.common.client.captcha.CaptchaWidget;
+import com.quikj.ace.common.client.captcha.CaptchaWidget.CaptchaListener;
 import com.quikj.ace.web.client.ApplicationController;
 import com.quikj.ace.web.client.presenter.UserBusyEmailPresenter;
-import com.quikj.ace.web.client.view.CaptchaFactory;
-import com.quikj.ace.web.client.view.CaptchaWidget;
-import com.quikj.ace.web.client.view.CaptchaWidget.CaptchaListener;
+import com.quikj.ace.web.client.view.CaptchaProperties;
 import com.quikj.ace.web.client.view.UserBusyEmailPanel;
 
 /**
@@ -119,7 +120,7 @@ public class DesktopUserBusyEmailPanel extends LayoutPanel implements
 
 		messageForm.add(new HTML("<p>"));
 
-		captcha = CaptchaFactory.create();
+		captcha = CaptchaFactory.create(CaptchaProperties.properties());
 		messageForm.add(captcha.render(this));
 		
 		messageForm.add(new HTML("<p>"));

@@ -105,8 +105,6 @@ public class ClientProperties extends HashMap<String, List<String>> {
 	public static final String CURRENCY_CENT = "formCurrencyCent";
 	public static final String FORM_DATE_FORMAT = "formDateFormat";
 	
-	public static final String RECAPTCHA2_SITE_KEY = "recaptcha2SiteKey";
-	
 	// not properties, just a constants
 	public static final String OPERATOR_TYPE = "operator";
 	public static final String VISITOR_TYPE = "visitor";

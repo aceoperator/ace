@@ -86,7 +86,7 @@ public class LostPasswordPresenter {
 	}
 
 	public void userNameSubmitted(final String name, String captcha, String captchaType) {
-		if (name == null || name.trim().length() == 0) {
+		if (name == null || name.trim().isEmpty()) {
 			validationError(ApplicationController.getMessages().LostPasswordPresenter_nameMissing());
 			return;
 		}
@@ -129,13 +129,13 @@ public class LostPasswordPresenter {
 
 	public void answersSubmitted(String name, HashMap<Integer, String> answers, String captcha, String captchaType) {
 		for (String answer : answers.values()) {
-			if (answer.length() == 0) {
+			if (answer.isEmpty()) {
 				validationError(ApplicationController.getMessages().LostPasswordPresenter_answersMissing());
 				return;
 			}
 		}
 
-		if (captcha == null || captcha.trim().length() == 0) {
+		if (captcha == null || captcha.trim().isEmpty()) {
 			validationError(ApplicationController.getMessages().UserBusyEmailPresenter_imagePasscodeMissing());
 			return;
 		}

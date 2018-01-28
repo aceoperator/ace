@@ -1,12 +1,12 @@
 /**
  * 
  */
-package com.quikj.ace.web.client.view;
+package com.quikj.ace.common.client.captcha;
+
+import java.util.Map;
 
 import com.google.gwt.user.client.ui.Widget;
 import com.quikj.ace.common.client.salesfront.recaptcha.RecaptchaWidget;
-import com.quikj.ace.web.client.ApplicationController;
-import com.quikj.ace.web.client.ClientProperties;
 
 /**
  * @author amit
@@ -14,14 +14,18 @@ import com.quikj.ace.web.client.ClientProperties;
  */
 public class GoogleCaptchaWidget implements CaptchaWidget {
 
-	private String recaptcha2Key =  ClientProperties.getInstance().getStringValue(ClientProperties.RECAPTCHA2_SITE_KEY,
-			null);
 	private RecaptchaWidget recaptcha;
+
+	private Map<String, Object> properties;
+
+	public GoogleCaptchaWidget(Map<String, Object> properties) {
+		this.properties = properties;
+	}
 
 	@Override
 	public Widget render(CaptchaListener listener) {
 		initLanguage();
-		recaptcha = new RecaptchaWidget(recaptcha2Key);
+		recaptcha = new RecaptchaWidget((String) properties.get(CaptchaConstants.RECAPTCHA2_SITE_KEY));
 		return recaptcha;
 	}
 
@@ -31,20 +35,20 @@ public class GoogleCaptchaWidget implements CaptchaWidget {
 
 	@Override
 	public void reset() {
-		recaptcha.reset();		
+		recaptcha.reset();
 	}
 
 	@Override
 	public String getCaptcha() {
 		return recaptcha.getResponse();
 	}
-	
+
 	private void initLanguage() {
 		if (RecaptchaWidget.getLanguage() != null) {
 			return;
 		}
 
-		String lang = ApplicationController.getInstance().getLocale();
+		String lang = (String) properties.getOrDefault(CaptchaConstants.RECAPTCHA2_LANGUAGE, "en_US");
 		int index = lang.indexOf("_");
 		if (index > 0) {
 			lang = lang.substring(0, index);

@@ -141,7 +141,7 @@ public class CaptchaService {
 	// Copied from salesfront/gwt-recaptcha github code
 	private boolean verifyRecaptcha(String input, String remoteIp) {
 		try {
-			if (secretKey == null) {
+			if (secretKey == null || secretKey.trim().isEmpty()) {
 				System.out.println("Warning! attempt to validate recaptcha with no secret key set");
 				return false;
 			}

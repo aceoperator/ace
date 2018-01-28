@@ -21,12 +21,13 @@ import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.quikj.ace.common.client.captcha.CaptchaFactory;
+import com.quikj.ace.common.client.captcha.CaptchaWidget;
+import com.quikj.ace.common.client.captcha.CaptchaWidget.CaptchaListener;
 import com.quikj.ace.web.client.ApplicationController;
 import com.quikj.ace.web.client.ClientProperties;
 import com.quikj.ace.web.client.presenter.LostPasswordPresenter;
-import com.quikj.ace.web.client.view.CaptchaFactory;
-import com.quikj.ace.web.client.view.CaptchaWidget;
-import com.quikj.ace.web.client.view.CaptchaWidget.CaptchaListener;
+import com.quikj.ace.web.client.view.CaptchaProperties;
 import com.quikj.ace.web.client.view.LostPasswordPanel;
 
 /**
@@ -93,7 +94,7 @@ public class DesktopLostPasswordPanel1 extends LayoutPanel implements LostPasswo
 
 		collectUsernameForm.add(new HTML("<p>"));
 
-		captcha = CaptchaFactory.create();
+		captcha = CaptchaFactory.create(CaptchaProperties.properties());
 		collectUsernameForm.add(captcha.render(this));
 
 		buttonPanel = new HorizontalPanel();
