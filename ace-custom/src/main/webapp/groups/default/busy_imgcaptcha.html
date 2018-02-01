@@ -10,16 +10,20 @@
 <!-- Setup for mobile -->
 <meta name="HandheldFriendly" content="true" />
 <meta name="MobileOptimized" content="width" />
-<meta name="viewport"
-	content="width=device-width; user-scalable=no; initial-scale=1.0; maximum-scale=1.0;" />
+<meta name="viewport" content="width=device-width; user-scalable=no; initial-scale=1.0; maximum-scale=1.0;" />	
 <meta name="apple-mobile-web-app-capable" content="yes" />
-
-<script src="https://www.google.com/recaptcha/api.js?hl=en" async defer></script>
 
 <link type="text/css" rel="stylesheet"
 	href="/ace-contactcenter/Ace_web.css">
 
 <script type="text/javascript">
+	function refreshCaptcha() {
+		dt = new Date();
+		spice = dt.getTime();
+		img = document.getElementById("captchaImage");
+		img.src = "/ace-custom/captcha?spice=" + spice;
+	}
+
 	String.prototype.trim = function() {
 		return this.replace(/^\s+|\s+$/g, "");
 	}
@@ -43,6 +47,12 @@
 			return false;
 		}
 
+		var captcha = document.forms["messageForm"]["captcha"].value;
+		if (captcha == null || captcha.trim().length == 0) {
+			alert("Please enter the characters you see in the picture");
+			return false;
+		}
+
 		return true;
 	}
 </script>
@@ -56,8 +66,7 @@
 				<td><img align="top" src="logo.gif"></td>
 				<td width="100%" valign="bottom">
 					<h2 style="Color: black">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-						QUIK Computing Online Contact Center</h2>
-				</td>
+						QUIK Computing Online Contact Center</h2></td>
 			</tr>
 		</table>
 
@@ -86,9 +95,21 @@
 				<textarea name="message" cols="50" rows="5">
         </textarea>
 			<p>
-				<input type="hidden" name="captchaType" value="RECAPTCHA" />
-			<div class="g-recaptcha"
-				data-sitekey="6LdFhUEUAAAAAD1cBMTj_G87_rmpWeydMP9FzHq4"></div>
+			<div>
+				Please type the characters you see in the picture below.<br> <input
+					type="text" name="captcha"
+					style="background-color: #CCCCCC; border-color: black;" />
+				&nbsp;&nbsp; <small
+					title="By verifying the characters you entered against the characters in the picture, we will be able to differentiate you from a 'BOT'. A BOT is a program often used by spammers to send unsolicited mass email messages by exploiting a form similar to this one.">What
+					is this?</small>
+			</div>
+
+			<p>
+				<img id="captchaImage" src="/ace-custom/captcha" /> &nbsp;&nbsp; <a
+					href="#"
+					title="If you are not able to read the characters in the picture, click on this button to generate another picture."
+					onclick="refreshCaptcha(); captcha.value='';">Regenerate
+					Picture</a> &nbsp;&nbsp;&nbsp;
 			<p>
 				<input type="submit" name="submit" value="Submit" /> &nbsp;&nbsp; <input
 					type="reset" name="reset" value="Reset" />

@@ -123,7 +123,7 @@ public class CaptchaService {
 	}
 
 	private boolean verifyImageCaptcha(String sessionId, String input) {
-		if (input == null) {
+		if (input == null || input.trim().isEmpty()) {
 			return false;
 		}
 
@@ -146,7 +146,7 @@ public class CaptchaService {
 				return false;
 			}
 			
-			if (input == null) {
+			if (input == null || input.trim().isEmpty()) {
 				return false;
 			}
 			

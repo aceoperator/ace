@@ -12,13 +12,13 @@ import com.quikj.ace.common.client.salesfront.recaptcha.RecaptchaWidget;
  * @author amit
  *
  */
-public class GoogleCaptchaWidget implements CaptchaWidget {
+public class Recaptcha2Widget implements CaptchaWidget {
 
 	private RecaptchaWidget recaptcha;
 
 	private Map<String, Object> properties;
 
-	public GoogleCaptchaWidget(Map<String, Object> properties) {
+	public Recaptcha2Widget(Map<String, Object> properties) {
 		this.properties = properties;
 	}
 

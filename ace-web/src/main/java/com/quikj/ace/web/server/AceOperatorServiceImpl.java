@@ -180,7 +180,8 @@ public class AceOperatorServiceImpl extends RemoteServiceServlet implements AceO
 		String salt = getThreadLocalRequest().getSession().getId();
 		String remoteIp = getThreadLocalRequest().getRemoteAddr();
 		try {
-			boolean correct = CaptchaService.getInstance().verify(salt, captcha, remoteIp, CaptchaType.IMAGE);
+			boolean correct = CaptchaService.getInstance().verify(salt, captcha, remoteIp,
+					CaptchaType.valueOf(captchaType));
 			if (!correct) {
 				return "NoMatch";
 			}
@@ -197,6 +198,7 @@ public class AceOperatorServiceImpl extends RemoteServiceServlet implements AceO
 
 		int num_items = rcvd.numBcc();
 		for (int i = 0; i < num_items; i++) {
+			
 			send.addBcc(rcvd.getBccAt(i));
 		}
 
