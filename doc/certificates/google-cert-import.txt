@@ -1,0 +1,24 @@
+# Migrate to the PKCS12 format as recommedned by Java (one time step)
+# First get the root certificates from https://pki.google.com/faq.html
+keytool -importkeystore -srckeystore ~/.keystore -destkeystore ~/.keystore -deststoretype pkcs12
+
+# As per Google Certificate Authority's recommendation, import the following CACERTS into the root
+keytool -import -trustcacerts -alias root -file roots.pem -keystore ~/.keystore
+
+# Add Google recaptcha server certificate
+keytool -printcert -rfc -sslserver www.google.com/recaptcha/api/siteverify > recaptcha.pem
+keytool -importcert --alias google-api -file recaptcha.pem -–keystore ~/.keystore
+
+# View the certificate to see when it expires and other information
+cat recaptcha.pem | keytool -printcert
+# Note the expiry date and add a reminder in your calendar. Before the certificate expires, follow replace the certificate
+
+# Import other certificates for client sites if needed
+
+
+---------------------------------------------------------------------------------------
+# Check the entries in the keystore
+ keytool -list --keystore ~/.keystore
+ 
+ # delete an older entry from the keystore (for example - when a certificate expires or is revoked)
+ keytool -delete -alias google --keystore ~/.keystore
