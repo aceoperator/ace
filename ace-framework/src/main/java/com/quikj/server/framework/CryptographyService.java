@@ -4,7 +4,6 @@
 package com.quikj.server.framework;
 
 import java.io.UnsupportedEncodingException;
-import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -12,14 +11,14 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.util.Base64;
 
+import javax.annotation.PostConstruct;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.DESKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
@@ -27,37 +26,37 @@ import javax.crypto.spec.SecretKeySpec;
  *
  */
 public class CryptographyService {
-	private String salt = "SALT1";
-
-	private static final int ITERATIONS = 65536;
-	private static final int KEYSIZE = 256;
-	private byte[] saltBytes;
+	private String salt;
 	private Cipher cipher;
-	private SecretKeyFactory skf;
-	private IvParameterSpec ivParamSpec;
+
+	private static CryptographyService instance;
+
+	public String getSalt() {
+		return salt;
+	}
 
 	public CryptographyService(String salt) {
 		this.salt = salt;
+		CryptographyService.instance = this;
 	}
 
-	public void init() throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidParameterSpecException {
-			saltBytes = salt.getBytes();
-			skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+	public static CryptographyService getInstance() {
+		return instance;
+	}
 
-			cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-			AlgorithmParameters params = cipher.getParameters();
-			byte[] ivBytes = params.getParameterSpec(IvParameterSpec.class).getIV();
-			ivParamSpec = new IvParameterSpec(ivBytes);
+	@PostConstruct
+	public void init() throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidParameterSpecException {
+		cipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
 	}
 
 	public String cipher(String plaintext, String password)
 			throws InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException,
-			UnsupportedEncodingException, InvalidAlgorithmParameterException {
-		PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), saltBytes, ITERATIONS, KEYSIZE);
-		SecretKey secretKey = skf.generateSecret(spec);
-		SecretKeySpec secretSpec = new SecretKeySpec(secretKey.getEncoded(), "AES");
+			UnsupportedEncodingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException {
+		DESKeySpec spec = new DESKeySpec((password + salt).getBytes());
+		SecretKey secretKey = SecretKeyFactory.getInstance("DES").generateSecret(spec);
+		SecretKeySpec secretSpec = new SecretKeySpec(secretKey.getEncoded(), "DES");
 
-		cipher.init(Cipher.ENCRYPT_MODE, secretSpec, ivParamSpec);
+		cipher.init(Cipher.ENCRYPT_MODE, secretSpec);
 
 		byte[] encryptedTextBytes = cipher.doFinal(plaintext.getBytes());
 
@@ -66,12 +65,12 @@ public class CryptographyService {
 
 	public String decipher(String encryptedText, String password)
 			throws InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException,
-			UnsupportedEncodingException, InvalidAlgorithmParameterException {
-		PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), saltBytes, ITERATIONS, KEYSIZE);
-		SecretKey secretKey = skf.generateSecret(spec);
-		SecretKeySpec secretSpec = new SecretKeySpec(secretKey.getEncoded(), "AES");
+			UnsupportedEncodingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException {
+		DESKeySpec spec = new DESKeySpec((password + salt).getBytes());
+		SecretKey secretKey = SecretKeyFactory.getInstance("DES").generateSecret(spec);
+		SecretKeySpec secretSpec = new SecretKeySpec(secretKey.getEncoded(), "DES");
 
-		cipher.init(Cipher.DECRYPT_MODE, secretSpec, ivParamSpec);
+		cipher.init(Cipher.DECRYPT_MODE, secretSpec);
 
 		byte[] encryptedTextBytes = Base64.getDecoder().decode(encryptedText);
 		byte[] decryptedTextBytes = cipher.doFinal(encryptedTextBytes);
