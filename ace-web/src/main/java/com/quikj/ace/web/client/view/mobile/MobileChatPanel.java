@@ -5,6 +5,7 @@ package com.quikj.ace.web.client.view.mobile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Unit;
@@ -24,6 +25,7 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.StackLayoutPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.quikj.ace.messages.vo.talk.CallPartyElement;
 import com.quikj.ace.messages.vo.talk.CannedMessageElement;
 import com.quikj.ace.messages.vo.talk.DisconnectReasonElement;
@@ -31,13 +33,15 @@ import com.quikj.ace.web.client.ApplicationController;
 import com.quikj.ace.web.client.presenter.ChatSessionPresenter;
 import com.quikj.ace.web.client.view.ChatPanel;
 import com.quikj.ace.web.client.view.EmoticonUtils;
+import com.quikj.ace.web.client.view.FormRenderer;
+import com.quikj.ace.web.client.view.FormRenderer.FormListener;
 import com.quikj.ace.web.client.view.ViewUtils;
 
 /**
  * @author amit
  * 
  */
-public class MobileChatPanel extends StackLayoutPanel implements ChatPanel {
+public class MobileChatPanel extends StackLayoutPanel implements ChatPanel, FormListener {
 
 	private static final double TITLE_SIZE = 45.0;
 	private static final int DATA_ENTRY_PANEL_SIZE = 50;
@@ -56,8 +60,10 @@ public class MobileChatPanel extends StackLayoutPanel implements ChatPanel {
 	private HorizontalPanel chatPanelHeaderControls;
 	private String me;
 
-	private HTML typing;
+	private Widget typing;
 	private String typingFrom;
+
+	private FormRenderer formRenderer = new FormRenderer();
 
 	private List<HandlerRegistration> eventHandlers = new ArrayList<HandlerRegistration>();
 
@@ -66,8 +72,7 @@ public class MobileChatPanel extends StackLayoutPanel implements ChatPanel {
 		setSize("100%", "99%");
 	}
 
-	public void init(String me, CallPartyElement otherParty,
-			CannedMessageElement[] cannedMessages, boolean operator,
+	public void init(String me, CallPartyElement otherParty, CannedMessageElement[] cannedMessages, boolean operator,
 			boolean showOtherPartyInfo) {
 
 		this.operator = operator;
@@ -78,8 +83,7 @@ public class MobileChatPanel extends StackLayoutPanel implements ChatPanel {
 		initChatEditArea(cannedMessages);
 	}
 
-	private void initTranscriptArea(CallPartyElement otherParty,
-			boolean operator) {
+	private void initTranscriptArea(CallPartyElement otherParty, boolean operator) {
 		chatPanel = new VerticalPanel();
 		chatPanel.setSize("100%", "100%");
 
@@ -94,47 +98,35 @@ public class MobileChatPanel extends StackLayoutPanel implements ChatPanel {
 		chatPanelHeaderLabel.setWidth("100%");
 
 		chatPanelHeader.add(chatPanelHeaderLabel);
-		chatPanelHeader.setCellHorizontalAlignment(chatPanelHeaderLabel,
-				HasHorizontalAlignment.ALIGN_LEFT);
-		chatPanelHeader.setCellVerticalAlignment(chatPanelHeaderLabel,
-				HasVerticalAlignment.ALIGN_MIDDLE);
+		chatPanelHeader.setCellHorizontalAlignment(chatPanelHeaderLabel, HasHorizontalAlignment.ALIGN_LEFT);
+		chatPanelHeader.setCellVerticalAlignment(chatPanelHeaderLabel, HasVerticalAlignment.ALIGN_MIDDLE);
 
-		chatPanelHeaderLabel.setHTML(otherParty == null ? ApplicationController
-				.getMessages().DesktopChatPanel_private() : ViewUtils
-				.formatName(otherParty));
+		chatPanelHeaderLabel.setHTML(otherParty == null ? ApplicationController.getMessages().DesktopChatPanel_private()
+				: ViewUtils.formatName(otherParty));
 
 		chatPanelHeaderControls = new HorizontalPanel();
 		chatPanelHeader.add(chatPanelHeaderControls);
 		chatPanelHeaderControls.setSpacing(4);
-		chatPanelHeader.setCellHorizontalAlignment(chatPanelHeaderControls,
-				HasHorizontalAlignment.ALIGN_RIGHT);
-		chatPanelHeader.setCellVerticalAlignment(chatPanelHeaderControls,
-				HasVerticalAlignment.ALIGN_MIDDLE);
+		chatPanelHeader.setCellHorizontalAlignment(chatPanelHeaderControls, HasHorizontalAlignment.ALIGN_RIGHT);
+		chatPanelHeader.setCellVerticalAlignment(chatPanelHeaderControls, HasVerticalAlignment.ALIGN_MIDDLE);
 
-		discButton = new Button(ApplicationController.getMessages()
-				.DesktopChatPanel_disconnect());
+		discButton = new Button(ApplicationController.getMessages().DesktopChatPanel_disconnect());
 		chatPanelHeaderControls.add(discButton);
-		chatPanelHeaderControls.setCellHorizontalAlignment(discButton,
-				HasHorizontalAlignment.ALIGN_LEFT);
-		chatPanelHeaderControls.setCellVerticalAlignment(discButton,
-				HasVerticalAlignment.ALIGN_MIDDLE);
+		chatPanelHeaderControls.setCellHorizontalAlignment(discButton, HasHorizontalAlignment.ALIGN_LEFT);
+		chatPanelHeaderControls.setCellVerticalAlignment(discButton, HasVerticalAlignment.ALIGN_MIDDLE);
 
 		discButton.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				presenter.userDisconnected(
-						DisconnectReasonElement.NORMAL_DISCONNECT, null);
+				presenter.userDisconnected(DisconnectReasonElement.NORMAL_DISCONNECT, null);
 			}
 		});
 
 		if (operator) {
-			Button closeButton = new Button(ApplicationController.getMessages()
-					.DesktopChatPanel_close());
+			Button closeButton = new Button(ApplicationController.getMessages().DesktopChatPanel_close());
 			chatPanelHeaderControls.add(closeButton);
-			chatPanelHeaderControls.setCellHorizontalAlignment(closeButton,
-					HasHorizontalAlignment.ALIGN_LEFT);
-			chatPanelHeaderControls.setCellVerticalAlignment(closeButton,
-					HasVerticalAlignment.ALIGN_MIDDLE);
+			chatPanelHeaderControls.setCellHorizontalAlignment(closeButton, HasHorizontalAlignment.ALIGN_LEFT);
+			chatPanelHeaderControls.setCellVerticalAlignment(closeButton, HasVerticalAlignment.ALIGN_MIDDLE);
 
 			closeButton.addClickHandler(new ClickHandler() {
 				@Override
@@ -168,8 +160,7 @@ public class MobileChatPanel extends StackLayoutPanel implements ChatPanel {
 		dataEntryPanel.setSpacing(3);
 
 		chatPanel.add(dataEntryPanel);
-		chatPanel.setCellVerticalAlignment(dataEntryPanel,
-				HasVerticalAlignment.ALIGN_BOTTOM);
+		chatPanel.setCellVerticalAlignment(dataEntryPanel, HasVerticalAlignment.ALIGN_BOTTOM);
 		dataEntryPanel.setWidth("100%");
 		dataEntryPanel.setHeight(DATA_ENTRY_PANEL_SIZE + "px");
 
@@ -177,8 +168,7 @@ public class MobileChatPanel extends StackLayoutPanel implements ChatPanel {
 		dataEntryPanel.add(editPanel);
 		editPanel.setSize("100%", "100%");
 		editPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
-		dataEntryPanel.setCellVerticalAlignment(editPanel,
-				HasVerticalAlignment.ALIGN_TOP);
+		dataEntryPanel.setCellVerticalAlignment(editPanel, HasVerticalAlignment.ALIGN_TOP);
 
 		chatEditTextBox = new TextBox();
 		editPanel.add(chatEditTextBox);
@@ -199,11 +189,9 @@ public class MobileChatPanel extends StackLayoutPanel implements ChatPanel {
 		chatEditTextBox.setEnabled(false);
 		editPanel.add(new HTML("&nbsp;&nbsp;"));
 
-		sendButton = new Button(ApplicationController.getMessages()
-				.DesktopChatPanel_send());
+		sendButton = new Button(ApplicationController.getMessages().DesktopChatPanel_send());
 		editPanel.add(sendButton);
-		editPanel.setCellHorizontalAlignment(sendButton,
-				HasHorizontalAlignment.ALIGN_LEFT);
+		editPanel.setCellHorizontalAlignment(sendButton, HasHorizontalAlignment.ALIGN_LEFT);
 		sendButton.setWidth("100%");
 		sendButton.addClickHandler(new ClickHandler() {
 
@@ -230,16 +218,14 @@ public class MobileChatPanel extends StackLayoutPanel implements ChatPanel {
 			transcriptPanel.remove(typing);
 		}
 
-		HTML html = ChatPanel.Util.formatChat(from, timeStamp, message, me,
-				true);
+		Widget html = ChatPanel.Util.formatChat(from, timeStamp, message, me, true);
 		transcriptPanel.add(html);
 
 		if (userTyping) {
 			transcriptPanel.add(typing);
 		}
 
-		transcriptScrollPanel.setVerticalScrollPosition(transcriptPanel
-				.getOffsetHeight());
+		transcriptScrollPanel.setVerticalScrollPosition(transcriptPanel.getOffsetHeight());
 	}
 
 	@Override
@@ -269,8 +255,7 @@ public class MobileChatPanel extends StackLayoutPanel implements ChatPanel {
 
 		text = EmoticonUtils.replaceEmoticonText(text);
 
-		appendToConveration(null, ApplicationController.getInstance()
-				.timestamp(), text);
+		appendToConveration(null, ApplicationController.getInstance().timestamp(), text);
 		presenter.sendTextMessage(text);
 	}
 
@@ -308,8 +293,7 @@ public class MobileChatPanel extends StackLayoutPanel implements ChatPanel {
 	}
 
 	@Override
-	public void attach(String me, CallPartyElement otherParty,
-			CannedMessageElement[] cannedMessages, boolean operator,
+	public void attach(String me, CallPartyElement otherParty, CannedMessageElement[] cannedMessages, boolean operator,
 			boolean showOtherPartyInfo, boolean hideAvatar) {
 		init(me, otherParty, cannedMessages, operator, showOtherPartyInfo);
 	}
@@ -342,8 +326,7 @@ public class MobileChatPanel extends StackLayoutPanel implements ChatPanel {
 			parties = ViewUtils.formatName(userInfo);
 		} else {
 			parties = ApplicationController.getMessages()
-					.DesktopChatPanel_numUsersInConference(
-							otherParties.size() + 1 + "");
+					.DesktopChatPanel_numUsersInConference(otherParties.size() + 1 + "");
 		}
 
 		chatPanelHeaderLabel.setHTML(parties);
@@ -366,12 +349,10 @@ public class MobileChatPanel extends StackLayoutPanel implements ChatPanel {
 		}
 
 		if (render) {
-			typing = ChatPanel.Util.formatChat(from, timestamp,
-					ChatPanel.TYPING, me, true);
+			typing = ChatPanel.Util.formatChat(from, timestamp, ChatPanel.TYPING, me, true);
 			typingFrom = from;
 			transcriptPanel.add(typing);
-			transcriptScrollPanel.setVerticalScrollPosition(transcriptPanel
-					.getOffsetHeight());
+			transcriptScrollPanel.setVerticalScrollPosition(transcriptPanel.getOffsetHeight());
 		}
 	}
 
@@ -394,5 +375,32 @@ public class MobileChatPanel extends StackLayoutPanel implements ChatPanel {
 				adjustScrollHeight();
 			}
 		});
+	}
+
+	@Override
+	public void appendToConveration(String from, long timeStamp, long formId, String formDef) {
+		if (!adjusted) {
+			adjustScrollHeight();
+		}
+
+		boolean userTyping = false;
+		if (typing != null) {
+			userTyping = true;
+			transcriptPanel.remove(typing);
+		}
+
+		transcriptPanel.add(ChatPanel.Util.formatChat(from, timeStamp, "", me, true));
+		Widget widget = formRenderer.renderForm(formId, formDef, this);
+		transcriptPanel.add(widget);
+
+		if (userTyping) {
+			transcriptPanel.add(typing);
+		}
+	}
+
+	@Override
+	public boolean formSubmitted(long formId, Map<String, String> result) {
+		presenter.submitForm(formId, result);
+		return true;
 	}
 }

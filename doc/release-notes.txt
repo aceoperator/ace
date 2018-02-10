@@ -1,6 +1,0 @@
-Changes:
-1. Add ace.root.dir system property
-2. Give all users rest privilege (in ace-bi/..../upgrade.sql
-
-Need to Fix:
-log4j db appender throwing exception (probably mariadb inactivity setup)

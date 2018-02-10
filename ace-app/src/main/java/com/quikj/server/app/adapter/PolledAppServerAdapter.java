@@ -22,6 +22,7 @@ import com.quikj.ace.messages.vo.adapter.GroupInfo;
 import com.quikj.ace.messages.vo.app.Message;
 import com.quikj.ace.messages.vo.app.RequestMessage;
 import com.quikj.ace.messages.vo.talk.CannedMessageElement;
+import com.quikj.ace.messages.vo.talk.FormSubmissionElement;
 import com.quikj.application.web.talk.plugin.LostUsernamePassword;
 import com.quikj.application.web.talk.plugin.SynchronousDbOperations;
 import com.quikj.application.web.talk.plugin.accounting.CDRHandler;
@@ -34,6 +35,7 @@ import com.quikj.server.app.RemoteEndPoint;
 import com.quikj.server.framework.AceConfigFileHelper;
 import com.quikj.server.framework.AceException;
 import com.quikj.server.framework.AceLogger;
+import com.quikj.server.framework.FormUtil;
 
 // TODO add a timer after the initial connect. The timer is canceled after the first request from the client. 
 // If the timer expires, drop the session. This will prevent malicious clients from just keeping the session
@@ -70,8 +72,7 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 			public void run() {
 				expireSessions();
 			}
-		}, new Date(new Date().getTime() + SESSION_EXPIRY_TIMER),
-				SESSION_EXPIRY_TIMER);
+		}, new Date(new Date().getTime() + SESSION_EXPIRY_TIMER), SESSION_EXPIRY_TIMER);
 
 		measurementsTimer = new Timer();
 		expiryTimer.schedule(new TimerTask() {
@@ -80,18 +81,14 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 			public void run() {
 				logMeasurements();
 			}
-		}, new Date(new Date().getTime() + MEASUREMENTS_TIMER),
-				MEASUREMENTS_TIMER);
+		}, new Date(new Date().getTime() + MEASUREMENTS_TIMER), MEASUREMENTS_TIMER);
 
-		rmi = new RemoteAccessClient(ApplicationServer.getInstance()
-				.getBean(ApplicationConfiguration.class).getRegistryURL(),
-				ApplicationServer.getInstance()
-						.getBean(ApplicationConfiguration.class)
-						.getRegistryServiceName(), InetAddress.getLocalHost()
-						.getHostName());
+		rmi = new RemoteAccessClient(
+				ApplicationServer.getInstance().getBean(ApplicationConfiguration.class).getRegistryURL(),
+				ApplicationServer.getInstance().getBean(ApplicationConfiguration.class).getRegistryServiceName(),
+				InetAddress.getLocalHost().getHostName());
 
-		ApplicationServer.getInstance().registerMbean(
-				AppServerAdapterManagementMBean.MBEAN_NAME,
+		ApplicationServer.getInstance().registerMbean(AppServerAdapterManagementMBean.MBEAN_NAME,
 				new AppServerAdapterManagement());
 
 		instance = this;
@@ -161,39 +158,28 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 		}
 
 		if (expiredSessions.size() > 0) {
-			AceLogger.Instance().log(
-					AceLogger.INFORMATIONAL,
-					AceLogger.SYSTEM_LOG,
-					"AppServerAdapter.expireSessions() -- " + expiryCount
-							+ " sessions out of " + sessionCount
+			AceLogger.Instance().log(AceLogger.INFORMATIONAL, AceLogger.SYSTEM_LOG,
+					"AppServerAdapter.expireSessions() -- " + expiryCount + " sessions out of " + sessionCount
 							+ " sessions will be closed because of inactivity");
 
 			for (SessionInfo info : expiredSessions) {
-				AceLogger.Instance().log(
-						AceLogger.INFORMATIONAL,
-						AceLogger.SYSTEM_LOG,
-						"AppServerAdapter.expireSessions() -- Closing connection "
-								+ info.getSessionId()
+				AceLogger.Instance().log(AceLogger.INFORMATIONAL, AceLogger.SYSTEM_LOG,
+						"AppServerAdapter.expireSessions() -- Closing connection " + info.getSessionId()
 								+ " because of inactivity");
-				info.getEndPoint()
-						.dispose("disconnected because of inactivity");
+				info.getEndPoint().dispose("disconnected because of inactivity");
 			}
 		}
 	}
 
-	public List<Message> exchangeMessages(Message incoming)
-			throws AppServerAdapterException {
+	public List<Message> exchangeMessages(Message incoming) throws AppServerAdapterException {
 		synchronized (measurements) {
 			measurements.incrementIncomingMessageStartCount();
 		}
 
 		try {
-			String sessionId = incoming.getHeaders().get(
-					Message.SESSION_ID_HEADER);
+			String sessionId = incoming.getHeaders().get(Message.SESSION_ID_HEADER);
 			if (sessionId == null) {
-				throw new AppServerAdapterException(
-						"The incoming message does not contain a session id",
-						false);
+				throw new AppServerAdapterException("The incoming message does not contain a session id", false);
 			} else {
 				SessionInfo info = null;
 				synchronized (sessionMap) {
@@ -201,8 +187,7 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 				}
 
 				if (info == null) {
-					throw new AppServerAdapterException(
-							"Invalid or expired session id " + sessionId, false);
+					throw new AppServerAdapterException("Invalid or expired session id " + sessionId, false);
 				} else {
 					synchronized (info) {
 						timestamp(info);
@@ -210,11 +195,9 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 						if (incoming instanceof RequestMessage) {
 							RequestMessage msg = (RequestMessage) incoming;
 
-							if (msg.getMethod().equals(
-									RequestMessage.PING_METHOD)) {
+							if (msg.getMethod().equals(RequestMessage.PING_METHOD)) {
 								List<Message> msgs = new ArrayList<Message>();
-								boolean disconnect = generateResponse(info,
-										msgs);
+								boolean disconnect = generateResponse(info, msgs);
 								if (disconnect) {
 									synchronized (sessionMap) {
 										sessionMap.remove(info.getSessionId());
@@ -223,17 +206,11 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 								return msgs;
 							}
 
-							if (!msg.getMethod().equals(
-									RequestMessage.APPLICATION_METHOD)) {
-								AceLogger
-										.Instance()
-										.log(AceLogger.ERROR,
-												AceLogger.SYSTEM_LOG,
-												"AppServerAdapter.exchangeMessages() -- Message received with unsupported method: "
-														+ msg.getMethod());
-								throw new AppServerAdapterException(
-										"Invalid method - " + msg.getMethod(),
-										false);
+							if (!msg.getMethod().equals(RequestMessage.APPLICATION_METHOD)) {
+								AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+										"AppServerAdapter.exchangeMessages() -- Message received with unsupported method: "
+												+ msg.getMethod());
+								throw new AppServerAdapterException("Invalid method - " + msg.getMethod(), false);
 							}
 						}
 
@@ -241,9 +218,7 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 						ClientMessage message = new ClientMessage(incoming);
 						if (!info.getEndPoint().sendMessage(message)) {
 							// Sending the message failed
-							throw new AppServerAdapterException(
-									"Failed to send message to the endpoint",
-									false);
+							throw new AppServerAdapterException("Failed to send message to the endpoint", false);
 						}
 
 						// send the response
@@ -289,8 +264,7 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 	}
 
 	@Override
-	public void sendMessage(String sessionId, Message message)
-			throws AppServerAdapterException {
+	public void sendMessage(String sessionId, Message message) throws AppServerAdapterException {
 
 		SessionInfo info = null;
 		synchronized (sessionMap) {
@@ -298,8 +272,7 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 		}
 
 		if (info == null) {
-			throw new AppServerAdapterException("The session was not found",
-					false);
+			throw new AppServerAdapterException("The session was not found", false);
 		}
 
 		synchronized (info) {
@@ -308,30 +281,26 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 	}
 
 	@Override
-	public void endPointTerminated(String sessionId)
-			throws AppServerAdapterException {
+	public void endPointTerminated(String sessionId) throws AppServerAdapterException {
 		SessionInfo info = null;
 		synchronized (sessionMap) {
 			info = sessionMap.get(sessionId);
 		}
 
 		if (info == null) {
-			throw new AppServerAdapterException("The session was not found",
-					false);
+			throw new AppServerAdapterException("The session was not found", false);
 		}
 
 		Map<String, String> headers = new HashMap<String, String>();
 		headers.put(Message.SESSION_ID_HEADER, sessionId);
-		RequestMessage req = new RequestMessage(
-				RequestMessage.DISCONNECT_METHOD, "1.1", headers, null);
+		RequestMessage req = new RequestMessage(RequestMessage.DISCONNECT_METHOD, "1.1", headers, null);
 
 		synchronized (info) {
 			info.getMessages().add(req);
 		}
 	}
 
-	public String clientConnected(String ip, String endUserCookie)
-			throws AppServerAdapterException {
+	public String clientConnected(String ip, String endUserCookie) throws AppServerAdapterException {
 		synchronized (measurements) {
 			measurements.incrementConnectStartCount();
 		}
@@ -346,11 +315,11 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 			// AceLogger.Instance().log(
 			// AceLogger.INFORMATIONAL,
 			// AceLogger.SYSTEM_LOG,
-			// "AppServerAdapter.clientConnected() -- Received a connection request : "
+			// "AppServerAdapter.clientConnected() -- Received a connection
+			// request : "
 			// + ip + ", " + endUserCookie + ", " + sessionId);
 
-			RemoteEndPoint ep = new RemoteEndPoint(sessionId, ip,
-					endUserCookie, this);
+			RemoteEndPoint ep = new RemoteEndPoint(sessionId, ip, endUserCookie, this);
 			ep.start();
 
 			SessionInfo info = new SessionInfo(sessionId, ep, new Date());
@@ -370,8 +339,7 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 		}
 	}
 
-	public void clientDisconnected(String sessionId)
-			throws AppServerAdapterException {
+	public void clientDisconnected(String sessionId) throws AppServerAdapterException {
 		synchronized (measurements) {
 			measurements.incrementDisconnectStartCount();
 		}
@@ -380,8 +348,7 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 			synchronized (sessionMap) {
 				SessionInfo info = sessionMap.get(sessionId);
 				if (info == null) {
-					throw new AppServerAdapterException(
-							"Invalid or expired session id " + sessionId, false);
+					throw new AppServerAdapterException("Invalid or expired session id " + sessionId, false);
 				}
 
 				info.getEndPoint().dispose(null);
@@ -403,15 +370,12 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 		try {
 			CannedMessageElement[] cannedMessage = null;
 			if (groups != null) {
-				cannedMessage = SynchronousDbOperations.getInstance()
-						.listCannedMessages(groups, fetchContent);
+				cannedMessage = SynchronousDbOperations.getInstance().listCannedMessages(groups, fetchContent);
 				if (cannedMessage == null) {
-					throw new AppServerAdapterException(
-							"Database returned error", true);
+					throw new AppServerAdapterException("Database returned error", true);
 				}
 			} else {
-				throw new AppServerAdapterException(
-						"The groups attribute has not been supplied", true);
+				throw new AppServerAdapterException("The groups attribute has not been supplied", true);
 			}
 
 			return cannedMessage;
@@ -422,8 +386,7 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 		}
 	}
 
-	public Properties getProfile(String profileName, String browserType)
-			throws AppServerAdapterException {
+	public Properties getProfile(String profileName, String browserType) throws AppServerAdapterException {
 		synchronized (measurements) {
 			measurements.incrementProfileRequestStartCount();
 		}
@@ -435,12 +398,10 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 		// + profileName + ", " + browserType);
 
 		try {
-			String path = AceConfigFileHelper.getAcePath("profiles",
-					profileName + "-" + browserType + ".properties");
+			String path = AceConfigFileHelper.getAcePath("profiles", profileName + "-" + browserType + ".properties");
 			File file = new File(path);
 			if (!file.exists()) {
-				path = AceConfigFileHelper.getAcePath("profiles", profileName
-						+ ".properties");
+				path = AceConfigFileHelper.getAcePath("profiles", profileName + ".properties");
 				file = new File(path);
 			}
 
@@ -459,8 +420,7 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 		}
 	}
 
-	public String getParam(String object, String paramName)
-			throws AppServerAdapterException {
+	public String getParam(String object, String paramName) throws AppServerAdapterException {
 		synchronized (measurements) {
 			measurements.incrementGetParamStartCount();
 		}
@@ -479,11 +439,8 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 		CDRHandler handler = CDRHandler.getInstance();
 		if (handler != null) {
 			if (!handler.sendCDR(cdr)) {
-				AceLogger.Instance().log(
-						AceLogger.ERROR,
-						AceLogger.SYSTEM_LOG,
-						"AppServerAdapter.writeCdr() -- Could not send CDR "
-								+ cdr.getClass().getSimpleName());
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
+						"AppServerAdapter.writeCdr() -- Could not send CDR " + cdr.getClass().getSimpleName());
 			}
 		}
 	}
@@ -494,54 +451,50 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 		}
 
 		try {
-			List<String> owners = SynchronousDbOperations.getInstance()
-					.getGroupOwners(user);
+			List<String> owners = SynchronousDbOperations.getInstance().getGroupOwners(user);
 			List<GroupInfo> list = new ArrayList<GroupInfo>();
 			if (owners != null) {
 				for (String owner : owners) {
 					GroupInfo groupInfo = new GroupInfo();
 					groupInfo.setGroupName(owner);
 					try {
-						String key = "com.quikj.application.web.talk.feature.operator.Operator:"
-								+ owner;
+						String key = "com.quikj.application.web.talk.feature.operator.Operator:" + owner;
 						String val = getParam(key, "subscriber-queue-size");
 						if (val != null) {
 							groupInfo.setQueueSize(Integer.parseInt(val));
-						}						
+						}
 
 						val = getParam(key, "all-operators-busy");
 						if (val != null) {
-							groupInfo
-							.setAllOperatorsBusy(Boolean.parseBoolean(val));
+							groupInfo.setAllOperatorsBusy(Boolean.parseBoolean(val));
 						}
 
 						val = getParam(key, "operator-queue-size");
 						if (val != null) {
 							groupInfo.setNumOperators(Integer.parseInt(val));
 						}
-						
+
 						val = getParam(key, "operators-with-dnd-count");
 						if (val != null) {
 							groupInfo.setNumDND(Integer.parseInt(val));
 						}
-						
+
 						val = getParam(key, "estimated-wait-time");
 						if (val != null) {
 							groupInfo.setWaitTime(val);
 						}
-						
+
 						val = getParam(key, "paused-until");
 						if (val != null) {
 							groupInfo.setPausedUntil(Long.parseLong(val));
 						}
-						
+
 						list.add(groupInfo);
 					} catch (Exception e) {
-						AceLogger.Instance().log(
-								AceLogger.WARNING,
-								AceLogger.SYSTEM_LOG,
+						AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
 								"AppServerAdapter.getGroupInfo() -- Could not get group parameters. Error: "
-										+ e.getMessage(), e);
+										+ e.getMessage(),
+								e);
 					}
 				}
 			}
@@ -553,21 +506,18 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 		}
 	}
 
-	public HashMap<Integer, String> getSecurityQuestions(String userid)
-			throws AppServerAdapterException {
+	public HashMap<Integer, String> getSecurityQuestions(String userid) throws AppServerAdapterException {
 		synchronized (measurements) {
 			measurements.incrementGetSecurityQuestionsStartCount();
 		}
 
 		try {
 			if (userid == null) {
-				throw new AppServerAdapterException(
-						"The userid attribute has not been supplied", true);
+				throw new AppServerAdapterException("The userid attribute has not been supplied", true);
 			}
 
 			try {
-				HashMap<Integer, String> questions = SynchronousDbOperations
-						.getInstance().getSecurityQuestions(userid);
+				HashMap<Integer, String> questions = SynchronousDbOperations.getInstance().getSecurityQuestions(userid);
 				return questions;
 			} catch (Exception e) {
 				throw new AppServerAdapterException("databaseError", true);
@@ -579,8 +529,7 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 		}
 	}
 
-	public void resetPassword(String userid,
-			HashMap<Integer, String> securityAnswers, String locale)
+	public void resetPassword(String userid, HashMap<Integer, String> securityAnswers, String locale)
 			throws AppServerAdapterException {
 		synchronized (measurements) {
 			measurements.incrementResetPasswordStartCount();
@@ -589,8 +538,7 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 		try {
 			LostUsernamePassword.resetPassword(userid, securityAnswers, locale);
 		} catch (AceException e) {
-			throw new AppServerAdapterException(e.getMessage(),
-					e.isRecoverable());
+			throw new AppServerAdapterException(e.getMessage(), e.isRecoverable());
 		} catch (Exception e) {
 			throw new AppServerAdapterException(e.getMessage(), false, e);
 		} finally {
@@ -600,8 +548,7 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 		}
 	}
 
-	public void recoverLostUsername(String address, String locale)
-			throws AppServerAdapterException {
+	public void recoverLostUsername(String address, String locale) throws AppServerAdapterException {
 		synchronized (measurements) {
 			measurements.incrementRecoverUsernameStartCount();
 		}
@@ -609,8 +556,7 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 		try {
 			LostUsernamePassword.recoverLostUsername(address, locale);
 		} catch (AceException e) {
-			throw new AppServerAdapterException(e.getMessage(),
-					e.isRecoverable());
+			throw new AppServerAdapterException(e.getMessage(), e.isRecoverable());
 		} catch (Exception e) {
 			throw new AppServerAdapterException(e.getMessage(), false, e);
 		} finally {
@@ -618,5 +564,15 @@ public class PolledAppServerAdapter implements AppServerAdapter {
 				measurements.incrementRecoverUsernameEndCount();
 			}
 		}
+	}
+
+	public void submitForm(FormSubmissionElement form) throws AppServerAdapterException {
+		long cannedMessageId = SynchronousDbOperations.getInstance().retrieveFormRecord(form.getFormId());
+		if (cannedMessageId == -1L) {
+			throw new AppServerAdapterException("noFormFound");
+		}
+		
+		String cannedContent = SynchronousDbOperations.getInstance().queryCannedMessages(cannedMessageId);
+		FormUtil.processFormSubmission(cannedContent, form.getResponse());
 	}
 }

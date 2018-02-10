@@ -3,7 +3,8 @@
  */
 package com.quikj.ace.web.client.presenter;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import com.google.gwt.core.client.GWT;
@@ -39,8 +40,8 @@ public class UserBusyEmailPresenter {
 	}
 
 	public void informationSubmitted(String name, String email, String message,
-			String captcha) {
-		if (name == null || name.trim().length() == 0) {
+			String captcha, String captchaType) {
+		if (name == null || name.trim().isEmpty()) {
 			MessageBoxPresenter.getInstance().show(
 					ApplicationController.getMessages()
 							.UserBusyEmailPresenter_error(),
@@ -50,7 +51,7 @@ public class UserBusyEmailPresenter {
 			return;
 		}
 
-		if (message == null || message.trim().length() == 0) {
+		if (message == null || message.trim().isEmpty()) {
 			MessageBoxPresenter.getInstance().show(
 					ApplicationController.getMessages()
 							.UserBusyEmailPresenter_error(),
@@ -60,7 +61,7 @@ public class UserBusyEmailPresenter {
 			return;
 		}
 
-		if (captcha == null || captcha.trim().length() == 0) {
+		if (captcha == null || captcha.trim().isEmpty()) {
 			MessageBoxPresenter.getInstance().show(
 					ApplicationController.getMessages()
 							.UserBusyEmailPresenter_error(),
@@ -75,7 +76,7 @@ public class UserBusyEmailPresenter {
 		MailElement melement = new MailElement();
 		mail.setMailElement(melement);
 
-		Vector<String> to = new Vector<String>();
+		List<String> to = new ArrayList<>();
 		to.add(ClientProperties.getInstance().getStringValue(
 				ClientProperties.ALL_OPERATOR_BUSY_EMAIL, null));
 		melement.setTo(to);
@@ -108,7 +109,7 @@ public class UserBusyEmailPresenter {
 		melement.setBody(buffer.toString());
 
 		RequestBuilder builder = AceOperatorService.Util.getInstance()
-				.sendMail(mail, captcha.trim(), view.getCaptchaType(), new AsyncCallback<String>() {
+				.sendMail(mail, captcha.trim(), captchaType, new AsyncCallback<String>() {
 
 					@Override
 					public void onSuccess(String result) {

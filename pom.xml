@@ -13,7 +13,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<org.springframework.version>4.3.3.RELEASE</org.springframework.version>
 		<org.springframework.security.version>4.1.3.RELEASE</org.springframework.security.version>
-		<gwt.version>2.7.0</gwt.version>
+		<gwt.version>2.8.2</gwt.version>
 		<mysql.connector.version>5.1.27</mysql.connector.version>
 	</properties>
 
@@ -108,6 +108,7 @@
 	</build>
 
 	<modules>
+		<module>ace-ui-common</module>
 		<module>ace-messaging</module>
 		<module>ace-framework</module>
 		<module>ace-db</module>

@@ -8,8 +8,8 @@ package com.quikj.server.framework;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 import javax.mail.Address;
 import javax.mail.Message;
@@ -21,13 +21,13 @@ import javax.mail.internet.MimeMessage;
  * @author bhm
  */
 public class AceMailMessage implements Serializable {
-
+	private static final long serialVersionUID = 9025011992787835947L;
 	private String from = null;
-	private Vector to = new Vector();
-	private Vector cc = new Vector();
-	private Vector bcc = new Vector();
+	private List<String> to = new ArrayList<>();
+	private List<String> cc = new ArrayList<>();
+	private List<String> bcc = new ArrayList<>();
 	private String subject = null;
-	private Vector replyTo = new Vector();
+	private List<String> replyTo = new ArrayList<>();
 	private String body = null;
 	private String subType = "plain";
 
@@ -56,91 +56,50 @@ public class AceMailMessage implements Serializable {
 	}
 
 	public void addBcc(String bcc) {
-		(this.bcc).addElement(new String(bcc));
+		this.bcc.add(bcc);
 	}
 
 	public void addCc(String cc) {
-		(this.cc).addElement(new String(cc));
+		this.cc.add(cc);
 	}
 
-	public void addReplyTo(String reply_to) {
-		(this.replyTo).addElement(new String(reply_to));
+	public void addReplyTo(String replyTo) {
+		this.replyTo.add(replyTo);
 	}
 
 	public void addTo(String to) {
-		(this.to).addElement(new String(to));
+		this.to.add(to);
 	}
 
-	/**
-	 * Getter for property bcc.
-	 * 
-	 * @return Value of property bcc.
-	 */
-	public java.util.Vector getBcc() {
+	public List<String> getBcc() {
 		return bcc;
 	}
 
-	/**
-	 * Getter for property body.
-	 * 
-	 * @return Value of property body.
-	 */
-	public java.lang.String getBody() {
+	public String getBody() {
 		return body;
 	}
 
-	/**
-	 * Getter for property cc.
-	 * 
-	 * @return Value of property cc.
-	 */
-	public java.util.Vector getCc() {
+	public List<String> getCc() {
 		return cc;
 	}
 
-	/**
-	 * Getter for property errorMessage.
-	 * 
-	 * @return Value of property errorMessage.
-	 * 
-	 */
-	public java.lang.String getErrorMessage() {
+	public String getErrorMessage() {
 		return errorMessage;
 	}
 
-	/**
-	 * Getter for property from.
-	 * 
-	 * @return Value of property from.
-	 */
-	public java.lang.String getFrom() {
+	public String getFrom() {
 		return from;
 	}
 
-	/**
-	 * Getter for property replyTo.
-	 * 
-	 * @return Value of property replyTo.
-	 */
-	public java.util.Vector getReplyTo() {
+	public List<String> getReplyTo() {
 		return replyTo;
 	}
 
-	/**
-	 * Getter for property subject.
-	 * 
-	 * @return Value of property subject.
-	 */
-	public java.lang.String getSubject() {
+	public String getSubject() {
 		return subject;
 	}
 
-	/**
-	 * Getter for property to.
-	 * 
-	 * @return Value of property to.
-	 */
-	public java.util.Vector getTo() {
+	public List<String> getTo() {
 		return to;
 	}
 
@@ -160,85 +119,44 @@ public class AceMailMessage implements Serializable {
 		return to.size();
 	}
 
-	/**
-	 * Setter for property bcc.
-	 * 
-	 * @param bcc
-	 *            New value of property bcc.
-	 */
-	public void setBcc(java.util.Vector bcc) {
+	public void setBcc(List<String> bcc) {
 		this.bcc = bcc;
 	}
 
-	/**
-	 * Setter for property body.
-	 * 
-	 * @param body
-	 *            New value of property body.
-	 */
 	public void setBody(java.lang.String body) {
 		this.body = body;
 	}
 
-	/**
-	 * Setter for property cc.
-	 * 
-	 * @param cc
-	 *            New value of property cc.
-	 */
-	public void setCc(java.util.Vector cc) {
+	public void setCc(List<String> cc) {
 		this.cc = cc;
 	}
 
-	/**
-	 * Setter for property from.
-	 * 
-	 * @param from
-	 *            New value of property from.
-	 */
-	public void setFrom(java.lang.String from) {
+	public void setFrom(String from) {
 		this.from = from;
 	}
 
-	/**
-	 * Setter for property replyTo.
-	 * 
-	 * @param replyTo
-	 *            New value of property replyTo.
-	 */
-	public void setReplyTo(java.util.Vector replyTo) {
+	public void setReplyTo(List<String> replyTo) {
 		this.replyTo = replyTo;
 	}
 
-	/**
-	 * Setter for property subject.
-	 * 
-	 * @param subject
-	 *            New value of property subject.
-	 */
-	public void setSubject(java.lang.String subject) {
+	public void setSubject(String subject) {
 		this.subject = subject;
 	}
 
-	/**
-	 * Setter for property to.
-	 * 
-	 * @param to
-	 *            New value of property to.
-	 */
-	public void setTo(java.util.Vector to) {
+	public void setTo(List<String> to) {
 		this.to = to;
 	}
 
-	public javax.mail.Message toEmail(javax.mail.Session session)
-	// This method performs validation and returns null if the message shouldn't
-	// be sent
-	// Call getErrorMessage() in that case, to get the failure string.
-	{
+	public javax.mail.Message toEmail(javax.mail.Session session) {
+		// This method performs validation and returns null if the message
+		// shouldn't
+		// be sent
+		// Call getErrorMessage() in that case, to get the failure string.
+
 		MimeMessage emsg = new MimeMessage(session);
 		String field = "\"from\" = " + from;
 		if (from != null) {
-			if (addressValid(from) == true) {
+			if (addressValid(from)) {
 				try {
 					emsg.setFrom(new InternetAddress(from));
 				} catch (Exception ex) { // discard & proceed
@@ -247,46 +165,40 @@ public class AceMailMessage implements Serializable {
 		}
 
 		int size = to.size();
-		for (int i = 0; i < size; i++) {
-			String value = (String) to.elementAt(i);
+		for (String value : to) {
 			field = "\"to\" = " + value;
-			if (addressValid(value) == false) {
+			if (!addressValid(value)) {
 				continue;
 			}
 
 			try {
-				emsg.addRecipient(Message.RecipientType.TO,
-						new InternetAddress(value));
+				emsg.addRecipient(Message.RecipientType.TO, new InternetAddress(value));
 			} catch (Exception ex) { // discard & proceed
 			}
 		}
 
 		size = cc.size();
-		for (int i = 0; i < size; i++) {
-			String value = (String) cc.elementAt(i);
+		for (String value : cc) {
 			field = "\"cc\" = " + value;
-			if (addressValid(value) == false) {
+			if (!addressValid(value)) {
 				continue;
 			}
 
 			try {
-				emsg.addRecipient(Message.RecipientType.CC,
-						new InternetAddress(value));
+				emsg.addRecipient(Message.RecipientType.CC, new InternetAddress(value));
 			} catch (Exception ex) { // discard & proceed
 			}
 		}
 
 		size = bcc.size();
-		for (int i = 0; i < size; i++) {
-			String value = (String) bcc.elementAt(i);
+		for (String value : bcc) {
 			field = "\"bcc\" = " + value;
-			if (addressValid(value) == false) {
+			if (!addressValid(value)) {
 				continue;
 			}
 
 			try {
-				emsg.addRecipient(Message.RecipientType.BCC,
-						new InternetAddress(value));
+				emsg.addRecipient(Message.RecipientType.BCC, new InternetAddress(value));
 			} catch (Exception ex) { // discard & proceed
 			}
 		}
@@ -296,8 +208,7 @@ public class AceMailMessage implements Serializable {
 			try {
 				emsg.setSubject(subject, "utf-8");
 			} catch (Exception ex) {
-				errorMessage = "Error setting " + field + " : "
-						+ ex.getClass().getName() + " : " + ex.getMessage();
+				errorMessage = "Error setting " + field + " : " + ex.getClass().getName() + " : " + ex.getMessage();
 				return null;
 			}
 		}
@@ -306,28 +217,25 @@ public class AceMailMessage implements Serializable {
 		if (size > 0) {
 			field = "\"reply-to\"";
 
-			ArrayList reply_to = new ArrayList();
-			for (int i = 0; i < size; i++) {
-				String value = (String) replyTo.elementAt(i);
-				if (addressValid(value) == false) {
+			ArrayList<InternetAddress> replyToList = new ArrayList<>();
+			for (String value : replyTo) {
+				if (!addressValid(value)) {
 					continue;
 				}
 
 				try {
-					reply_to.add(new InternetAddress(value));
+					replyToList.add(new InternetAddress(value));
 				} catch (Exception ex) { // discard & proceed
 				}
 			}
 
-			if (reply_to.size() > 0) {
+			if (replyToList.size() > 0) {
 				try {
-					InternetAddress[] temp = new InternetAddress[reply_to
-							.size()];
-					reply_to.toArray(temp);
+					InternetAddress[] temp = new InternetAddress[replyToList.size()];
+					replyToList.toArray(temp);
 					emsg.setReplyTo(temp);
 				} catch (Exception ex) {
-					errorMessage = "Error setting " + field + " : "
-							+ ex.getClass().getName() + " : " + ex.getMessage();
+					errorMessage = "Error setting " + field + " : " + ex.getClass().getName() + " : " + ex.getMessage();
 					return null;
 				}
 			}
@@ -338,8 +246,7 @@ public class AceMailMessage implements Serializable {
 			try {
 				emsg.setText(body, "utf-8", subType);
 			} catch (Exception ex) {
-				errorMessage = "Error setting " + field + " : "
-						+ ex.getClass().getName() + " : " + ex.getMessage();
+				errorMessage = "Error setting " + field + " : " + ex.getClass().getName() + " : " + ex.getMessage();
 				return null;
 			}
 		} else {
@@ -357,8 +264,8 @@ public class AceMailMessage implements Serializable {
 				return null;
 			}
 		} catch (Exception ex) {
-			errorMessage = "Error getting recipients for validation : "
-					+ ex.getClass().getName() + " : " + ex.getMessage();
+			errorMessage = "Error getting recipients for validation : " + ex.getClass().getName() + " : "
+					+ ex.getMessage();
 			return null;
 		}
 

@@ -3,7 +3,6 @@ package com.quikj.ace.custom.server;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
@@ -16,13 +15,6 @@ import com.quikj.server.framework.CaptchaService;
 public class CaptchaServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 9120211725683240148L;
-
-	@Override
-	public void init(ServletConfig servletConfig) throws ServletException {
-		super.init(servletConfig);
-
-		new CaptchaService().init();
-	}
 
 	@Override
 	public void destroy() {

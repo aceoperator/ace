@@ -1107,7 +1107,7 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 		return;
 	}
 
-	private void processSendMailRequest(SendMailRequestMessage message, EndPointInterface from, int req_id) {
+	private void processSendMailRequest(SendMailRequestMessage message, EndPointInterface from, int reqId) {
 		// validate the requesting endpoint
 		if (RegisteredEndPointList.Instance().findRegisteredEndPointInfo(from) == null) {
 			// log a warning
@@ -1116,15 +1116,14 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 							+ from);
 
 			// send a response
-			if (message.isReplyRequired() == true) {
+			if (message.isReplyRequired()) {
 				if (from.sendEvent(
 						new MessageEvent(MessageEvent.CLIENT_RESPONSE_MESSAGE, null, ResponseMessage.FORBIDDEN,
 								java.util.ResourceBundle
 										.getBundle("com.quikj.application.web.talk.plugin.language",
 												ServiceController.getLocale((String) from.getParam("language")))
 										.getString("Unauthorized_send_mail_attempt_rejected"),
-								new SendMailResponseMessage(), null, req_id)) == false) {
-					// print error message
+								new SendMailResponseMessage(), null, reqId)) == false) {
 					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
 							"ServiceController.processSendMailRequest() (TALK) -- Could not send unauthorized send-mail response message to the endpoint "
 									+ from);
@@ -1135,15 +1134,14 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 
 		if (AceMailService.getInstance() == null) {
 			// mail service is not active
-			if (message.isReplyRequired() == true) {
+			if (message.isReplyRequired()) {
 				if (from.sendEvent(new MessageEvent(MessageEvent.CLIENT_RESPONSE_MESSAGE, null,
 						ResponseMessage.SERVICE_UNAVAILABLE,
 						java.util.ResourceBundle
 								.getBundle("com.quikj.application.web.talk.plugin.language",
 										ServiceController.getLocale((String) from.getParam("language")))
 								.getString("Mail_Service_not_active"),
-						new SendMailResponseMessage(), null, req_id)) == false) {
-					// print error message
+						new SendMailResponseMessage(), null, reqId)) == false) {
 					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
 							"ServiceController.processSendMailRequest() (TALK) -- Could not send service unavailable response message to the endpoint "
 									+ from);
@@ -1152,68 +1150,66 @@ public class ServiceController extends AceThread implements RemoteServiceInterfa
 			return;
 		}
 
-		MailElement rcv_mail = message.getMailElement();
-		AceMailMessage out_mail = new AceMailMessage();
+		MailElement rcvMail = message.getMailElement();
+		AceMailMessage outMail = new AceMailMessage();
 
-		out_mail.setSubType(rcv_mail.getSubype());
+		outMail.setSubType(rcvMail.getSubType());
 
-		int num_items = rcv_mail.numBcc();
-		for (int i = 0; i < num_items; i++) {
-			out_mail.addBcc(rcv_mail.getBccAt(i));
+		int numItems = rcvMail.numBcc();
+		for (int i = 0; i < numItems; i++) {
+			outMail.addBcc(rcvMail.getBccAt(i));
 		}
 
-		num_items = rcv_mail.numCc();
-		for (int i = 0; i < num_items; i++) {
-			out_mail.addCc(rcv_mail.getCcAt(i));
+		numItems = rcvMail.numCc();
+		for (int i = 0; i < numItems; i++) {
+			outMail.addCc(rcvMail.getCcAt(i));
 		}
 
-		num_items = rcv_mail.numTo();
-		for (int i = 0; i < num_items; i++) {
-			out_mail.addTo(rcv_mail.getToAt(i));
+		numItems = rcvMail.numTo();
+		for (int i = 0; i < numItems; i++) {
+			outMail.addTo(rcvMail.getToAt(i));
 		}
 
-		num_items = rcv_mail.numReplyTo();
-		for (int i = 0; i < num_items; i++) {
-			out_mail.addReplyTo(rcv_mail.getReplyToAt(i));
+		numItems = rcvMail.numReplyTo();
+		for (int i = 0; i < numItems; i++) {
+			outMail.addReplyTo(rcvMail.getReplyToAt(i));
 		}
 
-		String rcv_body = rcv_mail.getBody();
-		if (rcv_body != null) {
-			out_mail.setBody(rcv_body);
+		String rcvBody = rcvMail.getBody();
+		if (rcvBody != null) {
+			outMail.setBody(rcvBody);
 		}
 
-		String rcv_from = rcv_mail.getFrom();
-		if (rcv_from != null) {
-			out_mail.setFrom(rcv_from);
+		String rcvFrom = rcvMail.getFrom();
+		if (rcvFrom != null) {
+			outMail.setFrom(rcvFrom);
 		}
 
-		String rcv_subject = rcv_mail.getSubject();
-		if (rcv_subject != null) {
-			out_mail.setSubject(rcv_subject);
+		String rcvSubject = rcvMail.getSubject();
+		if (rcvSubject != null) {
+			outMail.setSubject(rcvSubject);
 		}
 
 		// enqueue the outgoing mail with the Ace Mail Service
 
-		if (AceMailService.getInstance().addToMailQueue(out_mail) == true) {
-			if (message.isReplyRequired() == true) {
+		if (AceMailService.getInstance().addToMailQueue(outMail)) {
+			if (message.isReplyRequired()) {
 				if (from.sendEvent(new MessageEvent(MessageEvent.CLIENT_RESPONSE_MESSAGE, null, ResponseMessage.OK,
-						"OK", new SendMailResponseMessage(), null, req_id)) == false) {
-					// print error message
+						"OK", new SendMailResponseMessage(), null, reqId)) == false) {
 					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
 							"ServiceController.processSendMailRequest() (TALK) -- Could not send OK send-mail response message to the endpoint "
 									+ from);
 				}
 			}
 		} else {
-			if (message.isReplyRequired() == true) {
+			if (message.isReplyRequired()) {
 				if (from.sendEvent(
 						new MessageEvent(MessageEvent.CLIENT_RESPONSE_MESSAGE, null, ResponseMessage.INTERNAL_ERROR,
 								java.util.ResourceBundle
 										.getBundle("com.quikj.application.web.talk.plugin.language",
 												ServiceController.getLocale((String) from.getParam("language")))
 										.getString("Send_mail_attempt_failed"),
-								new SendMailResponseMessage(), null, req_id)) == false) {
-					// print error message
+								new SendMailResponseMessage(), null, reqId)) == false) {
 					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
 							"ServiceController.processSendMailRequest() (TALK) -- Could not send fail send-mail response message to the endpoint "
 									+ from);

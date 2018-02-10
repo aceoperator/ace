@@ -78,6 +78,7 @@
 							<prop key="cdr-required">yes</prop>
 							<prop key="backup-cdr-dir">cdr</prop>
 							<prop key="backup-cdr-file">backup_cdr</prop>
+							<prop key="recaptcha-secret">${com.quikj.ace.recaptchaSecret}</prop>
 						</props>
 					</property>
 				</bean>

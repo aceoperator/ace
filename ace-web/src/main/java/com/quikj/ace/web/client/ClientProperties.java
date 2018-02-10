@@ -100,6 +100,11 @@ public class ClientProperties extends HashMap<String, List<String>> {
 	
 	public static final String GET_CANNED_MESSAGE_CONTENT = "getCannedMessageContent";
 	
+	public static final String CURRENCY_DELIMITER = "formCurrencyDelimiter";
+	public static final String CURRENCY_DOLLAR = "formCurrencyDollar";
+	public static final String CURRENCY_CENT = "formCurrencyCent";
+	public static final String FORM_DATE_FORMAT = "formDateFormat";
+	
 	// not properties, just a constants
 	public static final String OPERATOR_TYPE = "operator";
 	public static final String VISITOR_TYPE = "visitor";
