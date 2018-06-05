@@ -1,4 +1,4 @@
-# Migrate to the PKCS12 format as recommedned by Java (one time step)
+# Migrate to the PKCS12 format as recommended by Java (one time step)
 # First get the root certificates from https://pki.google.com/faq.html
 keytool -importkeystore -srckeystore ~/.keystore -destkeystore ~/.keystore -deststoretype pkcs12
 
