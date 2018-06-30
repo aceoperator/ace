@@ -4,18 +4,23 @@
 package com.quikj.ace.web.client.presenter;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestException;
 import com.google.gwt.i18n.shared.DateTimeFormat;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Widget;
 import com.quikj.ace.messages.vo.app.Message;
 import com.quikj.ace.messages.vo.app.ResponseMessage;
@@ -27,6 +32,8 @@ import com.quikj.ace.messages.vo.talk.ConferenceInformationMessage;
 import com.quikj.ace.messages.vo.talk.ConferencePartyInfo;
 import com.quikj.ace.messages.vo.talk.DisconnectMessage;
 import com.quikj.ace.messages.vo.talk.DisconnectReasonElement;
+import com.quikj.ace.messages.vo.talk.FormDefinitionElement;
+import com.quikj.ace.messages.vo.talk.FormSubmissionElement;
 import com.quikj.ace.messages.vo.talk.HtmlElement;
 import com.quikj.ace.messages.vo.talk.JoinRequestMessage;
 import com.quikj.ace.messages.vo.talk.MailElement;
@@ -37,6 +44,7 @@ import com.quikj.ace.messages.vo.talk.SendMailRequestMessage;
 import com.quikj.ace.messages.vo.talk.SetupRequestMessage;
 import com.quikj.ace.messages.vo.talk.SetupResponseMessage;
 import com.quikj.ace.messages.vo.talk.TypingElement;
+import com.quikj.ace.web.client.AceOperatorService;
 import com.quikj.ace.web.client.ApplicationController;
 import com.quikj.ace.web.client.AudioUtils;
 import com.quikj.ace.web.client.ChatSessionInfo;
@@ -395,8 +403,8 @@ public class ChatSessionPresenter {
 					.show(ApplicationController.getMessages().ChatSessionPresenter_incomingChat(),
 							ApplicationController.getMessages().ChatSessionPresenter_incomingChatFromParty(
 									ViewUtils.formatUserInfo(otherParties.get(0))) + "<p>"
-							+ ApplicationController.getMessages().ChatSessionPresenter_doYouWantToAnswer(), image,
-					new AcceptCallListener(chatInfo, reqId, contentType, msg, acceptTimer), false);
+									+ ApplicationController.getMessages().ChatSessionPresenter_doYouWantToAnswer(),
+							image, new AcceptCallListener(chatInfo, reqId, contentType, msg, acceptTimer), false);
 			Notifier.alert(ApplicationController.getMessages().ChatSessionPresenter_incomingChat());
 		}
 	}
@@ -487,7 +495,7 @@ public class ChatSessionPresenter {
 		UserChatsPresenter.getCurrentInstance().addMissedChat(image, ViewUtils.formatName(caller), caller.getEmail());
 	}
 
-	public void processRTPMessage(RTPMessage msg) {
+	private void processRTPMessage(RTPMessage msg) {
 		MediaElements media = msg.getMediaElements();
 		CallPartyElement from = msg.getFrom();
 		processMedia(media, from);
@@ -511,6 +519,12 @@ public class ChatSessionPresenter {
 				view.appendToConveration(formattedName, ApplicationController.getInstance().timestamp(),
 						text.getHtml());
 				playChime = true;
+			} else if (element instanceof FormDefinitionElement) {
+				FormDefinitionElement form = (FormDefinitionElement) element;
+				view.appendToConveration(formattedName, ApplicationController.getInstance().timestamp(),
+						form.getFormId(), form.getFormDef());
+			} else if (element instanceof FormSubmissionElement) {
+				processFormResponse(formattedName, (FormSubmissionElement) element);
 			} else if (element instanceof TypingElement) {
 				if (typingTimer != null) {
 					cancelTyping();
@@ -525,7 +539,6 @@ public class ChatSessionPresenter {
 					}
 				};
 				typingTimer.schedule(TYPING_TIMEOUT);
-
 			} else {
 				logger.warning("Media element of type " + element.getClass().getName() + " is not supported");
 			}
@@ -534,6 +547,35 @@ public class ChatSessionPresenter {
 		if (playChime) {
 			AudioUtils.getInstance().play(AudioUtils.CHIME);
 		}
+	}
+
+	private void processFormResponse(String from, FormSubmissionElement form) {
+		List<String> list = new ArrayList<>();
+
+		for (Entry<String, String> e : form.getResponse().entrySet()) {
+			StringBuilder b = new StringBuilder("<li><b>");
+			b.append(e.getKey());
+			b.append("</b>: ");
+			b.append(e.getValue());
+			b.append("</li>");
+			list.add(b.toString());
+		}
+
+		list.sort(new Comparator<String>() {
+			@Override
+			public int compare(String s1, String s2) {
+				return s1.compareTo(s2);
+			}
+		});
+
+		StringBuilder builder = new StringBuilder(
+				ApplicationController.getMessages().ChatSessionPresenter_formReceived() + ":<ul>");
+		for (String e : list) {
+			builder.append(e);
+		}
+		builder.append("</ul>");
+
+		view.appendToConveration(from, ApplicationController.getInstance().timestamp(), builder.toString());
 	}
 
 	public static void rtpReceived(RTPMessage msg) {
@@ -552,18 +594,57 @@ public class ChatSessionPresenter {
 
 	public void sendTextMessage(String text) {
 		lastTypingTime = null;
+		HtmlElement element = new HtmlElement();
+		element.setHtml(text);
+		sendRTPMessage(element);
+	}
 
+	private void sendRTPMessage(MediaElementInterface element) {
 		RTPMessage rtp = new RTPMessage();
 		rtp.setSessionId(chatInfo.getSessionId());
 		MediaElements elements = new MediaElements();
 		rtp.setMediaElements(elements);
-		HtmlElement element = new HtmlElement();
 		elements.getElements().add(element);
-		element.setHtml(text);
+
 		CallPartyElement cp = (CallPartyElement) SessionInfo.getInstance().get(SessionInfo.USER_INFO);
 		rtp.setFrom(cloneCallPartyElement(cp));
 
 		CommunicationsFactory.getServerCommunications().sendRequest(rtp, Message.CONTENT_TYPE_XML, false, 0L, null);
+	}
+
+	public void submitForm(long formId, Map<String, String> result) {
+		lastTypingTime = null;
+
+		FormSubmissionElement formSubmission = new FormSubmissionElement(result, formId);
+		if (chatInfo.getStatus() == ChatStatus.CONNECTED) {
+			sendRTPMessage(formSubmission);
+			view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
+					ApplicationController.getMessages().ChatSessionPresenter_userInputSubmitted());
+		} else {
+			RequestBuilder builder = AceOperatorService.Util.getInstance().submitForm(formSubmission,
+					new AsyncCallback<Void>() {
+						@Override
+						public void onSuccess(Void result) {
+							view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
+									ApplicationController.getMessages().ChatSessionPresenter_userInputSubmitted());
+						}
+
+						@Override
+						public void onFailure(Throwable caught) {
+							String error = caught.getMessage();
+							if ("noFormFound".equals(error)) {
+								view.appendToConveration(systemUser, ApplicationController.getInstance().timestamp(),
+										ApplicationController.getMessages()
+												.ChatSessionPresenter_userInputAlreadySubmitted());
+							}
+						}
+					});
+			try {
+				CommunicationsFactory.sendMessageToServer(builder);
+			} catch (RequestException e) {
+				logger.severe("Error sending message to the server - " + e.getMessage());
+			}
+		}
 	}
 
 	public void userDisconnected(int reasonCode, String reasonText) {
@@ -692,7 +773,7 @@ public class ChatSessionPresenter {
 			melement.addTo(to);
 		}
 
-		melement.setSubype("html");
+		melement.setSubType("html");
 
 		if (ClientProperties.getInstance().getBooleanValue(ClientProperties.COOKIE_IN_TRANSCRIPT_SUBJECT,
 				DEFAULT_COOKIE_IN_SUBJECT)) {
@@ -747,8 +828,7 @@ public class ChatSessionPresenter {
 
 		buffer.append("<br>");
 
-		// TODO internationalize the string
-		buffer.append("Disconnect status: ");
+		buffer.append(ApplicationController.getMessages().ChatSessionPresenter_disconnectStatus() + ": ");
 		if (reasonText != null && reasonText.length() > 0) {
 			buffer.append(reasonText);
 			buffer.append(" - ");
@@ -973,7 +1053,7 @@ public class ChatSessionPresenter {
 			if (contact.isDnd()) {
 				continue;
 			}
-			
+
 			// Do not add the contact to the list if he/she is already
 			// participating in the chat
 			for (CallPartyElement other : otherParties) {

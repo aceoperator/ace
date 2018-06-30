@@ -41,12 +41,12 @@ public class TalkPluginApp implements PluginAppInterface {
 
 	@Override
 	public void applicationInit(Properties properties) throws AceException {
-		String cdr_required_s = properties.getProperty("cdr-required");
-		if (cdr_required_s != null) {
-			if (cdr_required_s.equals("yes")) {
+		String cdrRequiredProperty = properties.getProperty("cdr-required");
+		if (cdrRequiredProperty != null) {
+			if (cdrRequiredProperty.equals("yes")) {
 				cdrRequired = true;
 				opmRequired = true;
-			} else if (cdr_required_s.equals("no")) {
+			} else if (cdrRequiredProperty.equals("no")) {
 				cdrRequired = false;
 				opmRequired = false;
 			} else {
@@ -61,8 +61,8 @@ public class TalkPluginApp implements PluginAppInterface {
 		}
 
 		if (cdrRequired) {
-			String backup_cdr_dir = properties.getProperty("backup-cdr-dir");
-			if (backup_cdr_dir == null) {
+			String backupCdrDir = properties.getProperty("backup-cdr-dir");
+			if (backupCdrDir == null) {
 				AceLogger
 						.Instance()
 						.log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
@@ -72,8 +72,8 @@ public class TalkPluginApp implements PluginAppInterface {
 				throw new AceException("Failed to initialization application");
 			}
 
-			String backup_cdr_file = properties.getProperty("backup-cdr-file");
-			if (backup_cdr_file == null) {
+			String backupCdrFile = properties.getProperty("backup-cdr-file");
+			if (backupCdrFile == null) {
 				AceLogger
 						.Instance()
 						.log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
@@ -84,7 +84,7 @@ public class TalkPluginApp implements PluginAppInterface {
 			}
 
 			try {
-				cdrHandler = new CDRHandler(backup_cdr_dir, backup_cdr_file);
+				cdrHandler = new CDRHandler(backupCdrDir, backupCdrFile);
 				cdrHandler.start();
 			} catch (IOException ex) {
 				AceLogger
@@ -125,7 +125,6 @@ public class TalkPluginApp implements PluginAppInterface {
 			controller = new ServiceController();
 			controller.start();
 		} catch (IOException ex) {
-			// print error message
 			AceLogger
 					.Instance()
 					.log(AceLogger.ERROR,
@@ -136,7 +135,6 @@ public class TalkPluginApp implements PluginAppInterface {
 			cleanup();
 			throw new AceException(ex);
 		} catch (AceException ex) {
-			// print error message
 			AceLogger
 					.Instance()
 					.log(AceLogger.ERROR,
@@ -150,7 +148,11 @@ public class TalkPluginApp implements PluginAppInterface {
 
 		SynchronousDbOperations.getInstance();
 		
-		new CaptchaService().init();
+		new CaptchaService();
+		String recaptchaSecret = properties.getProperty("recaptcha-secret");
+		if (recaptchaSecret != null && !recaptchaSecret.isEmpty()) {
+			CaptchaService.getInstance().setSecretKey(recaptchaSecret);
+		}
 	}
 
 	public void cleanup() {

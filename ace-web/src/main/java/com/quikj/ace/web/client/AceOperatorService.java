@@ -9,6 +9,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 import com.quikj.ace.messages.vo.adapter.GroupInfo;
 import com.quikj.ace.messages.vo.app.Message;
 import com.quikj.ace.messages.vo.talk.CannedMessageElement;
+import com.quikj.ace.messages.vo.talk.FormSubmissionElement;
 import com.quikj.ace.messages.vo.talk.SendMailRequestMessage;
 import com.quikj.ace.web.shared.AceServerException;
 
@@ -26,38 +27,34 @@ public interface AceOperatorService extends RemoteService {
 		}
 	}
 
-	String ACE_ENDUSER_COOKIE_NAME = "com.quikj.ace.endUserIdentifier";
+	public static String ACE_ENDUSER_COOKIE_NAME = "com.quikj.ace.endUserIdentifier";
 
-	public List<Message> exchangeMessages(Message incoming)
+	List<Message> exchangeMessages(Message incoming) throws AceServerException;
+
+	List<Message> exchangeMessages(List<Message> incoming) throws AceServerException;
+
+	String connect() throws AceServerException;
+
+	void disconnect(String sessionId) throws AceServerException;
+
+	CannedMessageElement[] listCannedMessages(String[] groups, boolean fetchContent) throws AceServerException;
+
+	HashMap<String, String> getProfile(String groupName, String browserType) throws AceServerException;
+
+	boolean allOperatorBusy(String group) throws AceServerException;
+
+	String sendMail(SendMailRequestMessage mail, String captcha, String captchaType);
+
+	GroupInfo[] getGroupInfo(String user);
+
+	HashMap<Integer, String> getSecurityQuestions(String userid, String captcha, String captchaType)
 			throws AceServerException;
 
-	public List<Message> exchangeMessages(List<Message> incoming)
-			throws AceServerException;
-
-	public String connect() throws AceServerException;
-
-	public void disconnect(String sessionId) throws AceServerException;
-
-	public CannedMessageElement[] listCannedMessages(String[] groups, boolean fetchContent)
-			throws AceServerException;
-
-	public HashMap<String, String> getProfile(String groupName,
-			String browserType) throws AceServerException;
-
-	public boolean allOperatorBusy(String group) throws AceServerException;
-
-	public String sendMail(SendMailRequestMessage mail, String captcha,
-			String captchaType);
-
-	public GroupInfo[] getGroupInfo(String user);
-
-	public HashMap<Integer, String> getSecurityQuestions(String userid,
-			String captcha, String captchaType) throws AceServerException;
-
-	public void resetPassword(String userid, String captcha,
-			String captchaType, HashMap<Integer, String> securityAnswers,
+	void resetPassword(String userid, String captcha, String captchaType, HashMap<Integer, String> securityAnswers,
 			String locale) throws AceServerException;
 
-	public void recoverLostUsername(String address, String captcha,
-			String captchaType, String locale) throws AceServerException;
+	void recoverLostUsername(String address, String captcha, String captchaType, String locale)
+			throws AceServerException;
+	
+	void submitForm(FormSubmissionElement form) throws AceServerException;
 }

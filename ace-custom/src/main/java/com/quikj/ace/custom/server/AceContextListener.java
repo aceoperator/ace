@@ -13,12 +13,15 @@ import com.quikj.server.framework.AceConfigFileHelper;
 import com.quikj.server.framework.AceLogger;
 import com.quikj.server.framework.AceMailService;
 import com.quikj.server.framework.AceTimer;
+import com.quikj.server.framework.CaptchaService;
 
 /**
  * @author amit
  * 
  */
 public class AceContextListener implements ServletContextListener {
+
+	public static final String RECAPTCHA_SECRET_KEY = "com.quikj.ace.recaptchaSecret";
 
 	public AceContextListener() {
 	}
@@ -41,21 +44,18 @@ public class AceContextListener implements ServletContextListener {
 			FileInputStream fis = new FileInputStream(
 					AceConfigFileHelper.getAcePath("config/custom",
 							"custom_cfg.properties"));
-			Properties logProperties = new Properties();
-			logProperties.load(fis);
+			Properties customProperties = new Properties();
+			customProperties.load(fis);
 			fis.close();
 
-			new AceLogger(logProperties.getProperty(
+			new AceLogger(customProperties.getProperty(
 					"com.quikj.ace.custom.log.processName", "CUSTOM"),
-					Integer.parseInt(logProperties.getProperty(
+					Integer.parseInt(customProperties.getProperty(
 							"com.quikj.ace.custom.log.logGroup", "1"))).start();
 
 			AceLogger.Instance().log(AceLogger.INFORMATIONAL,
 					AceLogger.SYSTEM_LOG, "Timer service started");
 			new AceTimer().start();
-
-			AceLogger.Instance().log(AceLogger.INFORMATIONAL,
-					AceLogger.SYSTEM_LOG, "Mail service started");
 
 			fis = new FileInputStream(AceConfigFileHelper.getAcePath(
 					"config/properties", "mail.properties"));
@@ -79,7 +79,23 @@ public class AceContextListener implements ServletContextListener {
 					mailProperties
 							.getProperty("com.quikj.ace.mailOverrideFrom"))
 					.start();
-
+			AceLogger.Instance().log(AceLogger.INFORMATIONAL,
+					AceLogger.SYSTEM_LOG, "Mail service started");
+			
+			fis = new FileInputStream(
+					AceConfigFileHelper.getAcePath("config/properties",
+							"captcha.properties"));
+			Properties captchaProperties = new Properties();
+			captchaProperties.load(fis);
+			fis.close();
+			
+			CaptchaService captchaService = new CaptchaService();
+			String captchaSecret = captchaProperties.getProperty(RECAPTCHA_SECRET_KEY);
+			if (captchaSecret != null && !captchaSecret.trim().isEmpty()) {
+				captchaService.setSecretKey(captchaSecret);
+				AceLogger.Instance().log(AceLogger.INFORMATIONAL,
+						AceLogger.SYSTEM_LOG, "Captcha service initialized");
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

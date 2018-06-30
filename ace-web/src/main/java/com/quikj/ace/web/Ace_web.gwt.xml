@@ -2,6 +2,7 @@
 <module rename-to='ace_web'>
 	<!-- Inherit the core Web Toolkit stuff. -->
 	<inherits name='com.google.gwt.user.User' />
+	<inherits name='com.quikj.ace.common.AceCommon' />
 	<inherits name='com.quikj.ace.messages.AceMessages' />
 	<inherits name="com.google.gwt.logging.Logging" />
 	<inherits name="com.google.gwt.i18n.I18N" />

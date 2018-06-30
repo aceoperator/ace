@@ -1,28 +1,24 @@
 package com.quikj.ace.messages.vo.talk;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 public class StringListElement implements TalkMessageInterface {
 	private static final long serialVersionUID = 275473611703348702L;
-	private Vector<String> elements = new Vector<String>();
+	private List<String> elements = new ArrayList<>();
 
 	public StringListElement() {
 	}
 
 	public void addElement(String element) {
-		elements.addElement(element);
+		elements.add(element);
 	}
 
 	public String elementAt(int index) {
-		return elements.elementAt(index);
+		return elements.get(index);
 	}
 
-	/**
-	 * Getter for property elements.
-	 * 
-	 * @return Value of property elements.
-	 */
-	public Vector<String> getElements() {
+	public List<String> getElements() {
 		return elements;
 	}
 
@@ -30,13 +26,7 @@ public class StringListElement implements TalkMessageInterface {
 		return elements.size();
 	}
 
-	/**
-	 * Setter for property elements.
-	 * 
-	 * @param elements
-	 *            New value of property elements.
-	 */
-	public void setElements(Vector<String> elements) {
+	public void setElements(List<String> elements) {
 		this.elements = elements;
 	}
 }

@@ -16,51 +16,24 @@ public class SendMailRequestMessage implements TalkMessageInterface {
 
 	private MailElement mailElement = null;
 
-	/** Holds value of property replyRequired. */
 	private boolean replyRequired = true;
 
-	/** Creates a new instance of SendMailRequestMessage */
 	public SendMailRequestMessage() {
 	}
 
-	/**
-	 * Getter for property mailElement.
-	 * 
-	 * @return Value of property mailElement.
-	 */
 	public MailElement getMailElement() {
 		return mailElement;
 	}
 
-	/**
-	 * Getter for property replyRequired.
-	 * 
-	 * @return Value of property replyRequired.
-	 * 
-	 */
 	public boolean isReplyRequired() {
 		return this.replyRequired;
 	}
 
-	/**
-	 * Setter for property mailElement.
-	 * 
-	 * @param mailElement
-	 *            New value of property mailElement.
-	 */
 	public void setMailElement(MailElement mailElement) {
 		this.mailElement = mailElement;
 	}
 
-	/**
-	 * Setter for property replyRequired.
-	 * 
-	 * @param replyRequired
-	 *            New value of property replyRequired.
-	 * 
-	 */
 	public void setReplyRequired(boolean replyRequired) {
 		this.replyRequired = replyRequired;
 	}
-
 }

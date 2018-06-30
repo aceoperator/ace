@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.quikj.ace</groupId>
 		<artifactId>ace</artifactId>
-		<version>3.0.1</version>
+		<version>3.1.0</version>
 	</parent>
 
 	<artifactId>ace-web</artifactId>
@@ -100,7 +100,6 @@
 			<scope>test</scope>
 		</dependency>
 
-
 		<dependency>
 			<groupId>com.google.gwt</groupId>
 			<artifactId>gwt-user</artifactId>
@@ -112,6 +111,13 @@
 			<groupId>com.google.gwt</groupId>
 			<artifactId>gwt-servlet</artifactId>
 			<version>${gwt.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-dev</artifactId>
+			<version>${gwt.version}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -141,11 +147,6 @@
 			<version>6.0.37</version>
 		</dependency>
 
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.5.6</version>
-		</dependency>
 
 		<dependency>
 			<groupId>javax.mail</groupId>
@@ -161,6 +162,12 @@
 
 		<dependency>
 			<groupId>com.quikj.ace</groupId>
+			<artifactId>ace-ui-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.quikj.ace</groupId>
 			<artifactId>ace-messaging</artifactId>
 			<version>${project.version}</version>
 		</dependency>
@@ -169,6 +176,12 @@
 			<groupId>com.quikj.ace</groupId>
 			<artifactId>ace-framework</artifactId>
 			<version>${project.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-log4j12</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -213,6 +226,14 @@
 					<groupId>org.ow2.asm</groupId>
 					<artifactId>asm-debug-all</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-log4j12</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 
@@ -221,7 +242,6 @@
 			<artifactId>asm-debug-all</artifactId>
 			<version>5.0.3</version>
 		</dependency>
-
 	</dependencies>
 
 </project>

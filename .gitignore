@@ -1,4 +1,6 @@
 **/target
-target
-/.settings/
-/.project
+**/.settings/
+**/.project
+**/.settings
+**/.classpath
+**/*versionsBackup

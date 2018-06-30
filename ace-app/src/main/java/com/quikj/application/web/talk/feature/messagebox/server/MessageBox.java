@@ -8,6 +8,7 @@ package com.quikj.application.web.talk.feature.messagebox.server;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -606,7 +607,7 @@ public class MessageBox extends AceThread implements FeatureInterface,
 						} else {
 							out_mail.setFrom(call_info.getFromAddress());
 						}
-						out_mail.setReplyTo(new Vector());
+						out_mail.setReplyTo(new ArrayList<String>());
 						out_mail.addReplyTo(out_mail.getFrom());
 
 						out_mail.setBody(text);

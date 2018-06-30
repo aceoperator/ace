@@ -3,9 +3,6 @@
  */
 package com.quikj.ace.web.client.view.desktop;
 
-import java.util.Date;
-
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -19,45 +16,40 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.quikj.ace.common.client.captcha.CaptchaFactory;
+import com.quikj.ace.common.client.captcha.CaptchaWidget;
+import com.quikj.ace.common.client.captcha.CaptchaWidget.CaptchaListener;
 import com.quikj.ace.web.client.ApplicationController;
 import com.quikj.ace.web.client.ClientProperties;
 import com.quikj.ace.web.client.presenter.LostPasswordPresenter;
+import com.quikj.ace.web.client.view.CaptchaProperties;
 import com.quikj.ace.web.client.view.LostPasswordPanel;
 
 /**
  * @author becky
  * 
  */
-public class DesktopLostPasswordPanel1 extends LayoutPanel implements
-		LostPasswordPanel {
+public class DesktopLostPasswordPanel1 extends LayoutPanel implements LostPasswordPanel, CaptchaListener {
 
-	private static final String CAPTCHA_HELP = ApplicationController
-			.getMessages().DesktopUserBusyEmailPanel_capchaHelp();
 	private VerticalPanel collectUsernameForm;
 	private TextBox name;
 	private HTML caption;
 	private LostPasswordPresenter presenter;
 	private Label nameLabel;
 	private HorizontalPanel buttonPanel;
-	private Image captchaImg;
-	private TextBox captchaText;
-	private HorizontalPanel captchaPanel;
-	private Label captchaLabel;
-	private HTML captchaHelp;
+	private CaptchaWidget captcha;
 
 	public DesktopLostPasswordPanel1() {
 		super();
 		setSize("100%", "100%");
 
 		boolean fromLoginPage = true;
-		String startPage = ClientProperties.getInstance().getStringValue(
-				ClientProperties.ONCLICK_START_PAGE, null);
+		String startPage = ClientProperties.getInstance().getStringValue(ClientProperties.ONCLICK_START_PAGE, null);
 		if (startPage != null) {
 			fromLoginPage = false;
 		}
@@ -74,13 +66,11 @@ public class DesktopLostPasswordPanel1 extends LayoutPanel implements
 		collectUsernameForm.setSpacing(5);
 		scrollPanel.setWidget(collectUsernameForm);
 
-		caption = new HTML("<p>"
-				+ ApplicationController.getMessages()
-						.DesktopLostPasswordPanel1_usernameFormInstructions());
+		caption = new HTML(
+				"<p>" + ApplicationController.getMessages().DesktopLostPasswordPanel1_usernameFormInstructions());
 		collectUsernameForm.add(caption);
 
-		nameLabel = new Label(ApplicationController.getMessages()
-				.DesktopLostPasswordPanel1_name());
+		nameLabel = new Label(ApplicationController.getMessages().DesktopLostPasswordPanel1_name());
 		collectUsernameForm.add(nameLabel);
 
 		name = new TextBox();
@@ -91,7 +81,7 @@ public class DesktopLostPasswordPanel1 extends LayoutPanel implements
 			@Override
 			public void onKeyUp(KeyUpEvent event) {
 				if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
-					captchaText.setFocus(true);
+					captcha.focus();
 				}
 			}
 		});
@@ -104,70 +94,16 @@ public class DesktopLostPasswordPanel1 extends LayoutPanel implements
 
 		collectUsernameForm.add(new HTML("<p>"));
 
-		// TODO create a common captcha widget
-		captchaLabel = new Label(ApplicationController.getMessages()
-				.DesktopUserBusyEmailPanel_typeChars());
-		collectUsernameForm.add(captchaLabel);
+		captcha = CaptchaFactory.create(CaptchaProperties.properties());
+		collectUsernameForm.add(captcha.render(this));
 
-		captchaImg = new Image(GWT.getModuleBaseURL() + "../jcaptcha?nocache="
-				+ new Date().getTime());
-		collectUsernameForm.add(captchaImg);
-
-		captchaPanel = new HorizontalPanel();
-		collectUsernameForm.add(captchaPanel);
-
-		captchaText = new TextBox();
-		captchaPanel.add(captchaText);
-		captchaText.addKeyUpHandler(new KeyUpHandler() {
-
-			@Override
-			public void onKeyUp(KeyUpEvent event) {
-				if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
-					processSubmit();
-				}
-			}
-		});
-
-		HTML sp = new HTML("&nbsp;");
-		captchaPanel.add(sp);
-
-		Button captchaResetButton = new Button(ApplicationController
-				.getMessages().DesktopUserBusyEmailPanel_regenPicture());
-		captchaPanel.add(captchaResetButton);
-		captchaResetButton.setTitle(ApplicationController.getMessages()
-				.DesktopUserBusyEmailPanel_instructionsToRegen());
-
-		captchaResetButton.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				captchaText.setText("");
-				captchaText.setFocus(true);
-				captchaImg.setUrl(GWT.getModuleBaseURL()
-						+ "../jcaptcha?nocache=" + new Date().getTime());
-			}
-		});
-
-		sp = new HTML("&nbsp;");
-		captchaPanel.add(sp);
-
-		captchaHelp = new HTML("<smallest>"
-				+ ApplicationController.getMessages()
-						.DesktopUserBusyEmailPanel_whatIsThis() + "</smallest>");
-		captchaPanel.add(captchaHelp);
-
-		captchaPanel.setCellVerticalAlignment(captchaHelp,
-				HasVerticalAlignment.ALIGN_MIDDLE);
-		captchaHelp.setTitle(CAPTCHA_HELP);
-
-		collectUsernameForm.add(new HTML("<p>"));
 		buttonPanel = new HorizontalPanel();
 		collectUsernameForm.add(buttonPanel);
 		buttonPanel.setSpacing(5);
 		buttonPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		buttonPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
 
-		Button submitButton = new Button(ApplicationController.getMessages()
-				.DesktopLostPasswordPanel1_submit());
+		Button submitButton = new Button(ApplicationController.getMessages().DesktopLostPasswordPanel1_submit());
 		buttonPanel.add(submitButton);
 		submitButton.addClickHandler(new ClickHandler() {
 
@@ -177,8 +113,7 @@ public class DesktopLostPasswordPanel1 extends LayoutPanel implements
 			}
 		});
 
-		Button resetButton = new Button(ApplicationController.getMessages()
-				.DesktopLostPasswordPanel_reset());
+		Button resetButton = new Button(ApplicationController.getMessages().DesktopLostPasswordPanel_reset());
 		buttonPanel.add(resetButton);
 		resetButton.addClickHandler(new ClickHandler() {
 
@@ -189,8 +124,7 @@ public class DesktopLostPasswordPanel1 extends LayoutPanel implements
 		});
 
 		if (fromLoginPage) {
-			Button cancelButton = new Button(ApplicationController
-					.getMessages().DesktopLostPasswordPanel_cancel());
+			Button cancelButton = new Button(ApplicationController.getMessages().DesktopLostPasswordPanel_cancel());
 			buttonPanel.add(cancelButton);
 			cancelButton.addClickHandler(new ClickHandler() {
 
@@ -205,14 +139,12 @@ public class DesktopLostPasswordPanel1 extends LayoutPanel implements
 	@Override
 	public void reset() {
 		name.setText("");
-		captchaText.setText("");
-		captchaImg.setUrl(GWT.getModuleBaseURL() + "../jcaptcha?nocache="
-				+ new Date().getTime());
 		name.setFocus(true);
+		captcha.reset();
 	}
 
 	public void processSubmit() {
-		presenter.userNameSubmitted(name.getText(), captchaText.getText());
+		presenter.userNameSubmitted(name.getText(), captcha.getCaptcha(), captcha.getType());
 	}
 
 	@Override
@@ -220,4 +152,8 @@ public class DesktopLostPasswordPanel1 extends LayoutPanel implements
 		this.presenter = presenter;
 	}
 
+	@Override
+	public void captchaEntered(String captcha, String type) {
+		processSubmit();
+	}
 }

@@ -13,6 +13,7 @@ import org.apache.struts.util.LabelValueBean;
 
 import com.quikj.ace.db.webtalk.model.GroupBean;
 import com.quikj.application.communicator.admin.controller.SpringUtils;
+import com.quikj.server.framework.FormUtil;
 
 /**
  * 
@@ -109,19 +110,26 @@ public class CannedMessageManagementForm extends ActionForm {
 
 			// for create or modify
 			if (submit.equals("Create") || submit.equals("Modify")) {
-				if ((group == null) || (group.length() == 0)) {
+				if (group == null || group.isEmpty()) {
 					errors.add("group", new ActionError(
 							"error.cannedmessage.no.group"));
 				}
 
-				if ((description == null) || (description.length() == 0)) {
+				if (description == null || description.trim().isEmpty()) {
 					errors.add("description", new ActionError(
 							"error.cannedmessage.no.description"));
 				}
 
-				if ((message == null) || (message.length() == 0)) {
+				message = message.trim();
+				if (message == null || message.trim().isEmpty()) {
 					errors.add("message", new ActionError(
 							"error.cannedmessage.no.content"));
+				}
+				
+				String formError = FormUtil.validateForm(message);
+				if (formError != null && !formError.isEmpty()) {
+					errors.add("message", new ActionError(
+							"error.cannedmessage.form.error", formError));
 				}
 			}
 

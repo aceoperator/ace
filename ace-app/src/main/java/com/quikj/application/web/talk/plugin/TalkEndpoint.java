@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -18,6 +19,8 @@ import com.quikj.ace.messages.vo.talk.CannedMessageElement;
 import com.quikj.ace.messages.vo.talk.ConferenceInformationMessage;
 import com.quikj.ace.messages.vo.talk.DisconnectMessage;
 import com.quikj.ace.messages.vo.talk.DisconnectReasonElement;
+import com.quikj.ace.messages.vo.talk.FormDefinitionElement;
+import com.quikj.ace.messages.vo.talk.FormSubmissionElement;
 import com.quikj.ace.messages.vo.talk.HtmlElement;
 import com.quikj.ace.messages.vo.talk.JoinRequestMessage;
 import com.quikj.ace.messages.vo.talk.JoinResponseMessage;
@@ -38,6 +41,7 @@ import com.quikj.server.framework.AceConfigFileHelper;
 import com.quikj.server.framework.AceLogger;
 import com.quikj.server.framework.AceMessageInterface;
 import com.quikj.server.framework.AceNetworkAccess;
+import com.quikj.server.framework.FormUtil;
 
 public class TalkEndpoint implements PluginAppClientInterface {
 
@@ -74,8 +78,8 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		contentFilter = ApplicationServer.getInstance().getBean(ContentFilter.class);
 	}
 
-	private void addToCallList(long session_id, SessionInfo session) {
-		chatList.put(new Long(session_id), session);
+	private void addToCallList(long sessionId, SessionInfo session) {
+		chatList.put(sessionId, session);
 
 		if (registered) {
 			RegisteredEndPointList.Instance().setCallCount(parent, chatList.size());
@@ -83,33 +87,31 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		}
 	}
 
-	private void changeSessionId(long from_session_id, long to_session_id) {
-		SessionInfo session = getSessionInfo(from_session_id);
+	private void changeSessionId(long fromSessionId, long toSessionId) {
+		SessionInfo session = getSessionInfo(fromSessionId);
 		if (session != null) {
-			session.setSessionId(to_session_id);
-			chatList.remove(from_session_id);
+			session.setSessionId(toSessionId);
+			chatList.remove(fromSessionId);
 
 			// The cookie is set to null because in the replace session, there
 			// is no cookie information. In the scenario where V calls A and A
 			// adds B to the chat, B's transcript will not have V's cookie
 			// information. This is the correct behavior.
-			String transFile = renameTranscript(session.getTranscriptFile(), to_session_id, null);
+			String transFile = renameTranscript(session.getTranscriptFile(), toSessionId, null);
 			session.setTranscriptFile(transFile);
 
-			chatList.put(new Long(to_session_id), session);
+			chatList.put(new Long(toSessionId), session);
 		}
 	}
 
-	private boolean checkRequestMessage(String content_type, WebMessage body) {
+	private boolean checkRequestMessage(String contentType, WebMessage body) {
 		if (body == null) {
-			// print error message
 			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
 					+ "- TalkEndoint.checkRequestMessage() -- Request message does not have a body");
 			return false;
 		}
 
-		if (!content_type.equalsIgnoreCase(Message.CONTENT_TYPE_XML)) {
-			// print error message
+		if (!contentType.equalsIgnoreCase(Message.CONTENT_TYPE_XML)) {
 			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
 					+ "- TalkEndoint.checkRequestMessage() -- Content type of a request message is not application/xml");
 			return false;
@@ -117,10 +119,9 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		return true;
 	}
 
-	private boolean checkResponseMessage(String content_type, WebMessage body) {
+	private boolean checkResponseMessage(String contentType, WebMessage body) {
 		if (body != null) {
-			if (!content_type.equalsIgnoreCase(Message.CONTENT_TYPE_XML)) {
-				// print error message
+			if (!contentType.equalsIgnoreCase(Message.CONTENT_TYPE_XML)) {
 				AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
 						+ "- TalkEndoint.checkResponseMessage() -- Content type of a response message is not application/xml");
 				return false;
@@ -183,61 +184,59 @@ public class TalkEndpoint implements PluginAppClientInterface {
 
 	public boolean eventReceived(AceMessageInterface event) {
 		if (event instanceof MessageEvent) {
-			MessageEvent event_rcvd = (MessageEvent) event;
+			MessageEvent eventRcvd = (MessageEvent) event;
 
-			switch (event_rcvd.getEventType()) {
+			switch (eventRcvd.getEventType()) {
 			case MessageEvent.REGISTRATION_RESPONSE:
-				return processRegistrationResponseEvent(event_rcvd);
+				return processRegistrationResponseEvent(eventRcvd);
 
 			case MessageEvent.SETUP_RESPONSE:
-				return processSetupResponseEvent(event_rcvd);
+				return processSetupResponseEvent(eventRcvd);
 
 			case MessageEvent.SETUP_REQUEST:
-				return processSetupRequestEvent(event_rcvd);
+				return processSetupRequestEvent(eventRcvd);
 
 			case MessageEvent.DISCONNECT_MESSAGE:
-				return processDisconnectEvent(event_rcvd);
+				return processDisconnectEvent(eventRcvd);
 
 			case MessageEvent.RTP_MESSAGE:
-				return processRTPEvent(event_rcvd);
+				return processRTPEvent(eventRcvd);
 
 			default:
 				// The event is for the client, send it to the client
 
-				if (event_rcvd.getMessage() != null) {
+				if (eventRcvd.getMessage() != null) {
 					long sessionId = 0L;
 					boolean save = false;
-					if (event_rcvd.getMessage() instanceof JoinResponseMessage) {
-						JoinResponseMessage join = (JoinResponseMessage) event_rcvd.getMessage();
+					if (eventRcvd.getMessage() instanceof JoinResponseMessage) {
+						JoinResponseMessage join = (JoinResponseMessage) eventRcvd.getMessage();
 						sessionId = join.getSessionList().get(0);
 						save = true;
-					} else if (event_rcvd.getMessage() instanceof ConferenceInformationMessage) {
-						ConferenceInformationMessage conf = (ConferenceInformationMessage) event_rcvd.getMessage();
+					} else if (eventRcvd.getMessage() instanceof ConferenceInformationMessage) {
+						ConferenceInformationMessage conf = (ConferenceInformationMessage) eventRcvd.getMessage();
 						sessionId = conf.getSessionId();
 						save = true;
 					}
 
 					if (save) {
 						SessionInfo sessionInfo = getSessionInfo(sessionId);
-						saveTranscript(sessionInfo.getTranscriptFile(), event_rcvd.getMessage(),
-								MessageDirection.Outgoing, event_rcvd.getResponseStatus(), event_rcvd.getReason());
+						saveTranscript(sessionInfo.getTranscriptFile(), eventRcvd.getMessage(),
+								MessageDirection.Outgoing, eventRcvd.getResponseStatus(), eventRcvd.getReason());
 					}
 				}
 
-				if (event_rcvd.isRequest()) {
+				if (eventRcvd.isRequest()) {
 					// request message
-					if (!parent.sendRequestMessageToClient(event_rcvd.getRequestId(), Message.CONTENT_TYPE_XML,
-							event_rcvd.getMessage())) {
-						// print error message
+					if (!parent.sendRequestMessageToClient(eventRcvd.getRequestId(), Message.CONTENT_TYPE_XML,
+							eventRcvd.getMessage())) {
 						AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
 								+ "- TalkEndoint.eventReceived() -- Error sending server request message to the endpoint");
 						return false;
 					}
 				} else {
 					// response message
-					if (!parent.sendResponseMessageToClient(event_rcvd.getRequestId(), event_rcvd.getResponseStatus(),
-							event_rcvd.getReason(), Message.CONTENT_TYPE_XML, event_rcvd.getMessage())) {
-						// print an error message
+					if (!parent.sendResponseMessageToClient(eventRcvd.getRequestId(), eventRcvd.getResponseStatus(),
+							eventRcvd.getReason(), Message.CONTENT_TYPE_XML, eventRcvd.getMessage())) {
 						AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
 								+ "- TalkEndoint.eventReceived() -- Error sending server response message to the endpoint");
 						return false;
@@ -251,16 +250,14 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			return processDropEndpointEvent((DropEndpointEvent) event);
 		} else {
 			// unexpected event
-
-			// print error message
 			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
 					+ "- TalkEndoint.eventReceived() --  Unknown type of event received: " + event.messageType());
 			return false;
 		}
 	}
 
-	private SessionInfo getSessionInfo(long session_id) {
-		return chatList.get(session_id);
+	private SessionInfo getSessionInfo(long sessionId) {
+		return chatList.get(sessionId);
 	}
 
 	public boolean newConnection(String host, String endUserCookie, RemoteEndPoint parent) {
@@ -413,24 +410,22 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		// + " In processDisconnectMessage");
 
 		// get the call information from the call list
-		long session_id = message.getSessionId();
+		long sessionId = message.getSessionId();
 
-		SessionInfo session_info = null;
-		if (session_id == -1) // not specified
-		{
-			session_info = lastSession;
+		SessionInfo sessionInfo = null;
+		if (sessionId == -1) { // not specified
+			sessionInfo = lastSession;
 		} else {
-			session_info = getSessionInfo(session_id);
+			sessionInfo = getSessionInfo(sessionId);
 		}
 
-		if (session_info == null) // not found
-		{
+		if (sessionInfo == null) { // not found
 			return true;
 		}
 
-		saveTranscript(session_info.getTranscriptFile(), message, MessageDirection.Incoming, null, null);
+		saveTranscript(sessionInfo.getTranscriptFile(), message, MessageDirection.Incoming, null, null);
 
-		removeFromCallList(session_id);
+		removeFromCallList(sessionId);
 
 		if (registered) {
 			CallPartyElement selfInfo = (CallPartyElement) parent.getParam(EndPointInterface.PARAM_SELF_INFO);
@@ -449,7 +444,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			return false;
 		}
 
-		closeTranscript(session_info.getTranscriptFile());
+		closeTranscript(sessionInfo.getTranscriptFile());
 
 		if (!registered) {
 			// close the connection
@@ -635,8 +630,6 @@ public class TalkEndpoint implements PluginAppClientInterface {
 
 		if (!sessionInfo.isConnected()) {
 			// we do not expect any setup response
-
-			// print error message
 			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
 					+ "- TalkEndoint.processRTPMessage() -- An RTP message is received for a call that is not connected");
 			// and ignore
@@ -644,6 +637,13 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		}
 
 		List<Integer> cannedList = resolveCannedMediaElements(message);
+
+		handleSpecialContent(message);
+		
+		if (message.getMediaElements().getElements().isEmpty()) {
+			// Special content handling has stripped out all media elements
+			return true;
+		}
 
 		if (!registered) {
 			scrubMessage(message, cannedList);
@@ -720,27 +720,39 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			if (medium instanceof CannedMessageElement) {
 				CannedMessageElement canned = (CannedMessageElement) medium;
 
-				HtmlElement html = null;
+				MediaElementInterface element = null;
 				if (canned.getMessage() == null) {
 					String result = SynchronousDbOperations.getInstance().queryCannedMessages(canned.getId());
 					if (result != null) {
-						html = new HtmlElement();
-						html.setHtml(result);
+						element = resolveContent(result);
+						if (element instanceof FormDefinitionElement) {
+							long formId = SynchronousDbOperations.getInstance().createFormRecord(message.getSessionId(),
+									canned.getId());
+							if (formId == -1L) {
+								// This is unlikely to happen. Will happen when
+								// there is a database connectivity issue
+								AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
+										Thread.currentThread().getName()
+												+ "- TalkEndoint.resolveCannedMediaElements() -- Could not create a form record for session "
+												+ message.getSessionId());
+							} else {
+								((FormDefinitionElement) element).setFormId(formId);
+							}
+						}
 					} else {
 						AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
 								Thread.currentThread().getName()
-										+ "- TalkEndoint.processRTPMessage() -- A canned message with group = "
+										+ "- TalkEndoint.resolveCannedMediaElements() -- A canned message with group = "
 										+ canned.getGroup() + " and id " + canned.getId() + " could not be found."
 										+ " Going to ignore");
 					}
 				} else {
-					html = new HtmlElement();
-					html.setHtml(canned.getMessage());
+					element = new HtmlElement(canned.getMessage());
 				}
 
 				i.remove();
-				if (html != null) {
-					i.add(html);
+				if (element != null) {
+					i.add(element);
 					cannedList.add(index);
 				}
 			}
@@ -749,6 +761,20 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		}
 
 		return cannedList;
+	}
+
+	private MediaElementInterface resolveContent(String content) {
+		MediaElementInterface element;
+		String[] tokens = FormUtil.tokenizeFormDef(content);
+		if (tokens != null) {
+			FormDefinitionElement form = new FormDefinitionElement();
+			element = form;
+			form.setFormDef(tokens[1]);
+		} else {
+			element = new HtmlElement(content);
+		}
+
+		return element;
 	}
 
 	private void scrubMessage(RTPMessage message, List<Integer> cannedList) {
@@ -765,7 +791,34 @@ public class TalkEndpoint implements PluginAppClientInterface {
 				e.setHtml(contentFilter.scrubHtml(e.getHtml()));
 			}
 		}
+	}
 
+	private void handleSpecialContent(RTPMessage message) {
+		Iterator<MediaElementInterface> i = message.getMediaElements().getElements().iterator();
+		while(i.hasNext()) {
+			MediaElementInterface e = i.next();
+			if (e instanceof FormSubmissionElement) {
+				boolean toTranscript = processFormSubmission((FormSubmissionElement) e);
+				if (!toTranscript) {
+					i.remove(); // strip out from processing
+				}
+			}
+		}
+	}
+
+	private boolean processFormSubmission(FormSubmissionElement form) {
+		long cannedMessageId = SynchronousDbOperations.getInstance().retrieveFormRecord(form.getFormId());
+		if (cannedMessageId == -1L) {
+			// The form has already been submitted
+			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
+					Thread.currentThread().getName()
+							+ "- TalkEndoint.processFormSubmission() -- Could not retrieve form record for "
+							+ form.getFormId());
+			return false;
+		}
+
+		String cannedMessageContent = SynchronousDbOperations.getInstance().queryCannedMessages(cannedMessageId);
+		return FormUtil.processFormSubmission(cannedMessageContent, form.getResponse());
 	}
 
 	private void saveTranscript(String transcriptFile, Object message, MessageDirection direction, Integer status,
@@ -880,7 +933,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		return true;
 	}
 
-	private boolean processSetupRequestMessage(int request_id, SetupRequestMessage message) {
+	private boolean processSetupRequestMessage(int requestId, SetupRequestMessage message) {
 		// System.out.println(Thread.currentThread().getName()
 		// + " In processSetupRequestMessage");
 
@@ -888,7 +941,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			// unregistered users get one call
 
 			// send a response
-			parent.sendResponseMessageToClient(request_id, ResponseMessage.FORBIDDEN,
+			parent.sendResponseMessageToClient(requestId, ResponseMessage.FORBIDDEN,
 					java.util.ResourceBundle
 							.getBundle("com.quikj.application.web.talk.plugin.language",
 									ServiceController.getLocale((String) parent.getParam("language")))
@@ -910,7 +963,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		}
 		rsp.setSessionId(sessionId);
 
-		if (!parent.sendResponseMessageToClient(request_id, SetupResponseMessage.ACK, "Acknowledgement",
+		if (!parent.sendResponseMessageToClient(requestId, SetupResponseMessage.ACK, "Acknowledgement",
 				Message.CONTENT_TYPE_XML, rsp)) {
 			// print error message
 			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
@@ -934,7 +987,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
 					+ "- TalkEndoint.processSetupRequestMessage() -- Error sending message to the service controller");
 
-			parent.sendResponseMessageToClient(request_id, ResponseMessage.SERVICE_UNAVAILABLE,
+			parent.sendResponseMessageToClient(requestId, ResponseMessage.SERVICE_UNAVAILABLE,
 					java.util.ResourceBundle
 							.getBundle("com.quikj.application.web.talk.plugin.language",
 									ServiceController.getLocale((String) parent.getParam("language")))
@@ -960,7 +1013,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 
 		// create a session info
 		SessionInfo session = new SessionInfo(sessionId, parent);
-		session.setRequestId(request_id);
+		session.setRequestId(requestId);
 		session.setTranscriptFile(transFile);
 
 		// and add it to the list of sessions
@@ -1314,13 +1367,12 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		}
 	}
 
-	private void removeFromCallList(long session_id) {
-		removeFromCallList(session_id, true);
+	private void removeFromCallList(long sessionId) {
+		removeFromCallList(sessionId, true);
 	}
 
-	public boolean requestReceived(int request_id, String content_type, WebMessage body) {
-
-		if (!checkRequestMessage(content_type, body)) {
+	public boolean requestReceived(int requestId, String contentType, WebMessage body) {
+		if (!checkRequestMessage(contentType, body)) {
 			return true;
 		}
 
@@ -1335,7 +1387,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
 					+ "- TalkEndoint.requestReceived() -- The first request received from the client is not a setup or a registration request");
 
-			if (!parent.sendResponseMessageToClient(request_id, ResponseMessage.FORBIDDEN, "Bad sequence",
+			if (!parent.sendResponseMessageToClient(requestId, ResponseMessage.FORBIDDEN, "Bad sequence",
 					Message.CONTENT_TYPE_XML, null)) {
 				// print error message
 				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()
@@ -1346,15 +1398,15 @@ public class TalkEndpoint implements PluginAppClientInterface {
 		firstReqRcvd = true;
 
 		if (message instanceof RegistrationRequestMessage) {
-			return processRegistrationRequestMessage(request_id, (RegistrationRequestMessage) message);
+			return processRegistrationRequestMessage(requestId, (RegistrationRequestMessage) message);
 		} else if (message instanceof SetupRequestMessage) {
-			return processSetupRequestMessage(request_id, (SetupRequestMessage) message);
+			return processSetupRequestMessage(requestId, (SetupRequestMessage) message);
 		} else if (message instanceof RTPMessage) {
 			return processRTPMessage((RTPMessage) message);
 		} else if (message instanceof DisconnectMessage) {
 			return processDisconnectMessage((DisconnectMessage) message);
 		} else if (message instanceof UserToUserMessage) {
-			return processUserToUserRequestMessage(request_id, (UserToUserMessage) message);
+			return processUserToUserRequestMessage(requestId, (UserToUserMessage) message);
 		} else {
 			if (message instanceof JoinRequestMessage) {
 				JoinRequestMessage join = (JoinRequestMessage) message;
@@ -1363,7 +1415,7 @@ public class TalkEndpoint implements PluginAppClientInterface {
 			}
 
 			// unknown type of message, send it to the service controller
-			MessageEvent me = new MessageEvent(MessageEvent.CLIENT_REQUEST_MESSAGE, parent, message, null, request_id);
+			MessageEvent me = new MessageEvent(MessageEvent.CLIENT_REQUEST_MESSAGE, parent, message, null, requestId);
 			if (!ServiceController.Instance().sendMessage(me)) {
 				// print error message
 				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, Thread.currentThread().getName()

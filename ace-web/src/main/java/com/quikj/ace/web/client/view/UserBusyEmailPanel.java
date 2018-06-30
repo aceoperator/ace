@@ -10,10 +10,7 @@ import com.quikj.ace.web.client.presenter.UserBusyEmailPresenter;
  * 
  */
 public interface UserBusyEmailPanel {
+	void setPresenter(UserBusyEmailPresenter presenter);
 
-	public void setPresenter(UserBusyEmailPresenter presenter);
-
-	public void setEmailSentResult(String error);
-	
-	public String getCaptchaType();
+	void setEmailSentResult(String error);
 }
