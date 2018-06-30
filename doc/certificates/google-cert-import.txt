@@ -1,4 +1,4 @@
-# Migrate to the PKCS12 format as recommedned by Java (one time step)
+# Migrate to the PKCS12 format as recommended by Java (one time step)
 # First get the root certificates from https://pki.google.com/faq.html
 keytool -importkeystore -srckeystore ~/.keystore -destkeystore ~/.keystore -deststoretype pkcs12
 
@@ -21,4 +21,4 @@ cat recaptcha.pem | keytool -printcert
  keytool -list --keystore ~/.keystore
  
  # delete an older entry from the keystore (for example - when a certificate expires or is revoked)
- keytool -delete -alias google --keystore ~/.keystore
+ keytool -delete -alias google-api --keystore ~/.keystore

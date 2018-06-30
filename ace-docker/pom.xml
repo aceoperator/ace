@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.quikj.ace</groupId>
 		<artifactId>ace</artifactId>
-		<version>3.0.1-SNAPSHOT</version>
+		<version>3.1.0</version>
 	</parent>
 
 	<artifactId>ace-docker</artifactId>
@@ -18,25 +18,6 @@
 
 	<build>
 		<plugins>
-
-<!-- 			<plugin> -->
-<!-- 				<groupId>com.spotify</groupId> -->
-<!-- 				<artifactId>docker-maven-plugin</artifactId> -->
-<!-- 				<version>${docker.version}</version> -->
-<!-- 				<executions> -->
-<!-- 					<execution> -->
-<!-- 						<id>clean-all-images</id> -->
-<!-- 						<phase>package</phase> -->
-<!-- 						<goals> -->
-<!-- 							<goal>removeImage</goal> -->
-<!-- 						</goals> -->
-<!-- 						<configuration> -->
-<!-- 							<imageName></imageName> -->
-<!-- 						</configuration> -->
-<!-- 					</execution> -->
-<!-- 				</executions> -->
-<!-- 			</plugin> -->
-
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 				<version>3.0.2</version>
@@ -72,7 +53,7 @@
 							<goal>build</goal>
 						</goals>
 						<configuration>
-							<imageName>aceoperator/db</imageName>
+							<imageName>quik/aceoperator-db</imageName>
 							<imageTags>
 								<imageTag>${project.version}</imageTag>
 							</imageTags>
@@ -94,7 +75,7 @@
 							<goal>build</goal>
 						</goals>
 						<configuration>
-							<imageName>aceoperator/mail</imageName>
+							<imageName>quik/aceoperator-mail</imageName>
 							<imageTags>
 								<imageTag>${project.version}</imageTag>
 							</imageTags>
@@ -109,7 +90,7 @@
 							<goal>build</goal>
 						</goals>
 						<configuration>
-							<imageName>aceoperator/app</imageName>
+							<imageName>quik/aceoperator-app</imageName>
 							<imageTags>
 								<imageTag>${project.version}</imageTag>
 							</imageTags>
@@ -133,7 +114,7 @@
 							<goal>build</goal>
 						</goals>
 						<configuration>
-							<imageName>aceoperator/frontend</imageName>
+							<imageName>quik/aceoperator-frontend</imageName>
 							<imageTags>
 								<imageTag>${project.version}</imageTag>
 							</imageTags>
