@@ -3,6 +3,6 @@
 	<classpathentry kind="con" path="org.eclipse.che.MAVEN2_CLASSPATH_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" output="ace-db/target/classes" path="src/main/java"/>
-	<classpathentry kind="src" output="ace-db/target/classes" path="target/generated-sources/xjc"/>
+	<classpathentry kind="src" path="target/generated-sources/xjc"/>
 	<classpathentry kind="src" output="ace-db/target/test-classes" path="src/test/java"/>
 </classpath>
