@@ -22,6 +22,9 @@ services:
           - "network"
         environment:
           - "MYSQL_ROOT_PASSWORD=a1b2c3d4"
+          - "MYSQL_DATABASE=webtalk"
+          - "MYSQL_USER=ace"
+          - "MYSQL_PASSWORD=a1b2c3d4"
     mail:
         container_name: ace-mail
         image: "quik/aceoperator-mail:${project.version}"
