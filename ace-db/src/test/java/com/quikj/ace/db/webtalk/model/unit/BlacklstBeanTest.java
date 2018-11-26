@@ -28,7 +28,7 @@ import com.quikj.ace.db.webtalk.model.BlacklistBean;
  * 
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({ "/META-INF/AoDbSpringBase.xml", "/META-INF/AoDbSpringBeans.xml" })
+@ContextConfiguration({ "/META-INF/AoDbSpringBase.xml", "/META-INF/AoDbSpringBeans.xml" , "/AoDbSpringOverride.xml"})
 @TransactionConfiguration(transactionManager = "transactionManager", defaultRollback = true)
 @Transactional
 public class BlacklstBeanTest {

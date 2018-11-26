@@ -28,6 +28,12 @@ ENV ACE_SMTP_PASSWORD $ACE_SMTP_PASSWORD
 ARG ACE_SMTP_SERVER=mail
 ENV ACE_SMTP_SERVER $ACE_SMTP_SERVER
 
+ARG RUN_SEED=true
+ENV RUN_SEED $RUN_SEED
+
+ARG RUN_TOMCAT=true
+ENV RUN_TOMCAT $RUN_TOMCAT
+
 RUN apt-get update; apt-get -y install mariadb-client; rm -rf /usr/local/tomcat/webapps/*
 
 COPY *.sh /usr/share/aceoperator/bin/
