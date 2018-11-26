@@ -1,29 +1,45 @@
 # Dockerfile for ace-app
 FROM tomcat:7.0.72-jre8
-MAINTAINER Amit Chatterjee <amit.chatterjee@quik-j.com>
+LABEL MAINTAINER QUIK Computing <info@quik-j.com>
 
 ARG ACE_VERSION=SNAPSHOT
 
+ARG ACE_SQL_HOST=db
+ENV ACE_SQL_HOST $ACE_SQL_HOST
+
+ARG ACE_SQL_ROOT_PASSWORD=a1b2c3d4
+ENV ACE_SQL_ROOT_PASSWORD $ACE_SQL_ROOT_PASSWORD
+
+ARG ACE_SQL_USER=ace
+ENV ACE_SQL_USER $ACE_SQL_USER
+
+ARG ACE_SQL_PASSWORD=a1b2c3d4
+ENV ACE_SQL_PASSWORD $ACE_SQL_PASSWORD
+
+ARG LOAD_DEMO=true
+ENV LOAD_DEMO $LOAD_DEMO
+
+ARG ACE_SMTP_USER=
+ENV ACE_SMTP_USER $ACE_SMTP_USER
+
+ARG ACE_SMTP_PASSWORD=
+ENV ACE_SMTP_PASSWORD $ACE_SMTP_PASSWORD
+
+ARG ACE_SMTP_SERVER=mail
+ENV ACE_SMTP_SERVER $ACE_SMTP_SERVER
+
+RUN apt-get update; apt-get -y install mariadb-client; rm -rf /usr/local/tomcat/webapps/*
+
+COPY *.sh /usr/share/aceoperator/bin/
+RUN chmod +x /usr/share/aceoperator/bin/*.sh
+
 COPY work/${ACE_VERSION}/.ace /usr/share/aceoperator/.ace
-RUN sed -i -e 's/\$\$ACE(ACE_SQL_USER)/ace/g; s/\$\$ACE(ACE_SQL_PASSWORD)/a1b2c3d4/g;s/\$\$ACE(ACE_SQL_HOST)/db/g' \
-	 /usr/share/aceoperator/.ace/config/log4j.properties; \
-	sed -i -e 's/\$\$ACE(ACE_SQL_USER)/ace/g; s/\$\$ACE(ACE_SQL_PASSWORD)/a1b2c3d4/g; s/localhost/db/g' \
-	 /usr/share/aceoperator/.ace/config/properties/ace-db.properties; \
-	sed -i -e 's/\$\$ACE(ACE_SMTP_USER)//g; s/\$\$ACE(ACE_SMTP_PASSWORD)//g; s/\$\$ACE(ACE_SMTP_SERVER)/mail/g' \
-		/usr/share/aceoperator/.ace/config/properties/mail.properties
+COPY *.sql /usr/share/aceoperator/.ace/sql/
 
-RUN rm -rf /usr/local/tomcat/webapps/*
-
-COPY work/${ACE_VERSION}/web/ace-communicator.war /usr/local/tomcat/webapps/
-COPY work/${ACE_VERSION}/web/ace-contactcenter.war /usr/local/tomcat/webapps/
+COPY work/${ACE_VERSION}/web/*.war /usr/local/tomcat/webapps/
 COPY work/${ACE_VERSION}/web/ace-custom /usr/local/tomcat/webapps/ace-custom
-
-RUN sed -i -e 's/emailTranscript=false/emailTranscript=true/; s/transcriptEmailTo=@SELF;@OTHERS/transcriptEmailTo=@SELF;operations@acedemo.net/' \
-	/usr/share/aceoperator/.ace/profiles/default-operator.properties 
 
 COPY server.xml /usr/local/tomcat/conf
 COPY config-override.xml /usr/share/aceoperator/.ace/spring/ace-app/
 
-ENV JAVA_OPTS "-Xms256m -Xmx512m -Djava.awt.headless=true -Dfile.encoding=UTF8" -Duser.timezone=US/Eastern -Dace.root.dir=/usr/share/aceoperator"
-
-VOLUME ["/usr/local/tomcat/webapps/.ace"]
+CMD ["/usr/share/aceoperator/bin/run.sh"]

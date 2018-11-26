@@ -58,13 +58,6 @@
 								<imageTag>${project.version}</imageTag>
 							</imageTags>
 							<dockerDirectory>src/main/images/ace-db</dockerDirectory>
-							<resources>
-								<resource>
-									<targetPath>work</targetPath>
-									<directory>../ace-assembly/target/ace-${project.version}/ace-${project.version}/.ace/sql</directory>
-									<include>**/*.sql</include>
-								</resource>
-							</resources>
 						</configuration>
 					</execution>
 

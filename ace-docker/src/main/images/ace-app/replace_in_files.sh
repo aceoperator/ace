@@ -14,4 +14,4 @@ for env in $env_list; do
 done
 
 shift
-eval sed -e \'$exp_buffer\' "$*"
+eval sed -i -e \'$exp_buffer\' "$*"
