@@ -1,0 +1,6 @@
+# Dockerfile for ace-db
+FROM mariadb:5.5.52
+LABEL MAINTAINER QUIK Computing <info@quik-j.com>
+
+ARG MYSQL_ROOT_PASSWORD=a1b2c3d4
+ENV MYSQL_ROOT_PASSWORD $MYSQL_ROOT_PASSWORD
