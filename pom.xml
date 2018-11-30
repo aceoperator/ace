@@ -119,6 +119,6 @@
 		<module>ace-custom</module>
 		<module>ace-migration</module>
 		<module>ace-assembly</module>
+		<module>ace-docker</module>
 	</modules>
-
 </project>

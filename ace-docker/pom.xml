@@ -16,8 +16,19 @@
 		<docker.version>0.4.13</docker.version>
 	</properties>
 
-	<modules>
-		<!--TODO -->
-	</modules>
-
+	<profiles>
+		<profile>
+			<id>docker</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<modules>
+				<module>ace-docker-mail</module>
+				<module>ace-docker-db</module>
+				<module>ace-docker-app</module>
+				<module>ace-docker-frontend</module>
+				<module>ace-docker-compose</module>
+			</modules>
+		</profile>
+	</profiles>
 </project>

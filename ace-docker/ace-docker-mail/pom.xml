@@ -30,7 +30,7 @@
 							<imageTags>
 								<imageTag>${project.version}</imageTag>
 							</imageTags>
-							<dockerDirectory>src/main/docker</dockerDirectory>
+							<dockerDirectory>${basedir}/src/main/docker</dockerDirectory>
 						</configuration>
 					</execution>
 				</executions>
