@@ -1,5 +1,5 @@
 # initialize configuration and database
-docker run --name db -e MYSQL_ROOT_PASSWORD=a1b2c3d4 -p 3306:3306 mariadb:5.5.52
+docker run -d --name ace-db -v acedb:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=a1b2c3d4 -p 3306:3306 mariadb:5.5.52
 
 export ACE_SQL_HOST=127.0.0.1
 export ACE_SQL_ROOT_PASSWORD=a1b2c3d4
@@ -15,3 +15,12 @@ export RUN_SEED=true
 
 # drop configuration and database - so that you can reinit using the above command
 mysql -h 127.0.0.1 -u root -pa1b2c3d4 -e "DROP DATABASE webtalk"; rm -rf ~/.ace
+
+# to stop the db
+docker stop ace-db
+
+# to remove the db container
+docker rm -ace db
+
+# to remove the database tablespace
+docker volume rm acedb

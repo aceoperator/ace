@@ -1,5 +1,16 @@
 version: "2"
 services:
+    db:
+        container_name: ace-db
+        image: "quik/aceoperator-db:${project.version}"
+        ports: 
+          - "3306:3306"
+        volumes:
+          - "acedb:/var/lib/mysql"
+        networks:
+          - "network"
+        environment:
+          - "MYSQL_ROOT_PASSWORD=${ACE_SQL_ROOT_PASSWORD}"
     app:
         container_name: ace-app
         image: "quik/aceoperator-app:${project.version}"
@@ -21,17 +32,8 @@ services:
           - "ACE_SMTP_PASSWORD=${ACE_SMTP_PASSWORD}"
           - "LOAD_DEMO=${LOAD_DEMO}"
           - "RUN_SEED=${RUN_SEED}"
-         volumes:
-          - ${ACEOPERATOR_HOME}:/var/aceoperator
-    db:
-        container_name: ace-db
-        image: "quik/aceoperator-db:${project.version}"
-        ports: 
-          - "3306:3306"
-        networks:
-          - "network"
-        environment:
-          - "MYSQL_ROOT_PASSWORD=${ACE_SQL_ROOT_PASSWORD}"
+        volumes:
+          - "${ACEOPERATOR_HOME}:/var/aceoperator"
     mail:
         container_name: ace-mail
         image: "quik/aceoperator-mail:${project.version}"
@@ -55,3 +57,6 @@ services:
 networks:
   network:
     driver: bridge
+
+volumes:
+  acedb:

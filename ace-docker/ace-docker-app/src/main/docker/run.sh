@@ -23,6 +23,14 @@ if [ -z "$seed_dir" ]; then
     seed_dir="$target_dir/.ace/sql"
 fi
 
+# wait for mariadb to start
+maria_started=1
+while [ "$maria_started" = "1" ]; do
+    sleep 5
+    nc -zv $ACE_SQL_HOST 3306
+    maria_started=$?
+done
+
 if [ -n "$RUN_SEED" ]; then
     if [ ! -d "$target_dir/.ace" ]; then
         echo "$target_dir/.ace does not exist. Initializing"

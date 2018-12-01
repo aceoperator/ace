@@ -34,7 +34,7 @@ ENV RUN_SEED $RUN_SEED
 ARG RUN_TOMCAT=true
 ENV RUN_TOMCAT $RUN_TOMCAT
 
-RUN apt-get update; apt-get -y install mariadb-client; rm -rf /usr/local/tomcat/webapps/*
+RUN apt-get update; apt-get -y install mariadb-client netcat; rm -rf /usr/local/tomcat/webapps/*
 
 COPY *.sh /usr/share/aceoperator/bin/
 RUN chmod +x /usr/share/aceoperator/bin/*.sh
