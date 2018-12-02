@@ -24,7 +24,7 @@
 			</activation>
 			<modules>
 				<module>ace-docker-mail</module>
-				<module>ace-docker-db</module>
+				<module>ace-docker-data</module>
 				<module>ace-docker-app</module>
 				<module>ace-docker-frontend</module>
 				<module>ace-docker-compose</module>

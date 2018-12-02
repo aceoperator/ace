@@ -31,13 +31,10 @@
 								<imageTag>${project.version}</imageTag>
 							</imageTags>
 							<dockerDirectory>${basedir}/src/main/docker</dockerDirectory>
-							<buildArgs>
-								<ACE_VERSION>ace-${project.version}</ACE_VERSION>
-							</buildArgs>
 							<resources>
 								<resource>
-									<targetPath>work</targetPath>
-									<directory>${basedir}/../../ace-assembly/target/ace-${project.version}</directory>
+									<targetPath>work/webapps</targetPath>
+									<directory>${basedir}/../../ace-assembly/target/ace-${project.version}/ace-${project.version}/web</directory>
 								</resource>
 							</resources>
 						</configuration>

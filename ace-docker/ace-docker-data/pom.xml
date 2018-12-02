@@ -8,8 +8,8 @@
 		<version>3.1.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>ace-docker-db</artifactId>
-	<name>ace-docker-db</name>
+	<artifactId>ace-docker-data</artifactId>
+	<name>ace-docker-data</name>
 	<packaging>pom</packaging>
 
 	<build>
@@ -20,17 +20,23 @@
 				<version>${docker.version}</version>
 				<executions>
 					<execution>
-						<id>build-ace-db</id>
+						<id>build-ace-data</id>
 						<phase>package</phase>
 						<goals>
 							<goal>build</goal>
 						</goals>
 						<configuration>
-							<imageName>quik/aceoperator-db</imageName>
+							<imageName>quik/aceoperator-data</imageName>
 							<imageTags>
 								<imageTag>${project.version}</imageTag>
 							</imageTags>
 							<dockerDirectory>${basedir}/src/main/docker</dockerDirectory>
+							<resources>
+								<resource>
+									<targetPath>work/.ace</targetPath>
+									<directory>${basedir}/../../ace-assembly/src/main/config/.ace</directory>
+								</resource>
+							</resources>
 						</configuration>
 					</execution>
 				</executions>
