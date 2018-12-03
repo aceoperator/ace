@@ -1,0 +1,16 @@
+version: "2"
+services:
+    mail:
+        container_name: ace-mail
+        image: "quik/aceoperator-mail:${project.version}"
+        ports:
+          - "25:25"
+          - "143:143" 
+          - "993:993"
+        networks:
+          - "network"       
+networks:
+  network:
+    driver: bridge
+volumes:
+  acedb:

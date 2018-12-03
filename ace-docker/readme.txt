@@ -36,4 +36,6 @@ export ACE_SMTP_PASSWORD=
 export ACE_SMTP_SERVER=mail
 export RUN_SEED=true
 
- docker-compose -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/db-compose.yml -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/aceoperator-compose.yml up
+docker-compose -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/db-compose.yml \
+    -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/mail-compose.yml \
+    -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/aceoperator-compose.yml up
