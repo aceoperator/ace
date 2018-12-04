@@ -14,5 +14,32 @@ spec:
         valueFrom:
           secretKeyRef:
             name: aceoperator-secrets
-            key: root_password
+            key: mysql_root_password
+  - name: ace-data
+    image: "quik/aceoperator-data:3.1.0-SNAPSHOT"
+    env:
+      - name: ACE_SQL_HOST
+        value: 127.0.0.1
+      - name: ACE_SQL_ROOT_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: aceoperator-secrets
+            key: mysql_root_password
+      - name: ACE_SQL_USER
+        value: ace
+      - name: ACE_SQL_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: aceoperator-secrets
+            key: mysql_ace_password
+      - name: ACE_SMTP_SERVER
+        value: 127.0.0.1
+      - name: ACE_SMTP_USER
+        value: ""
+      - name: ACE_SMTP_PASSWORD
+        value: ""
+      - name: LOAD_DEMO
+        value: "true"
+      - name: RUN_SEED
+        value: "true"
   restartPolicy: Never
