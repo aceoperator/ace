@@ -17,6 +17,9 @@ spec:
             key: mysql_root_password
   - name: ace-data
     image: "quik/aceoperator-data:3.1.0-SNAPSHOT"
+    volumeMounts:
+      - mountPath: /var/aceoperator
+        name: aceoperator_home
     env:
       - name: ACE_SQL_HOST
         value: 127.0.0.1
@@ -42,4 +45,7 @@ spec:
         value: "true"
       - name: RUN_SEED
         value: "true"
+  volumes:
+    - name: aceoperator_home
+      emptyDir: {}
   restartPolicy: Never

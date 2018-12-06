@@ -2,7 +2,9 @@
 FROM tomcat:7.0.72-jre8
 LABEL MAINTAINER QUIK Computing <info@quik-j.com>
 
-# blow up stuff included with default tomcat
+RUN apt-get update; apt-get -y install netcat
+
+# blow up apps included with default tomcat
 RUN rm -rf /usr/local/tomcat/webapps/*
 
 COPY *.sh /usr/share/aceoperator/bin/
