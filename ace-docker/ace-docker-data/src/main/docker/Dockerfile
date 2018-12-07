@@ -29,8 +29,9 @@ ENV LOAD_DEMO $LOAD_DEMO
 ARG RUN_SEED=true
 ENV RUN_SEED $RUN_SEED
 
-RUN apt-get update; apt-get -y install mariadb-client netcat
+RUN apt-get update; apt-get -y install mariadb-client nmap; ln -s /usr/bin/ncat /usr/bin/nc
 
+COPY work/common/scripts/*.sh /usr/share/aceoperator/bin/
 COPY *.sh /usr/share/aceoperator/bin/
 RUN chmod +x /usr/share/aceoperator/bin/*.sh
 
@@ -38,5 +39,7 @@ COPY work/.ace /usr/share/aceoperator/.ace
 COPY *.sql /usr/share/aceoperator/.ace/sql/
 
 COPY config-override.xml /usr/share/aceoperator/.ace/spring/ace-app/
+
+EXPOSE 6969
 
 CMD ["/usr/share/aceoperator/bin/populate.sh"]

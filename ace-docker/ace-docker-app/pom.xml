@@ -36,6 +36,10 @@
 									<targetPath>work/webapps</targetPath>
 									<directory>${basedir}/../../ace-assembly/target/ace-${project.version}/ace-${project.version}/web</directory>
 								</resource>
+								<resource>
+									<targetPath>work/common/scripts</targetPath>
+									<directory>${basedir}/../ace-docker-common/src/main/scripts</directory>
+								</resource>
 							</resources>
 						</configuration>
 					</execution>
