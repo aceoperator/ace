@@ -11,7 +11,7 @@ minikube ssh
 # Remove unused docker imaages from minikube
 minikube ssh
 docker container rm $(docker ps -a -q)
-docker rmi to remove the image
+# docker rmi to remove the image
 
 # to delete deployments
 kubectl get deployments --all-namespaces
@@ -41,7 +41,10 @@ kubectl describe pod/aceoperator -n aceoperator
 kubectl exec -n aceoperator -it aceoperator bash
 
 # port forwarding
-kubectl port-forward aceoperator 3306:3306 -n aceoperator
+kubectl port-forward aceoperator 80:80 -n aceoperator
+
+# create a service
+kubectl create -f aceoperator-service.yml -n aceoperator
 
 # delete pod
 kubectl delete pod aceoperator -n aceoperator

@@ -14,17 +14,17 @@ docker volume rm $(docker volume ls -qf dangling=true | grep -v VOLUME)
 
 # Run aceoperator docker containers
 export ACEOPERATOR_HOME=$HOME
-export ACE_SQL_HOST=db
-export ACE_SQL_ROOT_PASSWORD=a1b2c3d4
-export ACE_SQL_USER=ace
-export ACE_SQL_PASSWORD=a1b2c3d4
-export ACE_SMTP_USER=
-export ACE_SMTP_PASSWORD=
-export ACE_SMTP_SERVER=mail
-export ACE_DATA_HOST=data
-export ACE_APP_HOST=app
-export ACE_LOAD_DEMO=true
-export ACE_RUN_SEED=true
+export ACEOPERATOR_SQL_HOST=db
+export ACEOPERATOR_SQL_ROOT_PASSWORD=a1b2c3d4
+export ACEOPERATOR_SQL_USER=ace
+export ACEOPERATOR_SQL_PASSWORD=a1b2c3d4
+export ACEOPERATOR_SMTP_USER=
+export ACEOPERATOR_SMTP_PASSWORD=
+export ACEOPERATOR_SMTP_SERVER=mail
+export ACEOPERATOR_DATA_HOST=data
+export ACEOPERATOR_APP_HOST=app
+export LOAD_DEMO=true
+export RUN_SEED=true
 
 docker-compose -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/db-compose.yml \
     -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/mail-compose.yml \

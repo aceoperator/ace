@@ -12,7 +12,7 @@ data_ping_port=6969
 cnt_init $ping_port
 
 # wait for the data container to start
-cnt_waitfor $ACE_DATA_HOST $data_ping_port STARTED
+cnt_waitfor $ACEOPERATOR_DATA_HOST $data_ping_port STARTED
 
 export JAVA_OPTS="-Xms256m -Xmx512m -Djava.awt.headless=true -Dfile.encoding=UTF8 -Duser.timezone=US/Eastern -Dace.root.dir=$target_dir"
 

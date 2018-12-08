@@ -10,22 +10,22 @@ services:
         networks:
           - "network"
         environment:
-          - "MYSQL_ROOT_PASSWORD=${ACE_SQL_ROOT_PASSWORD}"
+          - "MYSQL_ROOT_PASSWORD=${ACEOPERATOR_SQL_ROOT_PASSWORD}"
     data:
         container_name: ace-data
         image: "quik/aceoperator-data:${project.version}"
         links:
-          - "db:${ACE_SQL_HOST}"
+          - "db:${ACEOPERATOR_SQL_HOST}"
         networks:
           - "network"
         environment:
-          - "ACE_SQL_HOST=${ACE_SQL_HOST}"
-          - "ACE_SQL_ROOT_PASSWORD=${ACE_SQL_ROOT_PASSWORD}"
-          - "ACE_SQL_USER=${ACE_SQL_USER}"
-          - "ACE_SQL_PASSWORD=${ACE_SQL_PASSWORD}"
-          - "ACE_SMTP_SERVER=${ACE_SMTP_SERVER}"
-          - "ACE_SMTP_USER=${ACE_SMTP_USER}"
-          - "ACE_SMTP_PASSWORD=${ACE_SMTP_PASSWORD}"
+          - "ACEOPERATOR_SQL_HOST=${ACEOPERATOR_SQL_HOST}"
+          - "ACEOPERATOR_SQL_ROOT_PASSWORD=${ACEOPERATOR_SQL_ROOT_PASSWORD}"
+          - "ACEOPERATOR_SQL_USER=${ACEOPERATOR_SQL_USER}"
+          - "ACEOPERATOR_SQL_PASSWORD=${ACEOPERATOR_SQL_PASSWORD}"
+          - "ACEOPERATOR_SMTP_SERVER=${ACEOPERATOR_SMTP_SERVER}"
+          - "ACEOPERATOR_SMTP_USER=${ACEOPERATOR_SMTP_USER}"
+          - "ACEOPERATOR_SMTP_PASSWORD=${ACEOPERATOR_SMTP_PASSWORD}"
           - "LOAD_DEMO=${LOAD_DEMO}"
           - "RUN_SEED=${RUN_SEED}"
         volumes:

@@ -2,8 +2,8 @@
 FROM tomcat:7.0.72-jre8
 LABEL MAINTAINER QUIK Computing <info@quik-j.com>
 
-ARG ACE_DATA_HOST=db
-ENV ACE_DATA_HOST $ACE_DATA_HOST
+ARG ACEOPERATOR_DATA_HOST=db
+ENV ACEOPERATOR_DATA_HOST $ACEOPERATOR_DATA_HOST
 
 RUN apt-get update; apt-get -y install nmap; ln -s /usr/bin/ncat /usr/bin/nc
 

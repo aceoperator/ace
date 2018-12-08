@@ -4,8 +4,11 @@ metadata:
   name: aceoperator
   namespace: aceoperator
   labels:
-    product: aceoperator
+    author: quik-computing
+    app: aceoperator
+    client: generic
 spec:
+  restartPolicy: Never
   containers:
   - name: ace-db
     image: mariadb:5.5.52
@@ -21,25 +24,25 @@ spec:
       - mountPath: /var/aceoperator
         name: aceoperator-home
     env:
-      - name: ACE_SQL_HOST
+      - name: ACEOPERATOR_SQL_HOST
         value: 127.0.0.1
-      - name: ACE_SQL_ROOT_PASSWORD
+      - name: ACEOPERATOR_SQL_ROOT_PASSWORD
         valueFrom:
           secretKeyRef:
             name: aceoperator-secrets
             key: mysql_root_password
-      - name: ACE_SQL_USER
+      - name: ACEOPERATOR_SQL_USER
         value: ace
-      - name: ACE_SQL_PASSWORD
+      - name: ACEOPERATOR_SQL_PASSWORD
         valueFrom:
           secretKeyRef:
             name: aceoperator-secrets
             key: mysql_ace_password
-      - name: ACE_SMTP_SERVER
+      - name: ACEOPERATOR_SMTP_SERVER
         value: 127.0.0.1
-      - name: ACE_SMTP_USER
+      - name: ACEOPERATOR_SMTP_USER
         value: ""
-      - name: ACE_SMTP_PASSWORD
+      - name: ACEOPERATOR_SMTP_PASSWORD
         value: ""
       - name: LOAD_DEMO
         value: "true"
@@ -48,12 +51,16 @@ spec:
   - name: ace-app
     image: "quik/aceoperator-app:3.1.0-SNAPSHOT"
     env:
-      - name: ACE_DATA_HOST
+      - name: ACEOPERATOR_DATA_HOST
         value: 127.0.0.1
     volumeMounts:
       - mountPath: /var/aceoperator
         name: aceoperator-home
+  - name: ace-frontend
+    image: "quik/aceoperator-frontend:3.1.0-SNAPSHOT"
+    env:
+      - name: ACEOPERATOR_APP_HOST
+        value: 127.0.0.1
   volumes:
     - name: aceoperator-home
       emptyDir: {}
-  restartPolicy: Never
