@@ -8,6 +8,11 @@ eval $(minikube docker-env)
 # to ssh into minikube vm
 minikube ssh
 
+# Remove unused docker imaages from minikube
+minikube ssh
+docker container rm $(docker ps -a -q)
+docker rmi to remove the image
+
 # to delete deployments
 kubectl get deployments --all-namespaces
 kubectl delete -n NAMESPACE deployment DEPLOYMENT
@@ -40,3 +45,4 @@ kubectl port-forward aceoperator 3306:3306 -n aceoperator
 
 # delete pod
 kubectl delete pod aceoperator -n aceoperator
+

@@ -33,6 +33,8 @@ services:
           - "mail:mail"
         networks:
           - "network"
+        environment:
+          - "ACE_DATA_HOST=${ACE_DATA_HOST}"
         volumes:
           - "${ACEOPERATOR_HOME}:/var/aceoperator"
     frontend:

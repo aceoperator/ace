@@ -10,7 +10,9 @@ export LOAD_DEMO=true
 export ACE_SMTP_USER=
 export ACE_SMTP_PASSWORD=
 export ACE_SMTP_SERVER=mail
+export ACE_DATA_HOST=data
 export RUN_SEED=true
+
 docker-compose -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/db-compose.yml up
 
 # Cleanup all the images
@@ -34,6 +36,7 @@ export LOAD_DEMO=true
 export ACE_SMTP_USER=
 export ACE_SMTP_PASSWORD=
 export ACE_SMTP_SERVER=mail
+export ACE_DATA_HOST=data
 export RUN_SEED=true
 
 docker-compose -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/db-compose.yml \

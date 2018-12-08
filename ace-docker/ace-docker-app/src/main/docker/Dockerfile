@@ -2,6 +2,9 @@
 FROM tomcat:7.0.72-jre8
 LABEL MAINTAINER QUIK Computing <info@quik-j.com>
 
+ARG ACE_DATA_HOST=db
+ENV ACE_DATA_HOST $ACE_DATA_HOST
+
 RUN apt-get update; apt-get -y install nmap; ln -s /usr/bin/ncat /usr/bin/nc
 
 COPY work/common/scripts/*.sh /usr/share/aceoperator/bin/
@@ -15,6 +18,6 @@ RUN chmod +x /usr/share/aceoperator/bin/*.sh
 COPY work/webapps /usr/local/tomcat/webapps
 COPY server.xml /usr/local/tomcat/conf
 
-EXPOSE 6970
+EXPOSE 6970 8080 8443 8009
 
 CMD ["/usr/share/aceoperator/bin/run.sh"]
