@@ -4,10 +4,8 @@ services:
     data:
         container_name: ace-data
         image: "quik/aceoperator-data:${project.version}"
-        depends_on:
-          - db
         links:
-          - "db:db"
+          - "db:${ACE_SQL_HOST}"
         networks:
           - "network"
         environment:
@@ -25,12 +23,9 @@ services:
     app:
         container_name: ace-app
         image: "quik/aceoperator-app:${project.version}"
-        depends_on:
-          - mail
-          - data
         links:
-          - "data:data"
-          - "mail:mail"
+          - "db:${ACE_SQL_HOST}"
+          - "mail:${ACE_SMTP_SERVER}"
         networks:
           - "network"
         environment:
@@ -44,9 +39,11 @@ services:
           - "80:80"
           - "443:443"
         links:
-          - "app:app"
+          - "app:${ACE_APP_HOST}"
         networks:
-          - "network"       
+          - "network"
+        environment:
+          - "ACE_APP_HOST=${ACE_APP_HOST}"    
 networks:
   network:
     driver: bridge

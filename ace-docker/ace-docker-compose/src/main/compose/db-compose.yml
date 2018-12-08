@@ -14,10 +14,8 @@ services:
     data:
         container_name: ace-data
         image: "quik/aceoperator-data:${project.version}"
-        depends_on:
-          - db
         links:
-          - "db:db"
+          - "db:${ACE_SQL_HOST}"
         networks:
           - "network"
         environment:
