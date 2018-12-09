@@ -22,3 +22,5 @@ services:
 networks:
   network:
     driver: bridge
+volumes:
+  acedb:

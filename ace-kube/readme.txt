@@ -34,12 +34,6 @@ kubectl create -f aceoperator-pod.yml -n aceoperator
 kubectl get pods -n aceoperator
 kubectl describe pod/aceoperator -n aceoperator
 
-# bash into the pod
-kubectl exec -n aceoperator -it aceoperator bash
-
-# port forwarding
-kubectl port-forward aceoperator 80:80 -n aceoperator
-
 # create a service
 kubectl create -f aceoperator-service.yml -n aceoperator
 
@@ -51,3 +45,10 @@ kubectl delete pod aceoperator -n aceoperator
 
 # delete namespace
 kubectl delete namespace aceoperator
+
+-----------------------------------------------------
+# bash into the pod
+kubectl exec -n aceoperator -it aceoperator bash
+
+# port forwarding
+kubectl port-forward aceoperator 8080:8080 -n aceoperator

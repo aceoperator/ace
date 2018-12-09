@@ -24,7 +24,8 @@ services:
           - "network"
         environment:
           - "ACEOPERATOR_APP_HOST=${ACEOPERATOR_APP_HOST}" 
-          - "TLS_PORT=${TLS_PORT}"    
 networks:
   network:
     driver: bridge
+volumes:
+  acedb:

@@ -56,13 +56,6 @@ spec:
     volumeMounts:
       - mountPath: /var/aceoperator
         name: aceoperator-home
-  - name: ace-frontend
-    image: "quik/aceoperator-frontend:3.1.0-SNAPSHOT"
-    env:
-      - name: ACEOPERATOR_APP_HOST
-        value: 127.0.0.1
-      - name: TLS_PORT
-        value: "30443"
   volumes:
     - name: aceoperator-home
       emptyDir: {}
