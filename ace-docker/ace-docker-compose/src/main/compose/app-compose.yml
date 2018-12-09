@@ -1,0 +1,30 @@
+version: "2"
+services:
+    app:
+        container_name: ace-app
+        image: "quik/aceoperator-app:${project.version}"
+        links:
+          - "db:${ACEOPERATOR_SQL_HOST}"
+          - "mail:${ACEOPERATOR_SMTP_SERVER}"
+        networks:
+          - "network"
+        environment:
+          - "ACEOPERATOR_DATA_HOST=${ACEOPERATOR_DATA_HOST}"
+        volumes:
+          - "${ACEOPERATOR_HOME}:/var/aceoperator"
+    frontend:
+        container_name: ace-frontend
+        image: "quik/aceoperator-frontend:${project.version}"
+        ports:
+          - "80:80"
+          - "443:443"
+        links:
+          - "app:${ACEOPERATOR_APP_HOST}"
+        networks:
+          - "network"
+        environment:
+          - "ACEOPERATOR_APP_HOST=${ACEOPERATOR_APP_HOST}" 
+          - "TLS_PORT=${TLS_PORT}"    
+networks:
+  network:
+    driver: bridge

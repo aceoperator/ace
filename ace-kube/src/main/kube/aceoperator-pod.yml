@@ -61,6 +61,8 @@ spec:
     env:
       - name: ACEOPERATOR_APP_HOST
         value: 127.0.0.1
+      - name: TLS_PORT
+        value: "30443"
   volumes:
     - name: aceoperator-home
       emptyDir: {}

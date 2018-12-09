@@ -11,25 +11,6 @@ services:
           - "network"
         environment:
           - "MYSQL_ROOT_PASSWORD=${ACEOPERATOR_SQL_ROOT_PASSWORD}"
-    data:
-        container_name: ace-data
-        image: "quik/aceoperator-data:${project.version}"
-        links:
-          - "db:${ACEOPERATOR_SQL_HOST}"
-        networks:
-          - "network"
-        environment:
-          - "ACEOPERATOR_SQL_HOST=${ACEOPERATOR_SQL_HOST}"
-          - "ACEOPERATOR_SQL_ROOT_PASSWORD=${ACEOPERATOR_SQL_ROOT_PASSWORD}"
-          - "ACEOPERATOR_SQL_USER=${ACEOPERATOR_SQL_USER}"
-          - "ACEOPERATOR_SQL_PASSWORD=${ACEOPERATOR_SQL_PASSWORD}"
-          - "ACEOPERATOR_SMTP_SERVER=${ACEOPERATOR_SMTP_SERVER}"
-          - "ACEOPERATOR_SMTP_USER=${ACEOPERATOR_SMTP_USER}"
-          - "ACEOPERATOR_SMTP_PASSWORD=${ACEOPERATOR_SMTP_PASSWORD}"
-          - "LOAD_DEMO=${LOAD_DEMO}"
-          - "RUN_SEED=${RUN_SEED}"
-        volumes:
-          - "${ACEOPERATOR_HOME}:/var/aceoperator"
 networks:
   network:
     driver: bridge

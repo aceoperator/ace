@@ -1,10 +1,11 @@
 # First time setup of the Oracle tablespace for testing
-cd ~/git/ace/ace-docker/ace-docker-app ; mvn clean install
+cd ~/git/ace/ace-docker/ace-docker-data ; mvn clean install
 cd ~/git/ace/ace-docker/ace-docker-compose ; mvn clean install
 
-# Add the environment variables described above
+# Add the environment variables described below
 
-docker-compose -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/db-compose.yml up
+docker-compose -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/db-compose.yml \
+        -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/data-compose.yml up
 
 # Cleanup all the images
 docker rmi `docker images | grep -v REPOSITORY | awk '{print $1":"$2'} | grep quik`
@@ -13,6 +14,7 @@ docker rmi `docker images | grep -v REPOSITORY | awk '{print $1":"$2'} | grep qu
 docker volume rm $(docker volume ls -qf dangling=true | grep -v VOLUME)
 
 # Run aceoperator docker containers
+export TLS_PORT=443
 export ACEOPERATOR_HOME=$HOME
 export ACEOPERATOR_SQL_HOST=db
 export ACEOPERATOR_SQL_ROOT_PASSWORD=a1b2c3d4
@@ -26,9 +28,11 @@ export ACEOPERATOR_APP_HOST=app
 export LOAD_DEMO=true
 export RUN_SEED=true
 
+
 docker-compose -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/db-compose.yml \
+    -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/data-compose.yml \
     -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/mail-compose.yml \
-    -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/aceoperator-compose.yml up
+    -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/app-compose.yml up
 
 # To publish to Docker Hub:
 export DOCKER_ID_USER="username"
