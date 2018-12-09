@@ -17,6 +17,9 @@ docker container rm $(docker ps -a -q)
 kubectl get deployments --all-namespaces
 kubectl delete -n NAMESPACE deployment DEPLOYMENT
 
+# add ingress controller
+minikube addons enable ingress
+
 # stop minikube
 minikube stop
 
@@ -37,6 +40,9 @@ kubectl describe pod/aceoperator -n aceoperator
 # create a service
 kubectl create -f aceoperator-service.yml -n aceoperator
 
+# create an ingress
+kubectl create -f aceoperator-ingress.xml -n aceoperator
+
 # delete secret
 kubectl delete secret aceoperator-secrets -n aceoperator
 
@@ -46,6 +52,8 @@ kubectl delete pod aceoperator -n aceoperator
 # delete namespace
 kubectl delete namespace aceoperator
 
+# delete all in a namespace
+kubectl delete --all -n aceoperator
 -----------------------------------------------------
 # bash into the pod
 kubectl exec -n aceoperator -it aceoperator bash

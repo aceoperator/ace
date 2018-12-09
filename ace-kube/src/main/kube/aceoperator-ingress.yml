@@ -1,0 +1,18 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: aceoperator
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  backend:
+    serviceName: aceperator
+    servicePort: 80
+  rules:
+  - host: aceoperator.net
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: aceoperator
+          servicePort: 8080
