@@ -29,19 +29,23 @@ kubectl create namespace aceoperator
 kubectl get namespaces
 
 # create secret
-kubectl create -f ./aceoperator-secrets.yml -n aceoperator
+kubectl create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-secrets.yml -n aceoperator
 kubectl get secrets -n aceoperator
 
 # create aceoperator pod
-kubectl create -f aceoperator-pod.yml -n aceoperator
+kubectl create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-pod.yml -n aceoperator
 kubectl get pods -n aceoperator
 kubectl describe pod/aceoperator -n aceoperator
 
 # create a service
-kubectl create -f aceoperator-service.yml -n aceoperator
+kubectl create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-service.yml -n aceoperator
+
+# import certificate
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ~/certs/kube.key -out ~/certs/kube.crt -subj "/CN=aceoperator.net"
+kubectl create secret tls aceoperator-certs --key ~/certs/kube.key --cert ~/certs/kube.crt -n aceoperator
 
 # create an ingress
-kubectl create -f aceoperator-ingress.xml -n aceoperator
+kubectl create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-ingress.yml -n aceoperator
 
 # delete secret
 kubectl delete secret aceoperator-secrets -n aceoperator
