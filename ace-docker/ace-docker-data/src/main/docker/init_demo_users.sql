@@ -1,4 +1,4 @@
-use webtalk;
+use $$ACE(ACEOPERATOR_SQL_DB);
 
 INSERT IGNORE INTO user_tbl (userid, password, domain, flags, fullname, address, addnl_info, unavail_xferto, gatekeeper, password_updated)
 	VALUES ('amit', password('a1b2c3d4'),'ace', 4,'Amit Chatterjee','amit@acedemo.net','Operator','messagebox', '', NOW());

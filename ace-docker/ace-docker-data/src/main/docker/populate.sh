@@ -18,7 +18,7 @@ cnt_init $ping_port
 maria_started=1
 while [ "$maria_started" = "1" ]; do
     sleep 5
-    nc -zv $ACEOPERATOR_SQL_HOST 3306
+    nc -zv $ACEOPERATOR_SQL_HOST $ACEOPERATOR_SQL_PORT
     maria_started=$?
 done
 
@@ -30,14 +30,14 @@ if [ -n "$RUN_SEED" ]; then
         $bin_dir/replace_in_files.sh '^ACEOPERATOR_.*' `find $target_dir/.ace -type f \( -name "*properties" -o -name "*sql" \)`
     fi
 
-    db_exists=`mysql -h $ACEOPERATOR_SQL_HOST -u root -p$ACEOPERATOR_SQL_ROOT_PASSWORD -e 'SHOW DATABASES' | grep -i webtalk`
+    db_exists=`mysql -h $ACEOPERATOR_SQL_HOST -P $ACEOPERATOR_SQL_PORT -u root -p$ACEOPERATOR_SQL_ROOT_PASSWORD -e 'SHOW DATABASES' | grep -i webtalk`
     if [ -z "$db_exists" ]; then
         echo "Database webtalk does not exist. Creating and loading data"
-        mysql -h $ACEOPERATOR_SQL_HOST -u root -p$ACEOPERATOR_SQL_ROOT_PASSWORD < $target_dir/.ace/sql/init_db.sql
-        mysql -h $ACEOPERATOR_SQL_HOST -u $ACEOPERATOR_SQL_USER -p$ACEOPERATOR_SQL_PASSWORD < $target_dir/.ace/sql/init_objects.sql
+        mysql -h $ACEOPERATOR_SQL_HOST -P $ACEOPERATOR_SQL_PORT -u root -p$ACEOPERATOR_SQL_ROOT_PASSWORD < $target_dir/.ace/sql/init_db.sql
+        mysql -h $ACEOPERATOR_SQL_HOST -P $ACEOPERATOR_SQL_PORT -u $ACEOPERATOR_SQL_USER -p$ACEOPERATOR_SQL_PASSWORD < $target_dir/.ace/sql/init_objects.sql
 
         if [ -n "$LOAD_DEMO" ]; then
-            mysql -h $ACEOPERATOR_SQL_HOST -u $ACEOPERATOR_SQL_USER -p$ACEOPERATOR_SQL_PASSWORD < $sql_dir/init_demo_users.sql
+            mysql -h $ACEOPERATOR_SQL_HOST -P $ACEOPERATOR_SQL_PORT -u $ACEOPERATOR_SQL_USER -p$ACEOPERATOR_SQL_PASSWORD < $sql_dir/init_demo_users.sql
             sed -i -e 's/emailTranscript=false/emailTranscript=true/; s/transcriptEmailTo=@SELF;@OTHERS/transcriptEmailTo=@SELF;operations@acedemo.net/' \
                 $target_dir/.ace/profiles/default-operator.properties 
         fi

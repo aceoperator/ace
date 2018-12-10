@@ -1,4 +1,4 @@
-USE webtalk;
+USE $$ACE(ACEOPERATOR_SQL_DB);
 
 # Change on 10/18/2012
 ALTER TABLE user_tbl 

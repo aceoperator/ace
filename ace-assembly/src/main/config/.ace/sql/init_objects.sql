@@ -1,4 +1,4 @@
-USE webtalk;
+USE $$ACE(ACEOPERATOR_SQL_DB);
 
 CREATE TABLE IF NOT EXISTS `account_tbl` (
   userid VARCHAR(40) NOT NULL,

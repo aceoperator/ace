@@ -7,7 +7,7 @@
 
 -- Run the following SQL
 
-use webtalk;
+use $$ACE(ACEOPERATOR_SQL_DB);
 
 DELETE FROM feature_params_tbl WHERE pname = 'proactive-monitoring';
 
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS log_tbl
     KEY (process)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-use webtalk;
+use $$ACE(ACEOPERATOR_SQL_DB);
 CREATE TABLE IF NOT EXISTS cdr_unreg_opbusy_tbl (
   groupid varchar(64) binary NOT NULL,
   time_stamp datetime NOT NULL default 0,
@@ -44,7 +44,7 @@ ALTER TABLE cdr_unreg_login_tbl
 ALTER TABLE cdr_unreg_login_tbl 
 	modify name varchar(60) CHARACTER SET utf8 COLLATE utf8_general_ci default '';
 	
-use webtalk;
+use $$ACE(ACEOPERATOR_SQL_DB);
 CREATE TABLE IF NOT EXISTS user_security_questions_tbl (
   questionid TINYINT(4) NOT NULL ,
   question_value VARCHAR(128) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ,

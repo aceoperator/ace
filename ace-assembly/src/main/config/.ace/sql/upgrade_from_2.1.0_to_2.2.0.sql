@@ -1,4 +1,4 @@
-USE webtalk;
+USE $$ACE(ACEOPERATOR_SQL_DB);
 
 -- Change on 03/10/2013
 
@@ -47,7 +47,7 @@ ALTER TABLE `group_member_tbl`
 ALTER TABLE `feature_params_tbl` 
   ADD CONSTRAINT `FK1_feature_params_tbl`
   FOREIGN KEY (`feature_id` )
-  REFERENCES `webtalk`.`feature_tbl` (`id` )
+  REFERENCES `$$ACE(ACEOPERATOR_SQL_DB)`.`feature_tbl` (`id` )
   ON DELETE CASCADE
   ON UPDATE NO ACTION
 , ADD INDEX `FK1_feature_params_tbl` (`feature_id` ASC) ;
@@ -63,7 +63,7 @@ CREATE TABLE account_tbl LIKE ace.account_tbl;
 INSERT INTO account_tbl SELECT * FROM ace.account_tbl;
 DROP TABLE ace.account_tbl;
 
-ALTER TABLE `webtalk`.`account_tbl` 
+ALTER TABLE `$$ACE(ACEOPERATOR_SQL_DB)`.`account_tbl` 
 	DROP COLUMN `features` , 
 	DROP COLUMN `level` , 
 	DROP COLUMN `flags` , 

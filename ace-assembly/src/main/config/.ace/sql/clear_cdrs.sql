@@ -1,4 +1,4 @@
-use webtalk;
+use $$ACE(ACEOPERATOR_SQL_DB);
 
 delete from cdr_logout_tbl;
 
