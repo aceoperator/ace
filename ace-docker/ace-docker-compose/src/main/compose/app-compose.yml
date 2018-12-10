@@ -24,6 +24,9 @@ services:
           - "network"
         environment:
           - "ACEOPERATOR_APP_HOST=${ACEOPERATOR_APP_HOST}" 
+          - "ACEOPERATOR_CERTS_DIR=${ACEOPERATOR_CERTS_DIR}"
+        volumes:
+          - "${ACEOPERATOR_CERTS_DIR}:/etc/ssl/certs"
 networks:
   network:
     driver: bridge

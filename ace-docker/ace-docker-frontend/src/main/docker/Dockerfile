@@ -2,11 +2,10 @@
 FROM httpd:latest
 LABEL MAINTAINER Amit Chatterjee <amit.chatterjee@quik-j.com>
 
-ARG TLS_PORT=443
-ENV TLS_PORT $TLS_PORT
-
 ARG ACEOPERATOR_APP_HOST=app
 ENV ACEOPERATOR_APP_HOST $ACEOPERATOR_APP_HOST
 
-COPY * /usr/local/apache2/conf/
-RUN chmod +x /usr/local/apache2/conf/passphrase.sh
+ARG ACEOPERATOR_CERTS_DIR=/etc/pki/tls/certs
+ENV ACEOPERATOR_CERTS_DIR $ACEOPERATOR_CERTS_DIR
+
+COPY httpd.conf /usr/local/apache2/conf/
