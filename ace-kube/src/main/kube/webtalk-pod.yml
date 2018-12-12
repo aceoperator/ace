@@ -1,23 +1,14 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: aceoperator
-  namespace: aceoperator
+  name: webtalk
   labels:
     author: quik-computing
     app: aceoperator
-    client: generic
+    instance: webtalk
 spec:
   restartPolicy: Never
   containers:
-  - name: ace-db
-    image: mariadb:5.5.52
-    env:
-      - name: MYSQL_ROOT_PASSWORD
-        valueFrom:
-          secretKeyRef:
-            name: aceoperator-secrets
-            key: mysql_root_password
   - name: ace-data
     image: "quik/aceoperator-data:3.1.0-SNAPSHOT"
     volumeMounts:
@@ -25,20 +16,22 @@ spec:
         name: aceoperator-home
     env:
       - name: ACEOPERATOR_SQL_HOST
-        value: 127.0.0.1
+        value: "aceoperatordb.aceoperator.svc.cluster.local"
       - name: ACEOPERATOR_SQL_PORT
         value: "3306"
+      - name: ACEOPERATOR_SQL_DB
+        value: "webtalk"
       - name: ACEOPERATOR_SQL_ROOT_PASSWORD
         valueFrom:
           secretKeyRef:
-            name: aceoperator-secrets
+            name: aceoperator
             key: mysql_root_password
       - name: ACEOPERATOR_SQL_USER
         value: ace
       - name: ACEOPERATOR_SQL_PASSWORD
         valueFrom:
           secretKeyRef:
-            name: aceoperator-secrets
+            name: webtalk
             key: mysql_ace_password
       - name: ACEOPERATOR_SMTP_SERVER
         value: 127.0.0.1

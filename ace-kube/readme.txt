@@ -26,41 +26,34 @@ minikube stop
 ---------------------------------------------
 # create aceoperator namespace
 kubectl create namespace aceoperator
-kubectl get namespaces
 
 # create secret
 kubectl create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-secrets.yml -n aceoperator
-kubectl get secrets -n aceoperator
+
+# create aceoperatordb pod
+kubectl create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-pod.yml -n aceoperator
+
+# crete aceoperatordb service
+kubectl create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-service.yml -n aceoperator
+
+# use the command below to view the allocated port of the NodePort and connect to the database
+kubectl get services -n aceoperator
+mysql -h $(minikube ip) -P <PORTNUM> -u root -p
+
+# create secret for instance webtalk
+kubectl create -f ~/git/ace/ace-kube/src/main/kube/webtalk-secrets.yml -n aceoperator
 
 # create aceoperator pod
-kubectl create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-pod.yml -n aceoperator
-kubectl get pods -n aceoperator
-kubectl describe pod/aceoperator -n aceoperator
+kubectl create -f ~/git/ace/ace-kube/src/main/kube/webtalk-pod.yml -n aceoperator
 
 # create a service
-kubectl create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-service.yml -n aceoperator
+kubectl create -f ~/git/ace/ace-kube/src/main/kube/webtalk-service.yml -n aceoperator
 
 # import certificate
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ~/certs/kube.key -out ~/certs/kube.crt -subj "/CN=aceoperator.net"
 kubectl create secret tls aceoperator-certs --key ~/certs/kube.key --cert ~/certs/kube.crt -n aceoperator
 
-# create an ingress
-kubectl create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-ingress.yml -n aceoperator
+# create webtalk ingress
+kubectl create -f ~/git/ace/ace-kube/src/main/kube/webtalk-ingress.yml -n aceoperator
 
-# delete secret
-kubectl delete secret aceoperator-secrets -n aceoperator
 
-# delete pod
-kubectl delete pod aceoperator -n aceoperator
-
-# delete namespace
-kubectl delete namespace aceoperator
-
-# delete all in a namespace
-kubectl delete --all -n aceoperator
------------------------------------------------------
-# bash into the pod
-kubectl exec -n aceoperator -it aceoperator bash
-
-# port forwarding
-kubectl port-forward aceoperator 8080:8080 -n aceoperator

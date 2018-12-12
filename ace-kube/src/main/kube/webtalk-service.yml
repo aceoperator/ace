@@ -1,10 +1,11 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: aceoperator
+  name: webtalk
 spec:
   selector:
     app: aceoperator
+    instance: webtalk
   type: NodePort
   ports:
   - name: http

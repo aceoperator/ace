@@ -14,4 +14,5 @@ for env in $env_list; do
 done
 
 shift
+# echo "Replace expression: $exp_buffer"
 eval sed -i -e \'$exp_buffer\' "$*"

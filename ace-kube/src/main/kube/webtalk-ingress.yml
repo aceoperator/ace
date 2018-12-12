@@ -1,19 +1,19 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: aceoperator
+  name: webtalk
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   tls:
   - hosts:
-    - aceoperator.net
+    - webtalk.aceoperator.net
     secretName: aceoperator-certs
   rules:
-    - host: aceoperator.net
+    - host: webtalk.aceoperator.net
       http:
         paths:
           - path: /
             backend:
-              serviceName: aceoperator
+              serviceName: webtalk
               servicePort: 8080
