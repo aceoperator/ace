@@ -16,3 +16,4 @@ spec:
           secretKeyRef:
             name: aceoperator
             key: mysql_root_password
+

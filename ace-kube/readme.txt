@@ -1,3 +1,11 @@
+# Create NFS mount on linux
+sudo mkdir /var/nfs/mariadb
+#FIXME
+sudo 777 /var/nfs/mariadb
+sudo sh -c 'echo  "/var/nfs *(rw,root_squash)" > /etc/exports'
+sudo exportfs -a
+
+------------------------------------------
 # start minikube
 minikube start --vm-driver kvm2
 
@@ -28,32 +36,39 @@ minikube stop
 kubectl create namespace aceoperator
 
 # create secret
-kubectl create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-secrets.yml -n aceoperator
+kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-secrets.yml 
+
+# create NFS mount 
+kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-nfs.yml
+kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-nfs-claim.yml
+kubectl -n aceoperator get pv
+kubectl -n aceoperator get pvc
 
 # create aceoperatordb pod
-kubectl create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-pod.yml -n aceoperator
+kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-pod.yml 
 
 # crete aceoperatordb service
-kubectl create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-service.yml -n aceoperator
+kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-service.yml 
 
 # use the command below to view the allocated port of the NodePort and connect to the database
 kubectl get services -n aceoperator
 mysql -h $(minikube ip) -P <PORTNUM> -u root -p
 
+
 # create secret for instance webtalk
-kubectl create -f ~/git/ace/ace-kube/src/main/kube/webtalk-secrets.yml -n aceoperator
+kubectl  -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/webtalk-secrets.yml
 
 # create aceoperator pod
-kubectl create -f ~/git/ace/ace-kube/src/main/kube/webtalk-pod.yml -n aceoperator
+kubectl  -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/webtalk-pod.yml
 
 # create a service
-kubectl create -f ~/git/ace/ace-kube/src/main/kube/webtalk-service.yml -n aceoperator
+kubectl  -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/webtalk-service.yml
 
 # import certificate
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ~/certs/kube.key -out ~/certs/kube.crt -subj "/CN=aceoperator.net"
-kubectl create secret tls aceoperator-certs --key ~/certs/kube.key --cert ~/certs/kube.crt -n aceoperator
+kubectl -n aceoperator create secret tls aceoperator-certs --key ~/certs/kube.key --cert ~/certs/kube.crt 
 
 # create webtalk ingress
-kubectl create -f ~/git/ace/ace-kube/src/main/kube/webtalk-ingress.yml -n aceoperator
+kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/webtalk-ingress.yml 
 
 

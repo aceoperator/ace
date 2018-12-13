@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: aceoperator
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+  - ReadWriteMany
+  nfs:
+    # The address 192.168.39.1 is the Minikube gateway to the host. This way
+    # not only the container IP will be visible by the NFS server on the host machine,
+    # but the IP address of the `minikube ip` command. You will need to
+    # grant access to the `minikube ip` IP address.
+    server: 192.168.39.1
+    path: '/var/nfs'

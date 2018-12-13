@@ -13,7 +13,8 @@ spec:
     image: "quik/aceoperator-data:3.1.0-SNAPSHOT"
     volumeMounts:
       - mountPath: /var/aceoperator
-        name: aceoperator-home
+        name: aceoperator
+        subPath: instance/webtalk
     env:
       - name: ACEOPERATOR_SQL_HOST
         value: "aceoperatordb.aceoperator.svc.cluster.local"
@@ -50,7 +51,12 @@ spec:
         value: 127.0.0.1
     volumeMounts:
       - mountPath: /var/aceoperator
-        name: aceoperator-home
+        name: aceoperator
+        subPath: instance/webtalk
+  securityContext:
+    fsGroup: 1000
   volumes:
-    - name: aceoperator-home
-      emptyDir: {}
+    - name: aceoperator
+      persistentVolumeClaim:
+        claimName: aceoperator
+      
