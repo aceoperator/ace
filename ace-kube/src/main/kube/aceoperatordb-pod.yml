@@ -3,7 +3,6 @@ kind: Pod
 metadata:
   name: aceoperatordb
   labels:
-    author: quik-computing
     app: aceoperatordb
 spec:
   restartPolicy: Never

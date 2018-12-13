@@ -60,20 +60,16 @@ kubectl -n aceoperator get pv
 kubectl -n aceoperator get pvc
 
 # create aceoperatordb pod
-kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-pod.yml 
+kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-deployment.yml 
 
 # create aceoperatordb service
-kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-service.yml 
-
-# use the command below to view the allocated port of the NodePort and connect to the database
-kubectl get services -n aceoperator
-mysql -h $(minikube ip) -P <PORTNUM> -u root -p
+kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-service.yml
 
 # create secret for instance webtalk
 kubectl  -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/webtalk-secrets.yml
 
-# create aceoperator pod
-kubectl  -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/webtalk-pod.yml
+# create aceoperator deployment
+kubectl  -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/webtalk-deployment.yml
 
 # create a service
 kubectl  -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/webtalk-service.yml

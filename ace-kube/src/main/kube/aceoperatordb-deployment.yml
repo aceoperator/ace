@@ -1,0 +1,21 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: aceoperatordb
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: aceoperatordb
+    spec:
+      containers:
+      - name: ace-db
+        image: mariadb:5.5.52
+        env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: aceoperator
+                key: mysql_root_password
+
