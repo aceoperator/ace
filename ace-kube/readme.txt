@@ -54,8 +54,8 @@ kubectl create namespace aceoperator
 kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-secrets.yml 
 
 # create NFS mount 
-kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-nfs.yml
-kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-nfs-claim.yml
+kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-pv.yml
+kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-pvc.yml
 kubectl -n aceoperator get pv
 kubectl -n aceoperator get pvc
 
@@ -65,8 +65,14 @@ kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-
 # create aceoperatordb service
 kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-service.yml
 
+# service to access mysql externally - DON'T DOIT in production environment
+kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-service-ext.yml 
+
 # create secret for instance webtalk
 kubectl  -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/webtalk-secrets.yml
+
+# create configmap for webtalk
+kubectl -n aceoperator create configmap webtalk --from-env-file=$HOME/git/ace/ace-kube/src/main/kube/webtalk.properties
 
 # create aceoperator deployment
 kubectl  -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/webtalk-deployment.yml
@@ -79,3 +85,10 @@ kubectl -n aceoperator create secret tls aceoperator-certs --key ~/certs/kube.ke
 
 # create webtalk ingress
 kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/webtalk-ingress.yml
+
+# port forward http to minikube
+sudo iptables -A PREROUTING -t nat -i ens33 -p tcp --dport 80 -j DNAT --to $(minikube ip):80
+# sudo iptables -A FORWARD -p tcp -d $(minikube ip) --dport 80 -j ACCEPT
+sudo iptables -A PREROUTING -t nat -i ens33 -p tcp --dport 443 -j DNAT --to $(minikube ip):443
+# sudo iptables -A FORWARD -p tcp -d $(minikube ip) --dport 443 -j ACCEPT
+sudo iptables -t nat -L -n -v

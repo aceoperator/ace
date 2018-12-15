@@ -1,0 +1,12 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: aceoperatordb-ext
+spec:
+  type: NodePort
+  selector:
+    app: aceoperatordb
+  ports:
+  - name: mysql
+    protocol: TCP
+    port: 3306

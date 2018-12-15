@@ -43,7 +43,11 @@ spec:
           - name: ACEOPERATOR_SMTP_PASSWORD
             value: ""
           - name: LOAD_DEMO
-            value: "true"
+            # value: "true"
+            valueFrom:
+              configMapKeyRef:
+                name: webtalk
+                key: loadDemo
           - name: RUN_SEED
             value: "true"
       - name: ace-app
