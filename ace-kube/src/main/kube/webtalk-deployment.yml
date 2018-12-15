@@ -21,9 +21,12 @@ spec:
           - name: ACEOPERATOR_SQL_HOST
             value: "aceoperatordb.aceoperator.svc.cluster.local"
           - name: ACEOPERATOR_SQL_PORT
-            value: "3306"
+            valueFrom:
+              configMapKeyRef:
+                name: aceoperator
+                key: db.port
           - name: ACEOPERATOR_SQL_DB
-            value: "webtalk"
+            value: webtalk
           - name: ACEOPERATOR_SQL_ROOT_PASSWORD
             valueFrom:
               secretKeyRef:
@@ -43,13 +46,15 @@ spec:
           - name: ACEOPERATOR_SMTP_PASSWORD
             value: ""
           - name: LOAD_DEMO
-            # value: "true"
             valueFrom:
               configMapKeyRef:
                 name: webtalk
-                key: loadDemo
+                key: data.loadDemo
           - name: RUN_SEED
-            value: "true"
+            valueFrom:
+              configMapKeyRef:
+                name: webtalk
+                key: data.runSeed
       - name: ace-app
         image: "quik/aceoperator-app:3.1.0-SNAPSHOT"
         env:
