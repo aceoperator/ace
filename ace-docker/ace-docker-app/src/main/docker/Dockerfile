@@ -5,7 +5,7 @@ LABEL MAINTAINER QUIK Computing <info@quik-j.com>
 ARG ACEOPERATOR_DATA_HOST=db
 ENV ACEOPERATOR_DATA_HOST $ACEOPERATOR_DATA_HOST
 
-RUN apt-get update; apt-get -y install nmap; ln -s /usr/bin/ncat /usr/bin/nc
+RUN apt-get update; apt-get -y install nmap
 
 COPY work/common/scripts/*.sh /usr/share/aceoperator/bin/
 

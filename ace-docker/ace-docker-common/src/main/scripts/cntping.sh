@@ -1,11 +1,14 @@
 #!/bin/sh
 
+exec=ncat
+
 #
 # $1 = portnum
 # 
 cnt_init() {
-    echo "$1,$(date +'%s'),INIT" > /tmp/appstate_$1; nc -k -l $1 -c "cat /tmp/appstate_$1"&
-    export NC_PID_$1=$(ps ax | grep "nc -k -l $1" | grep -v "grep" | awk '{print $1}')
+    echo "$1,$(date +'%s'),INIT" > /tmp/appstate_$1; $exec -k -l $1 -c "cat /tmp/appstate_$1"&
+    export NC_PID_$1=$(ps ax | grep "$exec -k -l $1" | grep -v "grep" | awk '{print $1}')
+    echo "Going to listen on port $1 for container pings"
 }
 
 #
@@ -20,6 +23,7 @@ cnt_chstate() {
 #
 cnt_kill() {
     eval kill \$NC_PID_$1
+    echo "Killed $NC_PID"
 }
 
 #
@@ -31,7 +35,7 @@ cnt_waitfor() {
     con_log=0
     last_state=
     while [ -n "true" ]; do
-        message=$(nc --append-output --recv-only $1 $2)
+        message=$($exec --append-output --recv-only $1 $2)
         ret=$?
         if [ "$ret" = "0" ]; then
             # ping succeeded

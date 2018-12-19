@@ -28,12 +28,13 @@ spec:
             name: aceoperator
             key: mysql_root_password
       - name: ACEOPERATOR_SQL_USER
-        value: ace
+        value: "webtalk"
       - name: ACEOPERATOR_SQL_PASSWORD
         valueFrom:
           secretKeyRef:
             name: webtalk
             key: mysql_ace_password
+      # Start from here
       - name: ACEOPERATOR_SMTP_SERVER
         value: 127.0.0.1
       - name: ACEOPERATOR_SMTP_USER

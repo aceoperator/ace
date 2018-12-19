@@ -235,7 +235,7 @@ CREATE TABLE IF NOT EXISTS form_tbl (
   INDEX(send_time)
 ) ENGINE = InnoDB;
   
-INSERT IGNORE INTO account_tbl (userid, password, addnl_info) VALUES ('ace', PASSWORD('a1b2c3d4'), 'Ace Super User');
+INSERT IGNORE INTO account_tbl (userid, password, addnl_info) VALUES ('ace', PASSWORD('$$ACE(ACEOPERATOR_ADMIN_PASSWORD)'), 'Ace Super User');
 
 INSERT IGNORE INTO group_tbl VALUES ('operator-group','ace',0,3,3,0,0);
 INSERT IGNORE INTO user_tbl (userid, password, domain, flags, fullname, address, addnl_info, unavail_xferto, gatekeeper, password_updated)

@@ -16,9 +16,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ~/certs/kube.key -ou
 
 # port forward http to minikube (work in progress)
 sudo iptables -A PREROUTING -t nat -i ens33 -p tcp --dport 80 -j DNAT --to $(minikube ip):80
-sudo iptables -A FORWARD -p tcp -d $(minikube ip) --dport 80 -j ACCEPT
+sudo iptables -A FORWARD -p tcp --sport 80 -d $(minikube ip) --dport 80 -j ACCEPT
 sudo iptables -A PREROUTING -t nat -i ens33 -p tcp --dport 443 -j DNAT --to $(minikube ip):443
-sudo iptables -A FORWARD -p tcp -d $(minikube ip) --dport 443 -j ACCEPT
+sudo iptables -A FORWARD -p tcp --sport 80 -d $(minikube ip) --dport 443 -j ACCEPT
 sudo iptables -t nat -L -n -v
 
 # -------------------------------------------------------
@@ -56,6 +56,9 @@ minikube stop
 # -------------------------------------------------------
 # Setup aceoperator service for instance webtalk
 # -------------------------------------------------------
+# create NFS mount 
+kubectl create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-pv.yml
+kubectl get pv
 
 # create aceoperator namespace
 kubectl create namespace aceoperator
@@ -63,10 +66,8 @@ kubectl create namespace aceoperator
 # create secret
 kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-secrets.yml 
 
-# create NFS mount 
-kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-pv.yml
+# create a persistent volume claim
 kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-pvc.yml
-kubectl -n aceoperator get pv
 kubectl -n aceoperator get pvc
 
 # create aceoperatordb pod
