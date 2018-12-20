@@ -62,53 +62,64 @@ kubectl get pv
 
 # create aceoperator namespace
 kubectl create namespace aceoperator
+kubectl config set-context $(kubectl config current-context) --namespace=aceoperator
+kubectl config view | grep namespace:
 
 # create secret
-kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-secrets.yml 
-
-# create a persistent volume claim
-kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-pvc.yml
-kubectl -n aceoperator get pvc
-
-# create aceoperatordb pod
-kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-deployment.yml 
-
-# create aceoperatordb service
-kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-service.yml
-
-# service to access mysql externally - DON'T DOIT in production environment
-kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-service-ext.yml 
+kubectl  create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-secrets.yml 
 
 # create configmap for aceoperator
-kubectl -n aceoperator create configmap aceoperator --from-env-file=$HOME/git/ace/ace-kube/src/main/kube/aceoperator.properties
+kubectl  create configmap aceoperator --from-env-file=$HOME/git/ace/ace-kube/src/main/kube/aceoperator.properties
+
+# create a persistent volume claim
+kubectl  create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-pvc.yml
+kubectl  get pvc
+
+# create aceoperatordb deployment
+kubectl  create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-deployment.yml 
+
+# create aceoperatordb service
+kubectl  create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-service.yml
+
+# service to access mysql externally - DON'T DOIT in production environment
+kubectl  create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-service-ext.yml 
 
 # -------------------------------------------------------------------------------------------
 
 # create secret for instance webtalk
-kubectl  -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/webtalk-secrets.yml
+kubectl   create -f ~/git/ace/ace-kube/src/main/kube/webtalk-secrets.yml
 
 # create configmap for webtalk
-kubectl -n aceoperator create configmap webtalk --from-env-file=$HOME/git/ace/ace-kube/src/main/kube/webtalk.properties
+kubectl  create configmap webtalk --from-env-file=$HOME/git/ace/ace-kube/src/main/kube/webtalk.properties
 
 # create webtalk deployment
-kubectl  -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/webtalk-deployment.yml
+kubectl   create -f ~/git/ace/ace-kube/src/main/kube/webtalk-deployment.yml
 
 # create a service
-kubectl  -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/webtalk-service.yml
+kubectl   create -f ~/git/ace/ace-kube/src/main/kube/webtalk-service.yml
 
 # import certificate
-kubectl -n aceoperator create secret tls aceoperator-certs --key ~/certs/kube.key --cert ~/certs/kube.crt 
+kubectl  create secret tls aceoperator-certs --key ~/certs/kube.key --cert ~/certs/kube.crt 
 
 # create webtalk ingress
-kubectl -n aceoperator create -f ~/git/ace/ace-kube/src/main/kube/webtalk-ingress.yml
+kubectl  create -f ~/git/ace/ace-kube/src/main/kube/webtalk-ingress.yml
 
-# debug tools for certificate and stuff
+# ----------------------------------------------------------------------------------------------
+# Debug tools
+# -----------------------------------------------------------------------------------------------
+# verify ingress operation
 openssl s_client -host webtalk.aceoperator.net -port 443
 curl -I -k -v --resolve webtalk.aceoperator.net https://webtalk.aceoperator.net/ace-contactcenter
 
+# view logs for a container (replace webtalk with the deployment name and ace-data with the container name)
+kubectl logs $(kubectl get pod | grep webtalk | awk '{print $1}') -c ace-data
+
+# execute command on a container (replace webtalk with the deployment name and ace-data with the container name and /bin/bash with the command name)
+kubectl exec -it $(kubectl get pod | grep webtalk | awk '{print $1}') -c ace-data -- /bin/bash
+
 # -----------------------------------------------------------------------------------------------
 # cleanup
-
+kubectl config set-context $(kubectl config current-context) --namespace=default
 kubectl delete namespace aceoperator
 kubectl delete pv aceoperator
 

@@ -33,18 +33,52 @@ spec:
                 name: aceoperator
                 key: mysql_root_password
           - name: ACEOPERATOR_SQL_USER
-            value: ace
+            value: webtalk
           - name: ACEOPERATOR_SQL_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: webtalk
                 key: mysql_ace_password
           - name: ACEOPERATOR_SMTP_SERVER
-            value: 127.0.0.1
+            valueFrom:
+              configMapKeyRef:
+                name: aceoperator
+                key: data.smtpServer
+          - name: ACEOPERATOR_SMTP_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: aceoperator
+                key: data.smtpPort
           - name: ACEOPERATOR_SMTP_USER
-            value: ""
+            valueFrom:
+              configMapKeyRef:
+                name: aceoperator
+                key: data.smtpUser
           - name: ACEOPERATOR_SMTP_PASSWORD
-            value: ""
+            valueFrom:
+              secretKeyRef:
+                name: aceoperator
+                key: smtp_password
+          - name: ACEOPERATOR_MAIL_ENCRYPT
+            valueFrom:
+              configMapKeyRef:
+                name: aceoperator
+                key: data.mailEncrypt
+          - name: ACEOPERATOR_MAIL_OVERRIDE_FROM
+            valueFrom:
+              configMapKeyRef:
+                name: aceoperator
+                key: data.mailOverrideFrom
+          - name: ACEOPERATOR_RECAPTCHA_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: aceoperator
+                key: recaptcha_secret
+          - name: ACEOPERATOR_SITE_KEY
+            valueFrom:
+              secretKeyRef:
+                name: aceoperator
+                key: recaptcha_site_key
           - name: LOAD_DEMO
             valueFrom:
               configMapKeyRef:
