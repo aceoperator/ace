@@ -57,7 +57,7 @@ minikube stop
 # Setup aceoperator service for instance webtalk
 # -------------------------------------------------------
 # create NFS mount 
-kubectl create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-pv.yml
+kubectl create -f $(~/git/ace/ace-kube/src/main/kube/aceoperator-pv.sh)
 kubectl get pv
 
 # create aceoperator namespace
@@ -84,6 +84,11 @@ kubectl  create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-service.yml
 # service to access mysql externally - DON'T DOIT in production environment
 kubectl  create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-service-ext.yml 
 
+# test connectivity
+mysqladmin ping  -h $(minikube ip) -u root -p \
+    -P $(kubectl get service | grep '^aceoperatordb-ext' | awk '{print $5}' | awk -F ':' '{print substr($2, 1, length($2) - 4)}')
+mysql -h $(minikube ip) -u root -p \
+    -P $(kubectl get service | grep '^aceoperatordb-ext' | awk '{print $5}' | awk -F ':' '{print substr($2, 1, length($2) - 4)}')
 # -------------------------------------------------------------------------------------------
 
 # create secret for instance webtalk

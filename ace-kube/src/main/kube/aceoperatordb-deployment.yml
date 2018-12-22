@@ -9,9 +9,18 @@ spec:
       labels:
         app: aceoperatordb
     spec:
+      volumes:
+        - name: aceoperatordb
+          hostPath:
+            # directory location on host
+            path: /var/vol/aceoperator/mariadb
+            type: DirectoryOrCreate
       containers:
       - name: ace-db
         image: mariadb:5.5.52
+        volumeMounts:
+          - mountPath: /var/lib/mysql
+            name: aceoperatordb
         env:
           - name: MYSQL_ROOT_PASSWORD
             valueFrom:
