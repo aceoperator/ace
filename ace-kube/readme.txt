@@ -57,7 +57,7 @@ minikube stop
 # Setup aceoperator service for instance webtalk
 # -------------------------------------------------------
 # create NFS mount 
-kubectl create -f $(~/git/ace/ace-kube/src/main/kube/aceoperator-pv.sh)
+kubectl apply -f $(~/git/ace/ace-kube/src/main/kube/aceoperator-pv.sh)
 kubectl get pv
 
 # create aceoperator namespace
@@ -65,53 +65,59 @@ kubectl create namespace aceoperator
 kubectl config set-context $(kubectl config current-context) --namespace=aceoperator
 kubectl config view | grep namespace:
 
-# create secret
-kubectl  create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-secrets.yml 
+# create secret for aceoperator
+export ACEOPERATOR_SQL_ROOT_PASSWORD=a1b2c3d4
+export ACEOPERATOR_SMTP_PASSWORD=
+export ACEOPERATOR_RECAPTCHA_SECRET=
+export ACEOPERATOR_SITE_KEY=
+~/git/ace/ace-kube/src/main/kube/aceoperator-secret-from-env.sh | kubectl apply -f -
 
 # create configmap for aceoperator
-kubectl  create configmap aceoperator --from-env-file=$HOME/git/ace/ace-kube/src/main/kube/aceoperator.properties
+kubectl create configmap aceoperator --from-env-file=$HOME/git/ace/ace-kube/src/main/kube/aceoperator.properties
 
 # create a persistent volume claim
-kubectl  create -f ~/git/ace/ace-kube/src/main/kube/aceoperator-pvc.yml
+kubectl apply -f ~/git/ace/ace-kube/src/main/kube/aceoperator-pvc.yml
 kubectl  get pvc
 
 # create aceoperatordb deployment
-kubectl  create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-deployment.yml 
+kubectl apply -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-deployment.yml 
 
 # create aceoperatordb service
-kubectl  create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-service.yml
+kubectl apply -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-service.yml
 
 # service to access mysql externally - DON'T DOIT in production environment
-kubectl  create -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-service-ext.yml 
+kubectl apply -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-service-ext.yml 
 
-# test connectivity
-mysqladmin ping  -h $(minikube ip) -u root -p \
-    -P $(kubectl get service | grep '^aceoperatordb-ext' | awk '{print $5}' | awk -F ':' '{print substr($2, 1, length($2) - 4)}')
-mysql -h $(minikube ip) -u root -p \
-    -P $(kubectl get service | grep '^aceoperatordb-ext' | awk '{print $5}' | awk -F ':' '{print substr($2, 1, length($2) - 4)}')
 # -------------------------------------------------------------------------------------------
-
 # create secret for instance webtalk
-kubectl   create -f ~/git/ace/ace-kube/src/main/kube/webtalk-secrets.yml
+export ACEOPERATOR_SQL_PASSWORD=a1b2c3d4
+export ACEOPERATOR_ADMIN_PASSWORD=a1b2c3d4
+~/git/ace/ace-kube/src/main/kube/webtalk-secret-from-env.sh | kubectl apply -f -
 
 # create configmap for webtalk
-kubectl  create configmap webtalk --from-env-file=$HOME/git/ace/ace-kube/src/main/kube/webtalk.properties
+kubectl create configmap webtalk --from-env-file=$HOME/git/ace/ace-kube/src/main/kube/webtalk.properties
 
 # create webtalk deployment
-kubectl   create -f ~/git/ace/ace-kube/src/main/kube/webtalk-deployment.yml
+kubectl apply -f ~/git/ace/ace-kube/src/main/kube/webtalk-deployment.yml
 
 # create a service
-kubectl   create -f ~/git/ace/ace-kube/src/main/kube/webtalk-service.yml
+kubectl apply -f ~/git/ace/ace-kube/src/main/kube/webtalk-service.yml
 
 # import certificate
-kubectl  create secret tls aceoperator-certs --key ~/certs/kube.key --cert ~/certs/kube.crt 
+kubectl create secret tls aceoperator-certs --save-config --key ~/certs/kube.key --cert ~/certs/kube.crt 
 
 # create webtalk ingress
-kubectl  create -f ~/git/ace/ace-kube/src/main/kube/webtalk-ingress.yml
+kubectl apply -f ~/git/ace/ace-kube/src/main/kube/webtalk-ingress.yml
 
 # ----------------------------------------------------------------------------------------------
 # Debug tools
 # -----------------------------------------------------------------------------------------------
+# test mariadb connectivity
+mysqladmin ping  -h $(minikube ip) -u root -p \
+    -P $(kubectl get service | grep '^aceoperatordb-ext' | awk '{print $5}' | awk -F ':' '{print substr($2, 1, length($2) - 4)}')
+mysql -h $(minikube ip) -u root -p \
+    -P $(kubectl get service | grep '^aceoperatordb-ext' | awk '{print $5}' | awk -F ':' '{print substr($2, 1, length($2) - 4)}')
+
 # verify ingress operation
 openssl s_client -host webtalk.aceoperator.net -port 443
 curl -I -k -v --resolve webtalk.aceoperator.net https://webtalk.aceoperator.net/ace-contactcenter
@@ -128,4 +134,9 @@ kubectl config set-context $(kubectl config current-context) --namespace=default
 kubectl delete namespace aceoperator
 kubectl delete pv aceoperator
 
+minikube ssh
+    sudo rm -rf  /var/vol/aceoperator/
+    exit
+
 sudo rm -rf /var/vol/aceoperator/instance/webtalk/.ace
+#done
