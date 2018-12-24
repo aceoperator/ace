@@ -15,6 +15,7 @@ cnt_init $ping_port
 cnt_waitfor $ACEOPERATOR_DATA_HOST $data_ping_port STARTED
 
 export JAVA_OPTS="-Xms256m -Xmx512m -Djava.awt.headless=true -Dfile.encoding=UTF8 -Duser.timezone=US/Eastern -Dace.root.dir=$target_dir"
+# for e in $(env | grep '^ACEOPERATOR' | awk -F "=" '{ print " \"-denv."$1"="$2"\""}'); do export JAVA_OPTS="$JAVA_OPTS $e"; done
 
 # signal to other containers that the data initilization is done
 cnt_chstate $ping_port STARTED
