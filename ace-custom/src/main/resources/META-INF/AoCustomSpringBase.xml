@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.3.xsd">
+
+	<context:annotation-config />
+
+	<bean id="properties"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="ignoreResourceNotFound" value="true" />
+		<property name="ignoreUnresolvablePlaceholders" value="false" />
+		<!-- The property below ensures that system properties override properties defined in file -->
+		<property name="systemPropertiesMode" 
+			value="#{T(org.springframework.beans.factory.config.PropertyPlaceholderConfigurer).SYSTEM_PROPERTIES_MODE_OVERRIDE}" />
+		<property name="properties">
+			<props>
+				<prop key="ace.root.dir">#{T(com.quikj.server.framework.AceConfigFileHelper).getAceRoot()}
+				</prop>
+			</props>
+		</property>
+		<property name="locations">
+			<list>
+				<value>classpath:META-INF/ace-custom.properties</value>
+				<value>file:${ace.root.dir}/.ace/config/properties/*.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean class="com.quikj.ace.custom.server.AceCustomServiceInitializer">
+		<property name="processName" value="CUSTOM" />
+		<property name="processGroup" value="1" />
+
+		<property name="mailHost" value="${env.ACEOPERATOR_SMTP_SERVER}" />
+		<property name="mailPort" value="${env.ACEOPERATOR_SMTP_PORT}" />
+		<property name="mailEncrypt" value="${env.ACEOPERATOR_MAIL_ENCRYPT}" />
+		<property name="mailDebug" value="${com.quikj.ace.mailDebug}" />
+		<property name="mailUserName" value="${env.ACEOPERATOR_SMTP_USER}" />
+		<property name="mailPassword" value="${env.ACEOPERATOR_SMTP_PASSWORD}" />
+		<property name="mailPendingDir" value="${com.quikj.ace.mailPendingDir}" />
+		<property name="mailPendingFile" value="${com.quikj.ace.mailPendingFile}" />
+		<property name="mailOverrideFrom" value="${env.ACEOPERATOR_MAIL_OVERRIDE_FROM}" />
+		<property name="" value="${env.ACEOPERATOR_RECAPTCHA_SECRET}" />
+	</bean>
+</beans>

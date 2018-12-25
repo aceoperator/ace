@@ -12,6 +12,9 @@
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="ignoreResourceNotFound" value="true" />
 		<property name="ignoreUnresolvablePlaceholders" value="false" />
+		<!-- The property below ensures that system properties override properties defined in file -->
+		<property name="systemPropertiesMode" 
+			value="#{T(org.springframework.beans.factory.config.PropertyPlaceholderConfigurer).SYSTEM_PROPERTIES_MODE_OVERRIDE}" />
 		<property name="properties">
 			<props>
 				<prop key="ace.root.dir">#{T(com.quikj.server.framework.AceConfigFileHelper).getAceRoot()}
@@ -37,9 +40,9 @@
 	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
 		destroy-method="close">
 		<property name="driverClassName" value="${com.quikj.ace.db.core.jdbcDriverClassName}" />
-		<property name="url" value="${com.quikj.ace.db.core.jdbcUrl}" />
-		<property name="username" value="${com.quikj.ace.db.core.jdbcUsername}" />
-		<property name="password" value="${com.quikj.ace.db.core.jdbcPassword}" />
+		<property name="url" value="jdbc:mysql://${env.ACEOPERATOR_SQL_HOST}:${env.ACEOPERATOR_SQL_PORT}/${env.ACEOPERATOR_SQL_DB}?useUnicode=true&amp;characterEncoding=utf8" />
+		<property name="username" value="${env.ACEOPERATOR_SQL_USER}" />
+		<property name="password" value="${env.ACEOPERATOR_SQL_PASSWORD}" />
 		<property name="initialSize"
 			value="${com.quikj.ace.app.core.jdbcPoolInitialSize}" />
 		<property name="maxActive" value="${com.quikj.ace.app.core.jdbcPoolMaxActive}" />
@@ -57,15 +60,15 @@
 		<property name="registryURL" value="rmi://localhost:10999" />
 		<property name="registryServiceName" value="AceHTTPSRemoteAccess" />
 
-		<property name="mailHost" value="${com.quikj.ace.mailHost}" />
-		<property name="mailPort" value="${com.quikj.ace.mailPort}" />
-		<property name="mailEncrypt" value="${com.quikj.ace.mailEncrypt}" />
+		<property name="mailHost" value="${env.ACEOPERATOR_SMTP_SERVER}" />
+		<property name="mailPort" value="${env.ACEOPERATOR_SMTP_PORT}" />
+		<property name="mailEncrypt" value="${env.ACEOPERATOR_MAIL_ENCRYPT}" />
 		<property name="mailDebug" value="${com.quikj.ace.mailDebug}" />
-		<property name="mailUserName" value="${com.quikj.ace.mailUserName}" />
-		<property name="mailPassword" value="${com.quikj.ace.mailPassword}" />
+		<property name="mailUserName" value="${env.ACEOPERATOR_SMTP_USER}" />
+		<property name="mailPassword" value="${env.ACEOPERATOR_SMTP_PASSWORD}" />
 		<property name="mailPendingDir" value="${com.quikj.ace.mailPendingDir}" />
 		<property name="mailPendingFile" value="${com.quikj.ace.mailPendingFile}" />
-		<property name="mailOverrideFrom" value="${com.quikj.ace.mailOverrideFrom}" />
+		<property name="mailOverrideFrom" value="${env.ACEOPERATOR_MAIL_OVERRIDE_FROM}" />
 
 		<property name="plugins">
 			<list>
@@ -78,7 +81,7 @@
 							<prop key="cdr-required">yes</prop>
 							<prop key="backup-cdr-dir">cdr</prop>
 							<prop key="backup-cdr-file">backup_cdr</prop>
-							<prop key="recaptcha-secret">${com.quikj.ace.recaptchaSecret}</prop>
+							<prop key="recaptcha-secret">${env.ACEOPERATOR_RECAPTCHA_SECRET}</prop>
 						</props>
 					</property>
 				</bean>

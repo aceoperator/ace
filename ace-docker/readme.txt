@@ -13,6 +13,9 @@ docker rmi `docker images | grep -v REPOSITORY | awk '{print $1":"$2'} | grep qu
 # Remove the database tablespace
 docker volume rm $(docker volume ls -qf dangling=true | grep -v VOLUME)
 
+# Remove .ace
+sudo rm -rf ACEOPERATOR_HOME/.ace
+
 # Run aceoperator docker containers
 export ACEOPERATOR_HOME=$HOME
 export ACEOPERATOR_SQL_HOST=db
@@ -32,7 +35,6 @@ export ACEOPERATOR_MAIL_ENCRYPT=false
 export ACEOPERATOR_MAIL_OVERRIDE_FROM=
 
 export ACEOPERATOR_RECAPTCHA_SECRET=
-export ACEOPERATOR_SITE_KEY=
 
 export ACEOPERATOR_DATA_HOST=data
 export ACEOPERATOR_APP_HOST=app

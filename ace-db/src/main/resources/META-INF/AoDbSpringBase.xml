@@ -23,7 +23,9 @@
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="ignoreResourceNotFound" value="true" />
 		<property name="ignoreUnresolvablePlaceholders" value="false" />
-
+		<!-- The property below ensures that system properties override properties defined in file -->
+		<property name="systemPropertiesMode" 
+			value="#{T(org.springframework.beans.factory.config.PropertyPlaceholderConfigurer).SYSTEM_PROPERTIES_MODE_OVERRIDE}" />
 		<property name="locations">
 			<list>
 				<value>classpath:META-INF/ace-db.properties</value>
@@ -35,10 +37,11 @@
 	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
 		destroy-method="close">
 		<property name="driverClassName" value="${com.quikj.ace.db.core.jdbcDriverClassName}" />
-		<property name="url" value="${com.quikj.ace.db.core.jdbcUrl}" />
-		<property name="username" value="${com.quikj.ace.db.core.jdbcUsername}" />
-		<property name="password" value="${com.quikj.ace.db.core.jdbcPassword}" />
-		<property name="initialSize" value="${com.quikj.ace.db.core.jdbcPoolInitialSize}" />
+		<property name="url" value="jdbc:mysql://${env.ACEOPERATOR_SQL_HOST}:${env.ACEOPERATOR_SQL_PORT}/${env.ACEOPERATOR_SQL_DB}?useUnicode=true&amp;characterEncoding=utf8" />
+		<property name="username" value="${env.ACEOPERATOR_SQL_USER}" />
+		<property name="password" value="${env.ACEOPERATOR_SQL_PASSWORD}" />
+		<property name="initialSize"
+			value="${com.quikj.ace.db.core.jdbcPoolInitialSize}" />
 		<property name="maxActive" value="${com.quikj.ace.db.core.jdbcPoolMaxActive}" />
 		<property name="maxWait" value="90000" />
 		<property name="testOnBorrow" value="true" />
