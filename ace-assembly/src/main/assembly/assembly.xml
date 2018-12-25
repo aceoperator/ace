@@ -69,7 +69,6 @@
 			</binaries>
 		</moduleSet>
 
-
 		<moduleSet>
 			<useAllReactorProjects>true</useAllReactorProjects>
 			<includes>

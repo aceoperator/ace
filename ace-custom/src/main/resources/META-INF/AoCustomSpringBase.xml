@@ -42,6 +42,6 @@
 		<property name="mailPendingDir" value="${com.quikj.ace.mailPendingDir}" />
 		<property name="mailPendingFile" value="${com.quikj.ace.mailPendingFile}" />
 		<property name="mailOverrideFrom" value="${env.ACEOPERATOR_MAIL_OVERRIDE_FROM}" />
-		<property name="" value="${env.ACEOPERATOR_RECAPTCHA_SECRET}" />
+		<property name="captchaSecret" value="${env.ACEOPERATOR_RECAPTCHA_SECRET}" />
 	</bean>
 </beans>

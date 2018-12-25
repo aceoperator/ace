@@ -45,7 +45,7 @@ public class AceCustomServiceInitializer {
 	private String processName;
 
 	private int processGroup;
-
+	
 	@PreDestroy
 	public void destroy() {
 		AceMailService.getInstance().dispose();
@@ -119,4 +119,8 @@ public class AceCustomServiceInitializer {
 	public void setProcessGroup(int processGroup) {
 		this.processGroup = processGroup;
 	}
+
+	public void setProcessName(String processName) {
+		this.processName = processName;
+	}	
 }

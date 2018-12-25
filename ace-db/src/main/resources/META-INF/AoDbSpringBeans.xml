@@ -1,74 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
-	
+<beans xmlns="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 	<bean class="org.mybatis.spring.mapper.MapperFactoryBean" id="blackListDao">
 		<property name="sqlSessionFactory" ref="aoDbSqlSessionFactory" />
 		<property name="sqlSessionTemplate" ref="aoDbSqlSessionTemplate" />
 		<property name="mapperInterface" value="com.quikj.ace.db.webtalk.dao.BlackListDao" />
 	</bean>
-	
 	<bean class="org.mybatis.spring.mapper.MapperFactoryBean" id="userDao">
 		<property name="sqlSessionFactory" ref="aoDbSqlSessionFactory" />
 		<property name="sqlSessionTemplate" ref="aoDbSqlSessionTemplate" />
 		<property name="mapperInterface" value="com.quikj.ace.db.webtalk.dao.UserDao" />
 	</bean>
-	
 	<bean class="org.mybatis.spring.mapper.MapperFactoryBean" id="cannedMessageDao">
 		<property name="sqlSessionFactory" ref="aoDbSqlSessionFactory" />
 		<property name="sqlSessionTemplate" ref="aoDbSqlSessionTemplate" />
 		<property name="mapperInterface" value="com.quikj.ace.db.webtalk.dao.CannedMessageDao" />
 	</bean>
-	
 	<bean class="org.mybatis.spring.mapper.MapperFactoryBean" id="groupDao">
 		<property name="sqlSessionFactory" ref="aoDbSqlSessionFactory" />
 		<property name="sqlSessionTemplate" ref="aoDbSqlSessionTemplate" />
 		<property name="mapperInterface" value="com.quikj.ace.db.webtalk.dao.GroupDao" />
 	</bean>
-	
 	<bean class="org.mybatis.spring.mapper.MapperFactoryBean" id="featureDao">
 		<property name="sqlSessionFactory" ref="aoDbSqlSessionFactory" />
 		<property name="sqlSessionTemplate" ref="aoDbSqlSessionTemplate" />
 		<property name="mapperInterface" value="com.quikj.ace.db.webtalk.dao.FeatureDao" />
 	</bean>
-	
 	<bean class="org.mybatis.spring.mapper.MapperFactoryBean" id="logDao">
 		<property name="sqlSessionFactory" ref="aoDbSqlSessionFactory" />
 		<property name="sqlSessionTemplate" ref="aoDbSqlSessionTemplate" />
 		<property name="mapperInterface" value="com.quikj.ace.db.webtalk.dao.LogDao" />
 	</bean>
-	
 	<bean class="org.mybatis.spring.mapper.MapperFactoryBean" id="accountDao">
 		<property name="sqlSessionFactory" ref="aoDbSqlSessionFactory" />
 		<property name="sqlSessionTemplate" ref="aoDbSqlSessionTemplate" />
 		<property name="mapperInterface" value="com.quikj.ace.db.webtalk.dao.AccountDao" />
 	</bean>
-	
 	<bean class="com.quikj.ace.db.webtalk.model.bean.BlacklistBeanImpl" id="blacklist">
 		<property name="blackListDao" ref="blackListDao" />
 	</bean>
-	
 	<bean class="com.quikj.ace.db.webtalk.model.bean.UserBeanImpl" id="user">
 		<property name="userDao" ref="userDao" />
 	</bean>
-	
 	<bean class="com.quikj.ace.db.webtalk.model.bean.CannedMessageBeanImpl" id="cannedMessage">
 		<property name="cannedMessageDao" ref="cannedMessageDao" />
 	</bean>
-	
 	<bean class="com.quikj.ace.db.webtalk.model.bean.GroupBeanImpl" id="group">
 		<property name="groupDao" ref="groupDao" />
 	</bean>
-	
 	<bean class="com.quikj.ace.db.webtalk.model.bean.FeatureBeanImpl" id="feature">
 		<property name="featureDao" ref="featureDao" />
 	</bean>
-	
 	<bean class="com.quikj.ace.db.webtalk.model.bean.LogBeanImpl" id="log">
 		<property name="logDao" ref="logDao" />
 	</bean>
-	
 	<bean class="com.quikj.ace.db.webtalk.model.bean.AccountBeanImpl" id="account">
 		<property name="accountDao" ref="accountDao" />
 	</bean>

@@ -1,21 +1,6 @@
-# First time setup of the Oracle tablespace for testing
-cd ~/git/ace/ace-docker/ace-docker-data ; mvn clean install
-cd ~/git/ace/ace-docker/ace-docker-compose ; mvn clean install
-
-# Add the environment variables listed below
-
-docker-compose -p aceoperator -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/db-compose.yml \
-        -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/data-compose.yml up
-
-# Cleanup all the images
-docker rmi `docker images | grep -v REPOSITORY | awk '{print $1":"$2'} | grep quik`
-
-# Remove the database tablespace
-docker volume rm $(docker volume ls -qf dangling=true | grep -v VOLUME)
-
-# Remove .ace
-sudo rm -rf ACEOPERATOR_HOME/.ace
-
+# ------------------------------------------------------------
+# Setup environment variables
+# ------------------------------------------------------------
 # Run aceoperator docker containers
 export ACEOPERATOR_HOME=$HOME
 export ACEOPERATOR_SQL_HOST=db
@@ -43,12 +28,46 @@ export ACEOPERATOR_CERTS_DIR=$HOME/certs
 export RUN_SEED=true
 export LOAD_DEMO=true
 
+# ------------------------------------------------------------
+# First time setup of the mariadb tables for testing
+# ------------------------------------------------------------
+
+# 1. Add the environment variables listed below
+
+cd ~/git/ace/ace-docker/ace-docker-data ; mvn clean install
+
+cd ~/git/ace/ace-docker/ace-docker-compose ; mvn clean install
+
+docker-compose -p aceoperator -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/db-compose.yml \
+        -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/data-compose.yml up
+        
+# ------------------------------------------------------------
+# Cleanup all 
+# ------------------------------------------------------------
+docker-compose -p aceoperator -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/db-compose.yml \
+    -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/data-compose.yml \
+    -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/mail-compose.yml \
+    -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/app-compose.yml down
+
+docker rmi `docker images | grep -v REPOSITORY | awk '{print $1":"$2'} | grep quik`
+
+# Remove the database tablespace
+docker volume rm $(docker volume ls -qf dangling=true | grep -v VOLUME)
+
+# Remove .ace
+sudo rm -rf ACEOPERATOR_HOME/.ace
+
+# ------------------------------------------------------------
+# Start Ace Operator
+# ------------------------------------------------------------
 docker-compose -p aceoperator -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/db-compose.yml \
     -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/data-compose.yml \
     -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/mail-compose.yml \
     -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/app-compose.yml up
 
-# To publish to Docker Hub:
+# ------------------------------------------------------------
+# To publish to Docker Hub
+# ------------------------------------------------------------
 export DOCKER_ID_USER="username"
 docker login
 docker publish imagename:tag
