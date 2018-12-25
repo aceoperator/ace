@@ -14,5 +14,4 @@ data:
   mysql_root_password: $(convert "$ACEOPERATOR_SQL_ROOT_PASSWORD")
   smtp_password: $(convert "$ACEOPERATOR_SMTP_PASSWORD")
   recaptcha_secret: $(convert "$ACEOPERATOR_RECAPTCHA_SECRET")
-  recaptcha_site_key: $(convert "$ACEOPERATOR_SITE_KEY")
 EOF

@@ -43,6 +43,41 @@ spec:
               secretKeyRef:
                 name: webtalk
                 key: mysql_ace_password
+          - name: LOAD_DEMO
+            valueFrom:
+              configMapKeyRef:
+                name: webtalk
+                key: data.loadDemo
+          - name: RUN_SEED
+            valueFrom:
+              configMapKeyRef:
+                name: webtalk
+                key: data.runSeed
+      - name: ace-app
+        image: "quik/aceoperator-app:3.1.0-SNAPSHOT"
+        env:
+          - name: ACEOPERATOR_DATA_HOST
+            value: 127.0.0.1
+          - name: ACEOPERATOR_SQL_HOST
+            value: "aceoperatordb.aceoperator.svc.cluster.local"
+          - name: ACEOPERATOR_SQL_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: aceoperator
+                key: db.port
+          - name: ACEOPERATOR_SQL_DB
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.labels['instance']
+          - name: ACEOPERATOR_SQL_USER
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.labels['instance']
+          - name: ACEOPERATOR_SQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: webtalk
+                key: mysql_ace_password
           - name: ACEOPERATOR_SMTP_SERVER
             valueFrom:
               configMapKeyRef:
@@ -78,26 +113,6 @@ spec:
               secretKeyRef:
                 name: aceoperator
                 key: recaptcha_secret
-          - name: ACEOPERATOR_SITE_KEY
-            valueFrom:
-              secretKeyRef:
-                name: aceoperator
-                key: recaptcha_site_key
-          - name: LOAD_DEMO
-            valueFrom:
-              configMapKeyRef:
-                name: webtalk
-                key: data.loadDemo
-          - name: RUN_SEED
-            valueFrom:
-              configMapKeyRef:
-                name: webtalk
-                key: data.runSeed
-      - name: ace-app
-        image: "quik/aceoperator-app:3.1.0-SNAPSHOT"
-        env:
-          - name: ACEOPERATOR_DATA_HOST
-            value: 127.0.0.1
         volumeMounts:
           - mountPath: /var/aceoperator
             name: aceoperator
@@ -108,4 +123,3 @@ spec:
         - name: aceoperator
           persistentVolumeClaim:
             claimName: aceoperator
-      

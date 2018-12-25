@@ -69,7 +69,6 @@ kubectl config view | grep namespace:
 export ACEOPERATOR_SQL_ROOT_PASSWORD=a1b2c3d4
 export ACEOPERATOR_SMTP_PASSWORD=
 export ACEOPERATOR_RECAPTCHA_SECRET=
-export ACEOPERATOR_SITE_KEY=
 ~/git/ace/ace-kube/src/main/kube/aceoperator-secret-from-env.sh | kubectl apply -f -
 
 # create configmap for aceoperator
