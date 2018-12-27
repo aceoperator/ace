@@ -37,8 +37,9 @@ eval $(minikube docker-env)
 
 # remove unused docker imaages from minikube
 minikube ssh
-docker container rm $(docker ps -a -q)
-# docker rmi to remove the image
+    docker container rm $(docker ps -a -q)
+    # docker rmi to remove the image
+    exit
 
 # delete deployments
 kubectl get deployments --all-namespaces
@@ -125,5 +126,5 @@ minikube ssh
     sudo rm -rf  /var/vol/aceoperator/
     exit
 
-sudo rm -rf /var/vol/aceoperator/instance/webtalk/.ace
+sudo rm -rf /var/vol/aceoperator/instance/*
 #done

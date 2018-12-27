@@ -61,3 +61,10 @@ sed "s/webtalk/$instance/g" $template_dir/instance-service.yml | kubectl apply -
 
 # create an ingress for instance
 sed "s/webtalk/$instance/g" $template_dir/instance-ingress.yml | kubectl apply -f -
+
+nslookup $instance.aceoperator.net
+if [ "$?" -ne 0 ]; then
+    echo "Warning! DNS lookup for host $instance.aceoperator.net failed. You need to setup the DNS"
+fi
+
+kubectl get all | grep "$instance"

@@ -15,7 +15,7 @@ if [ ! -d "$target_dir/.ace" ]; then
     $bin_dir/replace_in_files.sh '^ACEOPERATOR_.*' $(find $target_dir/.ace -type f -name '*sql')
 fi
 
-db_exists=$(mysql -h $ACEOPERATOR_SQL_HOST -P $ACEOPERATOR_SQL_PORT -u root -p$ACEOPERATOR_SQL_ROOT_PASSWORD -e 'SHOW DATABASES' | grep -i webtalk)
+db_exists=$(mysql -h $ACEOPERATOR_SQL_HOST -P $ACEOPERATOR_SQL_PORT -u root -p$ACEOPERATOR_SQL_ROOT_PASSWORD -e 'SHOW DATABASES' | grep -i $ACEOPERATOR_SQL_DB)
 if [ -z "$db_exists" ]; then
     echo "Database $ACEOPERATOR_SQL_DB does not exist. Creating and loading data"
     mysql -h $ACEOPERATOR_SQL_HOST -P $ACEOPERATOR_SQL_PORT -u root -p$ACEOPERATOR_SQL_ROOT_PASSWORD < $target_dir/.ace/sql/init_db.sql

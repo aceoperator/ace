@@ -12,3 +12,5 @@ kubectl delete service "$instance"
 kubectl delete deployment "$instance"
 kubectl delete configmap "$instance"
 kubectl delete secret "$instance"
+
+kubectl get all | grep "$instance"
