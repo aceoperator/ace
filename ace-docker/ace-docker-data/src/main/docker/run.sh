@@ -10,7 +10,7 @@ cnt_init $ping_port
 
 # wait for mariadb to start
 maria_started=1
-while [ "$maria_started" = "1" ]; do
+while [ "$maria_started" -ne 0 ]; do
     sleep 5
     ncat -zv $ACEOPERATOR_SQL_HOST $ACEOPERATOR_SQL_PORT
     maria_started=$?

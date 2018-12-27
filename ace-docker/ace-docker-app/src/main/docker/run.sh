@@ -20,6 +20,7 @@ export JAVA_OPTS="-Xms256m -Xmx512m -Djava.awt.headless=true -Dfile.encoding=UTF
 for e in $(env | grep '^ACEOPERATOR' | awk -F "=" '{ print " -Denv."$1"="$2}'); do export JAVA_OPTS="$JAVA_OPTS $e"; done
 
 # signal to other containers that the data initilization is done
+# TODO change this to run after tomcat has started
 cnt_chstate $ping_port STARTED
 
 # Start tomcat

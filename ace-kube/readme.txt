@@ -87,26 +87,14 @@ kubectl apply -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-service.yml
 # service to access mysql externally - DON'T DOIT in production environment
 kubectl apply -f ~/git/ace/ace-kube/src/main/kube/aceoperatordb-service-ext.yml 
 
-# -------------------------------------------------------------------------------------------
-# create secret for instance webtalk
-export ACEOPERATOR_SQL_PASSWORD=a1b2c3d4
-export ACEOPERATOR_ADMIN_PASSWORD=a1b2c3d4
-~/git/ace/ace-kube/src/main/kube/webtalk-secret-from-env.sh | kubectl apply -f -
-
-# create configmap for webtalk
-kubectl create configmap webtalk --from-env-file=$HOME/git/ace/ace-kube/src/main/kube/webtalk.properties
-
-# create webtalk deployment
-kubectl apply -f ~/git/ace/ace-kube/src/main/kube/webtalk-deployment.yml
-
-# create a service
-kubectl apply -f ~/git/ace/ace-kube/src/main/kube/webtalk-service.yml
-
 # import certificate
 kubectl create secret tls aceoperator-certs --save-config --key ~/certs/kube.key --cert ~/certs/kube.crt 
 
-# create webtalk ingress
-kubectl apply -f ~/git/ace/ace-kube/src/main/kube/webtalk-ingress.yml
+# -------------------------------------------------------------------------------------------
+export ACEOPERATOR_SQL_PASSWORD=a1b2c3d4
+export ACEOPERATOR_ADMIN_PASSWORD=a1b2c3d4
+
+~/git/ace/ace-kube/src/main/kube/deploy_instance.sh ~/git/ace/ace-kube/src/main/kube ~/git/ace/ace-kube/src/main/kube webtalk
 
 # ----------------------------------------------------------------------------------------------
 # Debug tools
