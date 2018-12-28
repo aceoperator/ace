@@ -13,4 +13,5 @@ kubectl delete deployment "$instance"
 kubectl delete configmap "$instance"
 kubectl delete secret "$instance"
 
-kubectl get all | grep "$instance"
+echo "Here is how the deployment looks so far:"
+kubectl get all | grep "$instance" | sed '/^$/d'

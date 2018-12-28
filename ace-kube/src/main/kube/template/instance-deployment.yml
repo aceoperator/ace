@@ -55,6 +55,13 @@ spec:
                 key: data.runSeed
       - name: ace-app
         image: "quik/aceoperator-app:3.1.0-SNAPSHOT"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "1"
         env:
           - name: ACEOPERATOR_DATA_HOST
             value: 127.0.0.1
