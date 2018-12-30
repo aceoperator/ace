@@ -9,7 +9,7 @@ services:
         networks:
           - "network"
         environment:
-          - "ACEOPERATOR_DATA_HOST=${ACEOPERATOR_DATA_HOST}"
+          - "ACE3_APP_DATA_HOST=${ACE3_APP_DATA_HOST}"
 
           - "ACEOPERATOR_SQL_HOST=${ACEOPERATOR_SQL_HOST}"
           - "ACEOPERATOR_SQL_PORT=${ACEOPERATOR_SQL_PORT}"
@@ -24,6 +24,8 @@ services:
           - "ACEOPERATOR_MAIL_ENCRYPT=${ACEOPERATOR_MAIL_ENCRYPT}"
           - "ACEOPERATOR_MAIL_OVERRIDE_FROM=${ACEOPERATOR_MAIL_OVERRIDE_FROM}"
           - "ACEOPERATOR_RECAPTCHA_SECRET=${ACEOPERATOR_RECAPTCHA_SECRET}"
+
+          - "ACE3_APP_CNT_SYNC=true"
         volumes:
           - "${ACEOPERATOR_HOME}:/var/aceoperator"
     frontend:
@@ -33,14 +35,14 @@ services:
           - "80:80"
           - "443:443"
         links:
-          - "app:${ACEOPERATOR_APP_HOST}"
+          - "app:${ACE3_FE_APP_HOST}"
         networks:
           - "network"
         environment:
-          - "ACEOPERATOR_APP_HOST=${ACEOPERATOR_APP_HOST}" 
-          - "ACEOPERATOR_CERTS_DIR=${ACEOPERATOR_CERTS_DIR}"
+          - "ACE3_FE_APP_HOST=${ACE3_FE_APP_HOST}" 
+          - "ACE3_FE_CERTS_DIR=${ACE3_FE_CERTS_DIR}"
         volumes:
-          - "${ACEOPERATOR_CERTS_DIR}:/etc/ssl/certs"
+          - "${ACE3_FE_CERTS_DIR}:/etc/ssl/certs"
 networks:
   network:
     driver: bridge

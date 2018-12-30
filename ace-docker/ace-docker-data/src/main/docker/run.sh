@@ -17,13 +17,15 @@ while [ "$maria_started" -ne 0 ]; do
 done
 echo "Mariadb is running. Going to continue with data operations"
 
-if [ -n "$RUN_SEED" ]; then
+if [ -n "$ACE3_DATA_RUN_SEED" ]; then
     $bin_dir/seed.sh
     echo "Done seeing"
 fi
 
-# signal to other containers that the data initilization is done
-cnt_chstate $ping_port STARTED
+if [ "$ACE3_DATA_EXIT" = "false" ]; then
+    # signal to other containers that the data initilization is done
+    cnt_chstate $ping_port STARTED
 
-# wait for self to end. This is going to sleep infinitely until the signal handler sets the state to ENDED (NYI)
-cnt_waitfor 127.0.0.1 $ping_port ENDED
+    # wait for self to end. This is going to sleep infinitely until the signal handler sets the state to ENDED (NYI)
+    cnt_waitfor 127.0.0.1 $ping_port ENDED
+fi

@@ -15,10 +15,17 @@ mkdir ~/certs
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ~/certs/kube.key -out ~/certs/kube.crt -subj "/CN=*.aceoperator.net"
 
 # port forward http to minikube (work in progress)
-sudo iptables -A PREROUTING -t nat -i ens33 -p tcp --dport 80 -j DNAT --to $(minikube ip):80
-sudo iptables -A FORWARD -p tcp --sport 80 -d $(minikube ip) --dport 80 -j ACCEPT
-sudo iptables -A PREROUTING -t nat -i ens33 -p tcp --dport 443 -j DNAT --to $(minikube ip):443
-sudo iptables -A FORWARD -p tcp --sport 80 -d $(minikube ip) --dport 443 -j ACCEPT
+sudo echo 1 > /proc/sys/net/ipv4/ip_forward
+
+# Enable logging
+sudo iptables -I INPUT 1 -p tcp --dport 80 -j LOG
+sudo iptables -I INPUT 1 -p tcp --dport 443 -j LOG
+sudo iptables -t nat -p tcp -I PREROUTING 1  -j LOG
+sudo iptables -t nat -p tcp -I POSTROUTING 1 -j LOG
+
+sudo iptables -t nat -A PREROUTING -s 0/0 -p tcp -i ens33 --dport 80 -j DNAT --to $(minikube ip):80
+sudo iptables -t nat -A PREROUTING -s 0/0 -p tcp -i ens33 --dport 443 -j DNAT --to $(minikube ip):443
+sudo iptables -t nat -A POSTROUTING -j MASQUERADE 
 sudo iptables -t nat -L -n -v
 
 # ************************************************************
@@ -57,12 +64,15 @@ minikube stop
 # ************************************************************
 # Setup aceoperator service and an instance
 # ************************************************************
-
+# Add to .bashrc/.bash_profile
+export ACE3_HOME=~/git/ace/ace-kube/src/main/kube
+export ACE3_BIN=$ACE3_HOME/bin
+export PATH=$PATH:$ACE3_BIN
 # -------------------------------------------------------------------------------------------
 # 1. Preparation
 # -------------------------------------------------------------------------------------------
 # create NFS mount 
-kubectl apply -f $(~/git/ace/ace-kube/src/main/kube/bin/aceoperator-pv.sh)
+kubectl apply -f $(aceoperator-pv.sh)
 kubectl get pv
 
 # create aceoperator namespace
@@ -76,7 +86,7 @@ kubectl config view | grep namespace:
 export ACEOPERATOR_SQL_ROOT_PASSWORD=a1b2c3d4
 export ACEOPERATOR_SMTP_PASSWORD=
 export ACEOPERATOR_RECAPTCHA_SECRET=
-~/git/ace/ace-kube/src/main/kube/bin/deploy_framework.sh ~/git/ace/ace-kube/src/main/kube
+deploy_framework.sh $ACE3_HOME
 
 # -------------------------------------------------------------------------------------------
 3. Create an instance
@@ -86,8 +96,7 @@ export INSTANCE=<instance_name>
 export ACEOPERATOR_SQL_PASSWORD=a1b2c3d4
 export ACEOPERATOR_ADMIN_PASSWORD=a1b2c3d4
 
-~/git/ace/ace-kube/src/main/kube/bin/deploy_instance.sh ~/git/ace/ace-kube/src/main/kube $INSTANCE
-
+deploy_instance.sh $ACE3_HOME $INSTANCE
 # ----------------------------------------------------------------------------------------------
 # 4. Control resources
 # ----------------------------------------------------------------------------------------------
@@ -128,9 +137,7 @@ kubectl config set-context $(kubectl config current-context) --namespace=default
 kubectl delete namespace aceoperator
 kubectl delete pv aceoperator
 
-minikube ssh
-    sudo rm -rf  /var/vol/aceoperator/
-    exit
+minikube ssh "sudo rm -rf  /var/vol/aceoperator/"
 
 sudo rm -rf /var/vol/aceoperator/instance/*
 #done

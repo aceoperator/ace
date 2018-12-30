@@ -63,7 +63,7 @@ spec:
             memory: "512Mi"
             cpu: "1"
         env:
-          - name: ACEOPERATOR_DATA_HOST
+          - name: ACE3_APP_DATA_HOST
             value: 127.0.0.1
           - name: ACEOPERATOR_SQL_HOST
             value: "aceoperatordb.aceoperator.svc.cluster.local"

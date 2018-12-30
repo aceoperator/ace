@@ -11,8 +11,10 @@ data_ping_port=6969
 # signal to other containers that the data container is initializing
 cnt_init $ping_port
 
-# wait for the data container to start
-cnt_waitfor $ACEOPERATOR_DATA_HOST $data_ping_port STARTED
+if [ "$ACE3_APP_CNT_SYNC" = "true" ]; then
+    # wait for the data container to start
+    cnt_waitfor $ACE3_APP_DATA_HOST $data_ping_port STARTED
+fi
 
 export JAVA_OPTS="-Xms256m -Xmx512m -Djava.awt.headless=true -Dfile.encoding=UTF8 -Duser.timezone=US/Eastern -Dace.root.dir=$target_dir"
 
