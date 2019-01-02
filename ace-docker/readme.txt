@@ -1,5 +1,3 @@
-
-
 # ------------------------------------------------------------
 # First time setup of the mariadb tables for unit testing
 # ------------------------------------------------------------
@@ -17,7 +15,6 @@ docker-compose -p aceoperator -f ~/git/ace/ace-docker/ace-docker-compose/target/
 # ------------------------------------------------------------
 docker-compose -p aceoperator -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/db-compose.yml \
     -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/data-compose.yml \
-    -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/mail-compose.yml \
     -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/app-compose.yml down
 
 docker rmi `docker images | grep -v REPOSITORY | awk '{print $1":"$2'} | grep quik`

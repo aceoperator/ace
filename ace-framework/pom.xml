@@ -77,8 +77,7 @@
 					<version>2.22.1</version>
 					<configuration>
 						<systemPropertyVariables>
-							<ace.root.dir>${user.home}</ace.root.dir>
-							
+							<ace.root.dir>${basedir}/src/test/ace-root</ace.root.dir>
 						</systemPropertyVariables>
 					</configuration>
 				</plugin>
