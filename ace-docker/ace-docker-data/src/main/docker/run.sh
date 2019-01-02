@@ -19,7 +19,7 @@ echo "Mariadb is running. Going to continue with data operations"
 
 if [ -n "$ACE3_DATA_RUN_SEED" ]; then
     $bin_dir/seed.sh
-    echo "Done seeing"
+    echo "Done seeding"
 fi
 
 if [ "$ACE3_DATA_EXIT" = "false" ]; then

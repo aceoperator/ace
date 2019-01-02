@@ -11,16 +11,19 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
+import java.util.function.Consumer;
 
-import javax.mail.AuthenticationFailedException;
-import javax.mail.Authenticator;
-import javax.mail.PasswordAuthentication;
-import javax.mail.SendFailedException;
-import javax.mail.Session;
-import javax.mail.Transport;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+
+import org.springframework.mail.MailException;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.mail.javamail.MimeMessageHelper;
 
 /**
  * 
@@ -28,24 +31,7 @@ import javax.mail.Transport;
  */
 public class AceMailService extends AceThread {
 
-	private class SmtpAuthenticator extends Authenticator {
-
-		private String authName;
-		private String authPass;
-
-		public SmtpAuthenticator(String name, String password) {
-			authName = name;
-			authPass = password;
-		}
-
-		protected PasswordAuthentication getPasswordAuthentication() {
-			return new PasswordAuthentication(authName, authPass);
-		}
-	}
-
 	private static AceMailService instance = null;
-
-	private Session mailSession;
 
 	private ArrayList<AceMailMessage> pendingMessageList = new ArrayList<AceMailMessage>();
 	private int retryTimerId = -1;
@@ -61,6 +47,12 @@ public class AceMailService extends AceThread {
 
 	private String pendingDir;
 
+	private JavaMailSenderImpl mailSender;
+
+	public static AceMailService getInstance() {
+		return instance;
+	}
+
 	public AceMailService(String server, int port, boolean tls, boolean debug, String username, String password,
 			String pendingDir, String pendingFile, String overrideFrom) {
 		super("AceMailService");
@@ -74,40 +66,26 @@ public class AceMailService extends AceThread {
 	}
 
 	private void initMail(String server, int port, boolean tls, boolean debug, String username, String password) {
-
-		// do mail server setup
-		Properties props = new Properties();
-
-		// TODO - fix this
-		// props.put("mail.smtp.user", d_email);
-
-		props.setProperty("mail.smtp.host", server);
-		props.setProperty("mail.smtp.port", Integer.toString(port));
-
-		if (tls) {
-			props.setProperty("mail.smtp.starttls.enable", "true");
-			props.setProperty("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-			props.setProperty("mail.smtp.socketFactory.fallback", "false");
-			props.setProperty("mail.smtp.socketFactory.port", Integer.toString(port));
-		}
+		mailSender = new JavaMailSenderImpl();
+		Properties props = mailSender.getJavaMailProperties();
 
 		if (debug) {
-			props.setProperty("mail.smtp.debug", "true");
 			props.setProperty("mail.debug", "true");
 		}
 
-		SmtpAuthenticator authenticator = null;
-		if (username != null && username.length() > 0) {
-			props.setProperty("mail.smtp.auth", "true");
-			authenticator = new SmtpAuthenticator(username, password);
+		if (tls) {
+			props.put("mail.smtp.starttls.enable", "true");
 		}
 
-		mailSession = Session.getDefaultInstance(props, authenticator);
-		mailSession.setDebug(debug);
-	}
+		props.put("mail.transport.protocol", "smtp");
+		mailSender.setHost(server);
+		mailSender.setPort(port);
 
-	public static AceMailService getInstance() {
-		return instance;
+		if (username != null && username.length() > 0) {
+			props.put("mail.smtp.auth", "true");
+			mailSender.setUsername(username);
+			mailSender.setPassword(password);
+		}
 	}
 
 	public boolean addToMailQueue(AceMailMessage msg) {
@@ -149,8 +127,74 @@ public class AceMailService extends AceThread {
 		instance = null;
 	}
 
-	public Session getMailSession() {
-		return mailSession;
+	private boolean addressValid(String addr) {
+		String[] tokens = addr.split("@");
+		if (tokens.length < 2) {
+			return false;
+		}
+
+		String[] domain = tokens[1].split("\\.");
+		if (domain.length < 2) {
+			return false;
+		}
+
+		return true;
+	}
+
+	private void setAddressList(List<String> addresses, Consumer<String[]> function) {
+		if (!addresses.isEmpty()) {
+			for (String address : addresses) {
+				if (!addressValid(address)) {
+					throw new AceRuntimeException("Invalid address " + address);
+				}
+			}
+			function.accept(addresses.toArray(new String[addresses.size()]));
+		}
+	}
+
+	@FunctionalInterface
+	public interface ThrowingConsumer<T, E extends Exception> {
+		void accept(T t) throws E;
+	}
+
+	static <T> Consumer<T> throwingConsumerWrapper(ThrowingConsumer<T, Exception> throwingConsumer) {
+		return i -> {
+			try {
+				throwingConsumer.accept(i);
+			} catch (Exception ex) {
+				throw new AceRuntimeException(ex);
+			}
+		};
+	}
+
+	private MimeMessage setupEmail(AceMailMessage mailMessage) throws MessagingException, UnsupportedEncodingException {
+		MimeMessage message = mailSender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+		helper.setFrom(mailMessage.getFrom());
+
+		if (mailMessage.getTo().isEmpty() && mailMessage.getCc().isEmpty() && mailMessage.getBcc().isEmpty()) {
+			throw new AceRuntimeException("There are no recipeints");
+		}
+
+		setAddressList(mailMessage.getReplyTo(), throwingConsumerWrapper(replyTos -> helper.setReplyTo(replyTos[0])));
+
+		setAddressList(mailMessage.getTo(), throwingConsumerWrapper(recipients -> helper.setTo(recipients)));
+
+		setAddressList(mailMessage.getCc(), throwingConsumerWrapper(ccs -> helper.setCc(ccs)));
+
+		setAddressList(mailMessage.getBcc(), throwingConsumerWrapper(bccs -> helper.setBcc(bccs)));
+
+		if (mailMessage.getSubject() != null) {
+
+			helper.setSubject(new String(mailMessage.getSubject().getBytes("UTF-8")));
+		}
+
+		if (mailMessage.getBody() != null) {
+			boolean html = mailMessage.getSubType().equalsIgnoreCase("html");
+			helper.setText(new String(mailMessage.getBody().getBytes("UTF-8")), html);
+		}
+		return message;
 	}
 
 	private boolean handleMail(AceMailMessage mailMessage) {
@@ -159,38 +203,22 @@ public class AceMailService extends AceThread {
 			mailMessage.setFrom(overrideFrom);
 		}
 
-		javax.mail.Message message = mailMessage.toEmail(mailSession);
-		if (message == null) {
+		MimeMessage message = null;
+		try {
+			message = setupEmail(mailMessage);
+		} catch (AceRuntimeException | UnsupportedEncodingException | MessagingException e) {
 			AceLogger.Instance().log(AceLogger.WARNING, AceLogger.SYSTEM_LOG,
-					"AceMailService.handleMail() -- Outgoing email message discarded : "
-							+ mailMessage.getErrorMessage());
-
+					"AceMailService.handleMail() -- Outgoing email message discarded : " + e.getMessage(), e);
 			return true;
 		}
 
 		try {
-			// send the message
-
-			Transport tr = mailSession.getTransport("smtp");
-			tr.connect();
-			tr.sendMessage(message, message.getAllRecipients());
-			tr.close();
-
-		} catch (SendFailedException ex) {
+			mailSender.send(message);
+		} catch (MailException ex) {
 			// log a warning
 			return false;
-		} catch (AuthenticationFailedException ex) {
-			// log a warning
-			return false;
-		} catch (Exception ex) {
+		}  catch (Exception ex) {
 			// don't retry on remaining/other exceptions
-			// FolderClosedException, FolderNotFoundException,
-			// IllegalWriteException, MessageRemovedException,
-			// MethodNotSupportedException,
-			// NoSuchProviderException, ParseException, ReadOnlyFolderException,
-			// SearchException,
-			// StoreClosedException
-
 			// log a warning
 			return true;
 		} finally {
@@ -232,10 +260,9 @@ public class AceMailService extends AceThread {
 
 				sendPendingMessage();
 			} catch (Exception ex) {
-				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,
-						getName()
-								+ "- run() -- Error while serializing in saved pending mail file, pending messages discarded. Error = "
-								+ ex.getClass().getName() + " : " + ex.getMessage());
+				AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG, getName()
+						+ "- run() -- Error while serializing in saved pending mail file, pending messages discarded. Error = "
+						+ ex.getClass().getName() + " : " + ex.getMessage());
 
 				if (file.delete() == false) {
 					AceLogger.Instance().log(AceLogger.ERROR, AceLogger.SYSTEM_LOG,

@@ -36,7 +36,6 @@ sudo rm -rf $ACEOPERATOR_HOME/.ace
 
 docker-compose -p aceoperator -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/db-compose.yml \
     -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/data-compose.yml \
-    -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/mail-compose.yml \
     -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/app-compose.yml up
 
 # ------------------------------------------------------------

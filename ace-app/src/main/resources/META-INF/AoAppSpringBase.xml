@@ -1,20 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:util="http://www.springframework.org/schema/util"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+<beans xmlns="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.3.xsd">
 
 	<context:annotation-config />
 
-	<bean id="properties"
-		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	<bean id="properties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="ignoreResourceNotFound" value="true" />
 		<property name="ignoreUnresolvablePlaceholders" value="false" />
 		<!-- The property below ensures that system properties override properties defined in file -->
-		<property name="systemPropertiesMode" 
-			value="#{T(org.springframework.beans.factory.config.PropertyPlaceholderConfigurer).SYSTEM_PROPERTIES_MODE_OVERRIDE}" />
+		<property name="systemPropertiesMode" value="#{T(org.springframework.beans.factory.config.PropertyPlaceholderConfigurer).SYSTEM_PROPERTIES_MODE_OVERRIDE}" />
 		<property name="properties">
 			<props>
 				<prop key="ace.root.dir">#{T(com.quikj.server.framework.AceConfigFileHelper).getAceRoot()}
@@ -29,22 +27,18 @@
 		</property>
 	</bean>
 
-	<bean id="aceOperator" class="com.quikj.server.app.ApplicationServer"
-		init-method="startup" destroy-method="shutdown" />
+	<bean id="aceOperator" class="com.quikj.server.app.ApplicationServer" init-method="startup" destroy-method="shutdown" />
 
-	<bean id="contentFilter"
-		class="com.quikj.application.web.talk.plugin.impl.ContentFilterImpl">
+	<bean id="contentFilter" class="com.quikj.application.web.talk.plugin.impl.ContentFilterImpl">
 		<property name="enabled" value="${com.quikj.ace.app.contentFilterEnabled}" />
 	</bean>
 
-	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
-		destroy-method="close">
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
 		<property name="driverClassName" value="${com.quikj.ace.db.core.jdbcDriverClassName}" />
 		<property name="url" value="jdbc:mysql://${env.ACEOPERATOR_SQL_HOST}:${env.ACEOPERATOR_SQL_PORT}/${env.ACEOPERATOR_SQL_DB}?useUnicode=true&amp;characterEncoding=utf8" />
 		<property name="username" value="${env.ACEOPERATOR_SQL_USER}" />
 		<property name="password" value="${env.ACEOPERATOR_SQL_PASSWORD}" />
-		<property name="initialSize"
-			value="${com.quikj.ace.app.core.jdbcPoolInitialSize}" />
+		<property name="initialSize" value="${com.quikj.ace.app.core.jdbcPoolInitialSize}" />
 		<property name="maxActive" value="${com.quikj.ace.app.core.jdbcPoolMaxActive}" />
 		<property name="maxWait" value="90000" />
 		<property name="testOnBorrow" value="true" />
@@ -74,8 +68,7 @@
 			<list>
 				<bean class="com.quikj.server.app.PluginApplicationInfo">
 					<property name="id" value="2" />
-					<property name="clazz"
-						value="com.quikj.application.web.talk.plugin.TalkPluginApp" />
+					<property name="clazz" value="com.quikj.application.web.talk.plugin.TalkPluginApp" />
 					<property name="properties">
 						<props>
 							<prop key="cdr-required">yes</prop>

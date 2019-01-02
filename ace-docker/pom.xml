@@ -23,7 +23,6 @@
 				<activeByDefault>false</activeByDefault>
 			</activation>
 			<modules>
-				<module>ace-docker-mail</module>
 				<module>ace-docker-data</module>
 				<module>ace-docker-app</module>
 				<module>ace-docker-frontend</module>

@@ -5,7 +5,6 @@ services:
         image: "quik/aceoperator-app:${project.version}"
         links:
           - "db:${ACEOPERATOR_SQL_HOST}"
-          - "mail:${ACEOPERATOR_SMTP_SERVER}"
         networks:
           - "network"
         environment:

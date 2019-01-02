@@ -16,7 +16,7 @@ if [ ! -d "$target_dir/.ace" ]; then
 
     if [ "$ACE3_DATA_EMAIL_TRANSCRIPT" = "true" ]; then
         echo "Enabling email trascripts"
-        sed -i -e 's/emailTranscript=false/emailTranscript=true/; s/transcriptEmailTo=@SELF;@OTHERS/transcriptEmailTo=@SELF/; s/transcriptEmailFrom=@SELF/transcriptEmailFrom=@noreply@ace3.io/' \
+        sed -i -e 's/emailTranscript=false/emailTranscript=true/; s/transcriptEmailTo=@SELF;@OTHERS/transcriptEmailTo=@SELF/; s/transcriptEmailFrom=@SELF/transcriptEmailFrom=noreply@ace3.io/' \
             $target_dir/.ace/profiles/default-operator.properties
     fi
 fi
