@@ -17,7 +17,6 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ~/certs/kube.key -ou
 # port forward http to minikube (work in progress)
 sudo echo 1 > /proc/sys/net/ipv4/ip_forward
 
-# Enable logging
 sudo iptables -I INPUT 1 -p tcp --dport 80 -j LOG
 sudo iptables -I INPUT 1 -p tcp --dport 443 -j LOG
 sudo iptables -t nat -p tcp -I PREROUTING 1  -j LOG
@@ -95,6 +94,7 @@ export INSTANCE=<instance_name>
 
 export ACEOPERATOR_SQL_PASSWORD=a1b2c3d4
 export ACEOPERATOR_ADMIN_PASSWORD=a1b2c3d4
+export ACE3_DATA_USERS=TODO
 
 deploy_instance.sh $ACE3_HOME $INSTANCE
 # ----------------------------------------------------------------------------------------------
@@ -129,6 +129,8 @@ kubectl logs $(kubectl get pod | grep ${INSTANCE} | awk '{print $1}') -c ace-dat
 
 # execute command on a container
 kubectl exec -it $(kubectl get pod | grep ${INSTANCE} | awk '{print $1}') -c ace-data -- /bin/bash
+
+# To test the nfs mount
 
 # ************************************************************----------------------------------------
 # cleanup

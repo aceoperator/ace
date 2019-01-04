@@ -10,7 +10,7 @@ spec:
         app: aceoperator
         instance: webtalk
     spec:
-      containers:
+      initContainers:
       - name: ace-data
         image: "quik/aceoperator-data:3.1.0-SNAPSHOT"
         volumeMounts:
@@ -18,6 +18,8 @@ spec:
             name: aceoperator
             subPath: instance/webtalk
         env:
+          - name: ACE3_DATA_EXIT
+            value: "true"
           - name: ACEOPERATOR_SQL_HOST
             value: "aceoperatordb.aceoperator.svc.cluster.local"
           - name: ACEOPERATOR_SQL_PORT
@@ -43,16 +45,37 @@ spec:
               secretKeyRef:
                 name: webtalk
                 key: mysql_ace_password
-          - name: LOAD_DEMO
+          - name: ACEOPERATOR_ADMIN_PASSWORD
             valueFrom:
-              configMapKeyRef:
+              secretKeyRef:
                 name: webtalk
-                key: data.loadDemo
-          - name: RUN_SEED
+                key: admin_password
+          - name: ACE3_DATA_RUN_SEED
             valueFrom:
               configMapKeyRef:
                 name: webtalk
                 key: data.runSeed
+          - name: ACE3_DATA_RUN_PATCH
+            valueFrom:
+              configMapKeyRef:
+                name: webtalk
+                key: data.runPatch
+          - name: ACE3_DATA_LOAD_USERS
+            valueFrom:
+              configMapKeyRef:
+                name: webtalk
+                key: data.loadUsers
+          - name: ACE3_DATA_USERS
+            valueFrom:
+              secretKeyRef:
+                name: webtalk
+                key: data_operators
+          - name: ACE3_DATA_EMAIL_TRANSCRIPT
+            valueFrom:
+              configMapKeyRef:
+                name: webtalk
+                key: data.sendTranscript
+      containers:
       - name: ace-app
         image: "quik/aceoperator-app:3.1.0-SNAPSHOT"
         resources:
@@ -63,6 +86,8 @@ spec:
             memory: "512Mi"
             cpu: "1"
         env:
+          - name: ACE3_APP_CNT_SYNC
+            value: "false"
           - name: ACE3_APP_DATA_HOST
             value: 127.0.0.1
           - name: ACEOPERATOR_SQL_HOST
@@ -127,6 +152,6 @@ spec:
       securityContext:
         fsGroup: 1000
       volumes:
-        - name: aceoperator
-          persistentVolumeClaim:
-            claimName: aceoperator
+      - name: aceoperator
+        persistentVolumeClaim:
+          claimName: aceoperator

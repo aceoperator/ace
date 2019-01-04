@@ -52,18 +52,23 @@ if [ -z "$ACEOPERATOR_ADMIN_PASSWORD" ]; then
     export ACEOPERATOR_ADMIN_PASSWORD=$password
 fi
 
+echo "Adding secrets..."
 $bin_dir/instance-secret-from-env.sh $instance | kubectl apply -f -
 
 # create configmap for instance
+echo "Adding configmap..."
 kubectl create configmap $instance "--from-env-file=$property_file"
 
 # create deployment for instance
+echo "Adding deployment..."
 sed "s/webtalk/$instance/g" $template_dir/instance-deployment.yml | kubectl apply -f -
 
 # create a service for instance
+echo "Adding service..."
 sed "s/webtalk/$instance/g" $template_dir/instance-service.yml | kubectl apply -f -
 
 # create an ingress for instance
+echo "Adding ingress..."
 sed "s/webtalk/$instance/g" $template_dir/instance-ingress.yml | kubectl apply -f -
 
 nslookup $instance.aceoperator.net

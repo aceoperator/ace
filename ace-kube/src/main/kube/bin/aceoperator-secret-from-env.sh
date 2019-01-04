@@ -1,7 +1,7 @@
 #!/bin/sh
 
 function convert {
-  if [ -z "$1" ]; then echo "Warning: value empty" >&2; echo -n \"\"; else echo -n "$1" | base64 ; fi
+  if [ -z "$1" ]; then echo "Warning: value empty" >&2; echo -n \"\"; else echo -n "$1" | base64 -w 0; fi
 }
 
 cat << EOF
