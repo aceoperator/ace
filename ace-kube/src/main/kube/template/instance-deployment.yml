@@ -86,6 +86,8 @@ spec:
             memory: "512Mi"
             cpu: "1"
         env:
+          - name: ACE3_CONFIG_HASH
+            value: config_hash
           - name: ACE3_APP_CNT_SYNC
             value: "false"
           - name: ACE3_APP_DATA_HOST

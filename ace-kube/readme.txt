@@ -14,6 +14,9 @@ sudo exportfs -a
 mkdir ~/certs
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ~/certs/kube.key -out ~/certs/kube.crt -subj "/CN=*.aceoperator.net"
 
+# 3. install json parser for bash
+sudo yum install -y jq
+
 # port forward http to minikube (work in progress)
 sudo echo 1 > /proc/sys/net/ipv4/ip_forward
 
@@ -111,6 +114,12 @@ deploy_instance.sh $ACE3_HOME $INSTANCE
 
 kubectl set resources deployment ${INSTANCE} -c=ace-app --limits=cpu=200m,memory=512Mi
 
+# Edit configmap/secret/etc.
+kubectl edit configmap $INSTANCE
+
+# for the change to take effect on an instance
+deploy_instance.sh $ACE3_HOME webtalk deployment
+
 # ************************************************************---------------------------------------
 # Debugging tools
 # ************************************************************----------------------------------------
@@ -125,12 +134,16 @@ openssl s_client -host ${INSTANCE}.aceoperator.net -port 443
 curl -I -k -v --resolve ${INSTANCE}.aceoperator.net https://${INSTANCE}.aceoperator.net/ace-contactcenter
 
 # view logs for a container
-kubectl logs $(kubectl get pod | grep ${INSTANCE} | awk '{print $1}') -c ace-data
+kubectl logs $(kubectl get pod | grep ${INSTANCE} | awk '{print $1}') -c ace-app
 
 # execute command on a container
-kubectl exec -it $(kubectl get pod | grep ${INSTANCE} | awk '{print $1}') -c ace-data -- /bin/bash
+kubectl exec -it $(kubectl get pod | grep ${INSTANCE} | awk '{print $1}') -c ace-app -- /bin/bash
+
+# get a list of all deployed instances
+kubectl get pod --selector=app=aceoperator -o wide
 
 # To test the nfs mount
+# TODO
 
 # ************************************************************----------------------------------------
 # cleanup
