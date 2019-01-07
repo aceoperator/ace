@@ -142,6 +142,14 @@ kubectl exec -it $(kubectl get pod | grep ${INSTANCE} | awk '{print $1}') -c ace
 # get a list of all deployed instances
 kubectl get pod --selector=app=aceoperator -o wide
 
+# test aceoperatordb livensess
+    # to view the health of the system
+    kubectl describe pod $(kubectl get pod | grep aceoperatordb | awk '{print $1}')
+    # and view the events
+    # view all system events
+    kubectl get events --sort-by=.metadata.creationTimestamp
+    # change password using mysqladmin password
+
 # To test the nfs mount
 # TODO
 

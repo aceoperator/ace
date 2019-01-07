@@ -18,6 +18,14 @@ spec:
       containers:
       - name: ace-db
         image: mariadb:5.5.52
+        livenessProbe:
+          exec:
+            command:
+            - bash
+            - -c
+            - mysqladmin ping -u root -p$MYSQL_ROOT_PASSWORD | grep "mysqld is alive"
+          initialDelaySeconds: 90
+          periodSeconds: 60
         volumeMounts:
           - mountPath: /var/lib/mysql
             name: aceoperatordb
