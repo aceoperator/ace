@@ -85,6 +85,17 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "1"
+        readinessProbe:
+          httpGet:
+            path: /ace-contactcenter
+            port: 8080
+          initialDelaySeconds: 90
+          periodSeconds: 30
+        livenessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 90
+          periodSeconds: 60
         env:
           - name: ACE3_CONFIG_HASH
             value: config_hash
