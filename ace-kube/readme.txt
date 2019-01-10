@@ -3,6 +3,11 @@
 # ************************************************************
 
 # 1. create persistent volume on the VM using a NFS mount
+sudo systemctl disable firewalld
+sudo systemctl stop firewalld
+sudo systemctl start nfs-server
+sudo systemctl enable nfs-server
+
 sudo mkdir -p /var/vol/aceoperator/instance/webtalk
 
 sudo chown -R nfsnobody.nfsnobody /var/vol/aceoperator
@@ -165,8 +170,11 @@ kubectl get pod --selector=app=aceoperator -o wide
     # change password using mysqladmin password
 
 # To test the nfs mount
-# TODO
-
+minikube ssh
+    sudo mkdir -p /mnt/aceoperator
+    sudo mount -v -t nfs $(ip -4 addr show dev eth1 | grep inet | awk '{print $2}' | awk -F '/' '{print $1}' | awk -F '.' '{print $1"."$2"."$3".1"}'):/var/vol/aceoperator /mnt/aceoperator
+    # And verify
+    sudo umount /mnt/aceoperator
 # ************************************************************----------------------------------------
 # cleanup
 # ************************************************************----------------------------------------
