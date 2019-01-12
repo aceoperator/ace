@@ -44,8 +44,8 @@ ENV ACEOPERATOR_MAIL_OVERRIDE_FROM $ACEOPERATOR_MAIL_OVERRIDE_FROM
 ARG ACEOPERATOR_RECAPTCHA_SECRET=
 ENV ACEOPERATOR_RECAPTCHA_SECRET $ACEOPERATOR_RECAPTCHA_SECRET
 
-ARG ACE3_APP_CNT_SYNC=true
-ENV ACE3_APP_CNT_SYNC $ACE3_APP_CNT_SYNC
+ARG ACE3_CNTSYNC=true
+ENV ACE3_CNTSYNC $ACE3_CNTSYNC
 
 RUN apt-get update; apt-get -y install nmap
 
@@ -60,6 +60,7 @@ RUN chmod +x /usr/share/aceoperator/bin/*.sh
 COPY work/webapps /usr/local/tomcat/webapps
 COPY server.xml /usr/local/tomcat/conf
 
+# Expose 6970 so that the outside world can check for app start
 EXPOSE 6970 8080 8443 8009
 
-CMD ["/usr/share/aceoperator/bin/run.sh"]
+ENTRYPOINT ["/usr/share/aceoperator/bin/run.sh"]

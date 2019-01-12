@@ -18,8 +18,8 @@ spec:
             name: aceoperator
             subPath: instance/webtalk
         env:
-          - name: ACE3_DATA_EXIT
-            value: "true"
+          - name: ACE3_CNTSYNC
+            value: "false"
           - name: ACEOPERATOR_SQL_HOST
             value: "aceoperatordb.aceoperator.svc.cluster.local"
           - name: ACEOPERATOR_SQL_PORT
@@ -99,7 +99,7 @@ spec:
         env:
           - name: ACE3_CONFIG_HASH
             value: config_hash
-          - name: ACE3_APP_CNT_SYNC
+          - name: ACE3_CNTSYNC
             value: "false"
           - name: ACE3_APP_DATA_HOST
             value: 127.0.0.1

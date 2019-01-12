@@ -23,7 +23,7 @@ services:
           - "ACE3_DATA_USERS=${ACE3_DATA_USERS}"
           - "ACE3_DATA_EMAIL_TRANSCRIPT=${ACE3_DATA_EMAIL_TRANSCRIPT}"
 
-          - "ACE3_DATA_EXIT=false"
+          - "ACE3_CNTSYNC=true"
         volumes:
           - "${ACEOPERATOR_HOME}:/var/aceoperator"   
 networks:
