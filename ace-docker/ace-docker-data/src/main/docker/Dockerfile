@@ -32,8 +32,8 @@ ENV ACE3_DATA_EMAIL_TRANSCRIPT $ACE3_DATA_EMAIL_TRANSCRIPT
 ARG ACE3_DATA_USERS=
 ENV ACE3_DATA_USERS $ACE3_DATA_USERS
 
-ARG ACE3_DATA_EXIT=false
-ENV ACE3_DATA_EXIT $ACE3_DATA_EXIT
+ARG ACE3_CNTSYNC=true
+ENV ACE3_CNTSYNC $ACE3_CNTSYNC
 
 ARG ACE3_DATA_RUN_SEED=true
 ENV ACE3_DATA_RUN_SEED $ACE3_DATA_RUN_SEED
@@ -51,7 +51,5 @@ COPY work/.ace /usr/share/aceoperator/.ace
 COPY *.sql /usr/share/aceoperator/.ace/sql/
 
 COPY config-override.xml /usr/share/aceoperator/.ace/spring/ace-app/
-
-EXPOSE 6969
 
 CMD ["/usr/share/aceoperator/bin/run.sh"]

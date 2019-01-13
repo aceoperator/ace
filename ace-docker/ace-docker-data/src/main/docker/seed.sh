@@ -25,12 +25,22 @@ db_exists=$(mysql -h $ACEOPERATOR_SQL_HOST -P $ACEOPERATOR_SQL_PORT -u root -p$A
 if [ -z "$db_exists" ]; then
     echo "Database $ACEOPERATOR_SQL_DB does not exist. Creating database"
     mysql -h $ACEOPERATOR_SQL_HOST -P $ACEOPERATOR_SQL_PORT -u root -p$ACEOPERATOR_SQL_ROOT_PASSWORD < $target_dir/.ace/sql/init_db.sql
+fi
 
-    objs_exists=$(mysql -h $ACEOPERATOR_SQL_HOST -P $ACEOPERATOR_SQL_PORT -u $ACEOPERATOR_SQL_USER -p$ACEOPERATOR_SQL_PASSWORD  $ACEOPERATOR_SQL_DB -e 'SHOW TABLES' | grep -i account_tbl)
-    if [ -z "$data_exists" ]; then
+objs_exists=$(mysql -h $ACEOPERATOR_SQL_HOST -P $ACEOPERATOR_SQL_PORT -u $ACEOPERATOR_SQL_USER -p$ACEOPERATOR_SQL_PASSWORD  $ACEOPERATOR_SQL_DB -e 'SHOW TABLES' | grep -i account_tbl)
+if [ -z "$objs_exists" ]; then
+    # load data from backup if available
+    backup_dir="$target_dir/backup"
+    if [ -f "$backup_dir/backup.sql" ]; then
+        echo "Database tables for $ACEOPERATOR_SQL_DB does not exist. Creating objects from backup"
+        mysql -h $ACEOPERATOR_SQL_HOST -P $ACEOPERATOR_SQL_PORT -u $ACEOPERATOR_SQL_USER -p$ACEOPERATOR_SQL_PASSWORD $ACEOPERATOR_SQL_DB < $backup_dir/backup.sql
+    else
+        echo "Database tables for $ACEOPERATOR_SQL_DB does not exist. Creating objects from source"
         mysql -h $ACEOPERATOR_SQL_HOST -P $ACEOPERATOR_SQL_PORT -u $ACEOPERATOR_SQL_USER -p$ACEOPERATOR_SQL_PASSWORD < $target_dir/.ace/sql/init_objects.sql
 
+        # Instead of IFS, use - while read -e var; do echo -e $var; done
         if [ -n "$ACE3_DATA_LOAD_USERS" ]; then
+            echo "Creating operators..."
             IFS=$'\n'
             for e in $(echo $ACE3_DATA_USERS | tr ',' '\n'); do
                 user=$(echo $e | cut -d ":" -f 1)
@@ -40,13 +50,12 @@ if [ -z "$db_exists" ]; then
                 if [ -z "$user" ] || [ -z "$password" ] || [ -z "full_name" ] || [ -z "$email" ]; then
                     echo "One or more user attributes have not been set. Going to not create the user"
                 else
-                    echo "Creating user: $user, $full_name, $email"
+                    echo "Creating operator: $user, $full_name, $email"
                     mysql -h $ACEOPERATOR_SQL_HOST -P $ACEOPERATOR_SQL_PORT -u $ACEOPERATOR_SQL_USER -p$ACEOPERATOR_SQL_PASSWORD $ACEOPERATOR_SQL_DB \
                         -e "set @user='$user'; set @password='$password'; set @full_name='$full_name'; set @email='$email'; source $sql_dir/init_demo_user.sql;" 
                 fi
             done
             unset IFS
         fi
-    # TODO add patch logic here
     fi
 fi

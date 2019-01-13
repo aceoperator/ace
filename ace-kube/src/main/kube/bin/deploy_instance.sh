@@ -87,5 +87,9 @@ if [ "$part" = "all" ] || [ "$part" = "ingress" ]; then
     fi
 fi
 
+if [ "$part" = "all" ] || [ "$part" = "backup" ]; then
+    sed "s/webtalk/$instance/g" $template_dir/instance-backup-job.yml | kubectl apply -f -
+fi
+
 echo "Here is how the deployment looks so far:"
 kubectl get all | grep "$instance" | sed '/^$/d'

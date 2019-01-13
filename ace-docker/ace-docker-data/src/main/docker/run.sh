@@ -1,12 +1,25 @@
-#!/bin/sh
+#!/bin/bash
 
 bin_dir="/usr/share/aceoperator/bin"
 ping_port="6969"
+app_ping_port="6970"
 
 . $bin_dir/cntping.sh
 
-# signal to other containers that the data container is initializing
-cnt_init $ping_port
+function cleanup {
+    echo "Shutting down ace-data ..."
+    # TODO figure out what kind of cleanup is needed
+    echo "ace-data shutdown complete"
+    exit 143 # 128 + 15 -- SIGTERM
+}
+
+# Kill the "tail" and then, shutdown gracefully
+trap 'kill ${!}; cleanup' SIGTERM
+
+if [ "$ACE3_CNTSYNC" = "true" ]; then
+    # signal to other containers that the data container is initializing
+    cnt_init $ping_port
+fi
 
 # wait for mariadb to start
 maria_started=1
@@ -22,10 +35,15 @@ if [ -n "$ACE3_DATA_RUN_SEED" ]; then
     echo "Done seeding"
 fi
 
-if [ "$ACE3_DATA_EXIT" = "false" ]; then
-    # signal to other containers that the data initilization is done
+if [ "$ACE3_CNTSYNC" = "true" ]; then
+    # signal to the app container that the data initilization is done
     cnt_chstate $ping_port STARTED
 
-    # wait for self to end. This is going to sleep infinitely until the signal handler sets the state to ENDED (NYI)
-    cnt_waitfor 127.0.0.1 $ping_port ENDED
+    # wait forever
+    while true
+    do
+    tail -f /dev/null & wait ${!}
+    done
 fi
+
+echo "Exiting ace-data entrypoint"

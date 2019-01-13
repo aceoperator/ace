@@ -23,12 +23,26 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ~/certs/kube.key -ou
 sudo yum install -y jq
 
 # port forward http to minikube (work in progress)
+KUBEIF='virbr1'
+LANIF='ens33'
+
+# enable ip forwarding in the kernel
+echo 'Enabling Kernel IP forwarding...'
 sudo echo 1 > /proc/sys/net/ipv4/ip_forward
 
-sudo iptables -I INPUT 1 -p tcp --dport 80 -j LOG
-sudo iptables -I INPUT 1 -p tcp --dport 443 -j LOG
-sudo iptables -t nat -p tcp -I PREROUTING 1  -j LOG
-sudo iptables -t nat -p tcp -I POSTROUTING 1 -j LOG
+# enable masquerading to allow LAN internet access
+echo 'Enabling IP Masquerading and other rules...'
+sudo iptables -t nat -A POSTROUTING -o $LANIF -p tcp --dport 80 -j MASQUERADE
+sudo iptables -t nat -A POSTROUTING -o $LANIF -p tcp --dport 443 -j MASQUERADE
+iptables -A FORWARD -i $LANIF -o $KUBEIF -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i $KUBEIF -o $LANIF -j ACCEPT
+
+iptables -t nat -A POSTROUTING -o $KUBEIF -j MASQUERADE
+iptables -A FORWARD -i $KUBEIF -o $LANIF -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i $LANIF -o $KUBEIF -j ACCEPT
+
+# old
+sudo echo 1 > /proc/sys/net/ipv4/ip_forward
 
 sudo iptables -t nat -A PREROUTING -s 0/0 -p tcp -i ens33 --dport 80 -j DNAT --to $(minikube ip):80
 sudo iptables -t nat -A PREROUTING -s 0/0 -p tcp -i ens33 --dport 443 -j DNAT --to $(minikube ip):443
@@ -122,7 +136,7 @@ kubectl set resources deployment ${INSTANCE} -c=ace-app --limits=cpu=200m,memory
 kubectl edit configmap $INSTANCE
 
 # for the change to take effect on an instance
-deploy_instance.sh $ACE3_HOME webtalk deployment
+deploy_instance.sh $ACE3_HOME $INSTANCE deployment
 
 # ************************************************************---------------------------------------
 # Debugging tools

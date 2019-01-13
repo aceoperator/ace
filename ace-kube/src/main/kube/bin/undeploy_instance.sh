@@ -7,6 +7,7 @@ fi
 
 echo "Going to undeploy $instance"
 
+kubectl delete cronjob "${instance}-backup"
 kubectl delete ingress "$instance"
 kubectl delete service "$instance"
 kubectl delete deployment "$instance"

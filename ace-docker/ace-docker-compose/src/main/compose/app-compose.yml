@@ -24,7 +24,7 @@ services:
           - "ACEOPERATOR_MAIL_OVERRIDE_FROM=${ACEOPERATOR_MAIL_OVERRIDE_FROM}"
           - "ACEOPERATOR_RECAPTCHA_SECRET=${ACEOPERATOR_RECAPTCHA_SECRET}"
 
-          - "ACE3_APP_CNT_SYNC=true"
+          - "ACE3_CNTSYNC=true"
         volumes:
           - "${ACEOPERATOR_HOME}:/var/aceoperator"
     frontend:
