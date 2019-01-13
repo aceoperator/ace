@@ -36,6 +36,14 @@ docker-compose -p aceoperator -f ~/git/ace/ace-docker/ace-docker-compose/target/
     -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/data-compose.yml \
     -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/app-compose.yml up
 
+
+# ------------------------------------------------------------
+# Stop Ace Operator gracefully
+# ------------------------------------------------------------
+docker-compose -p aceoperator -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/db-compose.yml \
+    -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/data-compose.yml \
+    -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/app-compose.yml stop -t 60
+
 # ------------------------------------------------------------
 # Backup database
 # ------------------------------------------------------------

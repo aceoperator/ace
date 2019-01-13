@@ -1,11 +1,17 @@
 #!/bin/bash
 
 function cleanup {
-  # Your cleanup code here
-  echo "Application is being shutdown"
-  touch /var/aceoperator/stopped
+  echo "Shutting down ace-app..."
+  catalina.sh stop
+  while [ -n "$(ps ax | grep tomcat | grep -v grep)" ]; do
+    sleep 1
+  done
+  echo "ace-app shutdown complete"
+  exit 143 # 128 + 15 -- SIGTERM
 }
-trap finish SIGTERM
+
+# Kill the "tail" and then, shutdown gracefully
+trap 'kill ${!}; cleanup' SIGTERM
 
 src_dir="/usr/share/aceoperator"
 target_dir="/var/aceoperator"
@@ -30,11 +36,19 @@ export JAVA_OPTS="-Xms256m -Xmx512m -Djava.awt.headless=true -Dfile.encoding=UTF
 # add all the ACEOPERATOR environment variables as system properties with a "env." prefix
 for e in $(env | grep '^ACEOPERATOR' | awk -F "=" '{ print " -Denv."$1"="$2}'); do export JAVA_OPTS="$JAVA_OPTS $e"; done
 
+# Start tomcat in background. Else the signal cannot be trapped and shutdown won't be graceful
+catalina.sh run&
+
 if [ "$ACE3_CNTSYNC" = "true" ]; then
     # signal to other containers that app initilization is done
-    # TODO change this to run after tomcat has started
+    # TODO change this to run after tomcat has really started
     cnt_chstate $ping_port STARTED
 fi
 
-# Start tomcat
-catalina.sh run
+# wait forever
+while true
+do
+  tail -f /dev/null & wait ${!}
+done
+
+echo "Exiting ace-app entrypoint"
