@@ -137,7 +137,7 @@ kubectl set resources deployment ${INSTANCE} -c=ace-app --limits=cpu=200m,memory
 kubectl edit configmap $INSTANCE
 
 # for the change to take effect on an instance
-deploy_instance.sh $ACE3_HOME webtalk deployment
+deploy_instance.sh $ACE3_HOME $INSTANCE deployment
 
 # ************************************************************---------------------------------------
 # Debugging tools

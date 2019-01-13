@@ -1,0 +1,52 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: webtalk-backup
+spec:
+  schedule: "0 2 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: ace-backup
+              image: "quik/aceoperator-data:3.1.0-SNAPSHOT"
+              volumeMounts:
+                - mountPath: /var/aceoperator
+                  name: aceoperator
+                  subPath: instance/webtalk
+              env:
+                - name: ACEOPERATOR_SQL_HOST
+                  value: "aceoperatordb.aceoperator.svc.cluster.local"
+                - name: ACEOPERATOR_SQL_PORT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: aceoperator
+                      key: db.port
+                - name: ACEOPERATOR_SQL_DB
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.labels['instance']
+                - name: ACEOPERATOR_SQL_ROOT_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: aceoperator
+                      key: mysql_root_password
+                - name: ACEOPERATOR_SQL_USER
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.labels['instance']
+                - name: ACEOPERATOR_SQL_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: webtalk
+                      key: mysql_ace_password
+              args:
+                - /bin/sh
+                - -c
+                - /usr/share/aceoperator/bin/backup.sh
+          volumes:
+          - name: aceoperator
+            persistentVolumeClaim:
+              claimName: aceoperator
+          restartPolicy: OnFailure
