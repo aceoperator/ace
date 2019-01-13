@@ -38,7 +38,6 @@ sudo iptables -t nat -L -n -v
 # ************************************************************
 # Minikube operations
 # ************************************************************
-
 # start minikube
 minikube start --vm-driver kvm2
 
@@ -59,9 +58,6 @@ minikube ssh
 kubectl get deployments --all-namespaces
 kubectl delete -n NAMESPACE deployment DEPLOYMENT
 
-# enable ingress controller
-minikube addons enable ingress
-
 # bring up dashboard
 minikube dashboard
 
@@ -78,6 +74,9 @@ export PATH=$PATH:$ACE3_BIN
 # -------------------------------------------------------------------------------------------
 # 1. Preparation
 # -------------------------------------------------------------------------------------------
+# enable ingress controller
+minikube addons enable ingress
+
 # create NFS mount 
 kubectl apply -f $(aceoperator-pv.sh)
 kubectl get pv
