@@ -5,29 +5,36 @@ src_dir="/usr/share/aceoperator"
 target_dir="/var/aceoperator"
 bin_dir="$src_dir/bin"
 sql_dir="$target_dir/.ace/sql"
+backup_dir="$target_dir/backup"
 
 mkdir -p $target_dir/patches
 
 if [ ! -d "$target_dir/.ace" ]; then
-    # copy the src to persistent storage volume
-    echo "$target_dir/.ace does not exist. Initializing"
-    mkdir -p $target_dir
-    cp -R -p $src_dir/.ace $target_dir/
-    $bin_dir/replace_in_files.sh '^ACEOPERATOR_.*' $(find $target_dir/.ace -type f -name '*sql')
+    # load data from backup if available
+    if [ -f "$backup_dir/ace_backup.tar.gz" ]; then
+        echo "The .ace work directory does not exist. Creating working directory from backup"
+        tar xvf $backup_dir/ace_backup.tar.gz --directory $target_dir
+    else
+        # copy the src to persistent storage volume
+        echo "$target_dir/.ace does not exist. Initializing from source"
+        mkdir -p $target_dir
+        cp -R -p $src_dir/.ace $target_dir/
+        $bin_dir/replace_in_files.sh '^ACEOPERATOR_.*' $(find $target_dir/.ace -type f -name '*sql')
 
-    if [ "$ACE3_DATA_EMAIL_TRANSCRIPT" = "true" ]; then
-        echo "Enabling email trascripts"
-        sed -i -e 's/emailTranscript=false/emailTranscript=true/; s/transcriptEmailTo=@SELF;@OTHERS/transcriptEmailTo=@SELF/; s/transcriptEmailFrom=@SELF/transcriptEmailFrom=noreply@ace3.io/' \
-            $target_dir/.ace/profiles/default-operator.properties
-    fi
+        if [ "$ACE3_DATA_EMAIL_TRANSCRIPT" = "true" ]; then
+            echo "Enabling email trascripts"
+            sed -i -e 's/emailTranscript=false/emailTranscript=true/; s/transcriptEmailTo=@SELF;@OTHERS/transcriptEmailTo=@SELF/; s/transcriptEmailFrom=@SELF/transcriptEmailFrom=noreply@ace3.io/' \
+                $target_dir/.ace/profiles/default-operator.properties
+        fi
 
-    # Since we initialized from scratch, we are going to assume that all patches so far as been applied as a part of the above init. 
-    # Mark all the patches as applied
-    if [ -d "$src_dir/.ace/patches" ]; then
-        save_cwd=$(pwd)
-        cd $src_dir/.ace/patches
-        ls -1 patch_*.sh 2> /dev/null | awk -v curdate="$(date '+%Y-%m-%d %H:%M:%S')" '{print $0","curdate}' > $target_dir/patches/patchlist.txt
-        cd $save_cwd
+        # Since we initialized from scratch, we are going to assume that all patches so far as been applied as a part of the above init. 
+        # Mark all the patches as applied
+        if [ -d "$src_dir/.ace/patches" ]; then
+            save_cwd=$(pwd)
+            cd $src_dir/.ace/patches
+            ls -1 patch_*.sh 2> /dev/null | awk -v curdate="$(date '+%Y-%m-%d %H:%M:%S')" '{print $0","curdate}' > $target_dir/patches/patchlist.txt
+            cd $save_cwd
+        fi
     fi
 fi
 
@@ -40,10 +47,9 @@ fi
 objs_exists=$(mysql -h $ACEOPERATOR_SQL_HOST -P $ACEOPERATOR_SQL_PORT -u $ACEOPERATOR_SQL_USER -p$ACEOPERATOR_SQL_PASSWORD  $ACEOPERATOR_SQL_DB -e 'SHOW TABLES' | grep -i account_tbl)
 if [ -z "$objs_exists" ]; then
     # load data from backup if available
-    backup_dir="$target_dir/backup"
-    if [ -f "$backup_dir/backup.sql" ]; then
+    if [ -f "$backup_dir/db_backup.sql" ]; then
         echo "Database tables for $ACEOPERATOR_SQL_DB does not exist. Creating objects from backup"
-        mysql -h $ACEOPERATOR_SQL_HOST -P $ACEOPERATOR_SQL_PORT -u $ACEOPERATOR_SQL_USER -p$ACEOPERATOR_SQL_PASSWORD $ACEOPERATOR_SQL_DB < $backup_dir/backup.sql
+        mysql -h $ACEOPERATOR_SQL_HOST -P $ACEOPERATOR_SQL_PORT -u $ACEOPERATOR_SQL_USER -p$ACEOPERATOR_SQL_PASSWORD $ACEOPERATOR_SQL_DB < $backup_dir/db_backup.sql
     else
         echo "Database tables for $ACEOPERATOR_SQL_DB does not exist. Creating objects from source"
         mysql -h $ACEOPERATOR_SQL_HOST -P $ACEOPERATOR_SQL_PORT -u $ACEOPERATOR_SQL_USER -p$ACEOPERATOR_SQL_PASSWORD < $target_dir/.ace/sql/init_objects.sql
