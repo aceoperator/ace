@@ -23,10 +23,10 @@ if [ ! -d "$target_dir/.ace" ]; then
 
     # Since we initialized from scratch, we are going to assume that all patches so far as been applied as a part of the above init. 
     # Mark all the patches as applied
-    if [ -d "$src_dir/patches" ]; then
+    if [ -d "$src_dir/.ace/patches" ]; then
         save_cwd=$(pwd)
-        cd $src_dir/patches
-        ls -1 patch_*.sh 2> /dev/null | awk -v curdate="$(date --iso-8601)" '{print $0","curdate}' > $target_dir/patches/patchlist.txt
+        cd $src_dir/.ace/patches
+        ls -1 patch_*.sh 2> /dev/null | awk -v curdate="$(date '+%Y-%m-%d %H:%M:%S')" '{print $0","curdate}' > $target_dir/patches/patchlist.txt
         cd $save_cwd
     fi
 fi
@@ -71,12 +71,14 @@ if [ -z "$objs_exists" ]; then
         # Tables did not exist. We just created it.
         # Since we initialized from scratch, we are going to assume that all patches so far as been applied as a part of the above init. 
         # Mark all the patches as applied
-        save_cwd=$(pwd)
-        cd $src_dir/patches
-        for patch in "$(ls -1 patch_*.sql 2> /dev/null)"; do
-             mysql -h $ACEOPERATOR_SQL_HOST -P $ACEOPERATOR_SQL_PORT -u $ACEOPERATOR_SQL_USER -p$ACEOPERATOR_SQL_PASSWORD $ACEOPERATOR_SQL_DB \
-                        -e "set @file='$patch'; source $sql_dir/apply_patch.sql;" 
-        done
-        cd $save_cwd
+        if [ -d "$src_dir/.ace/patches" ]; then
+            save_cwd=$(pwd)
+            cd $src_dir/.ace/patches
+            for patch in "$(ls -1 patch_*.sql 2> /dev/null)"; do
+                mysql -h $ACEOPERATOR_SQL_HOST -P $ACEOPERATOR_SQL_PORT -u $ACEOPERATOR_SQL_USER -p$ACEOPERATOR_SQL_PASSWORD $ACEOPERATOR_SQL_DB \
+                            -e "set @file='$patch'; source $sql_dir/apply_patch.sql;" 
+            done
+            cd $save_cwd
+        fi
     fi
 fi

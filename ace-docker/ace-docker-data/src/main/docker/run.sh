@@ -35,6 +35,11 @@ if [ -n "$ACE3_DATA_RUN_SEED" ]; then
     echo "Done seeding"
 fi
 
+if [ -n "$ACE3_DATA_RUN_PATCH" ]; then
+    $bin_dir/patch.sh
+    echo "Done patching"
+fi
+
 if [ "$ACE3_CNTSYNC" = "true" ]; then
     # signal to the app container that the data initilization is done
     cnt_chstate $ping_port STARTED
