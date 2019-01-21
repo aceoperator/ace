@@ -1,11 +1,12 @@
 #!/usr/bin/bash
 
+
 src_dir="/usr/share/aceoperator"
 target_dir="/var/aceoperator"
 bin_dir="$src_dir/bin"
 sql_dir="$target_dir/.ace/sql"
 
-mkdir -p $target_dir
+mkdir -p $target_dir/patches
 
 if [ ! -d "$target_dir/.ace" ]; then
     # copy the src to persistent storage volume
@@ -18,6 +19,15 @@ if [ ! -d "$target_dir/.ace" ]; then
         echo "Enabling email trascripts"
         sed -i -e 's/emailTranscript=false/emailTranscript=true/; s/transcriptEmailTo=@SELF;@OTHERS/transcriptEmailTo=@SELF/; s/transcriptEmailFrom=@SELF/transcriptEmailFrom=noreply@ace3.io/' \
             $target_dir/.ace/profiles/default-operator.properties
+    fi
+
+    # Since we initialized from scratch, we are going to assume that all patches so far as been applied as a part of the above init. 
+    # Mark all the patches as applied
+    if [ -d "$src_dir/patches" ]; then
+        save_cwd=$(pwd)
+        cd $src_dir/patches
+        ls -1 patch_*.sh 2> /dev/null | awk -v curdate="$(date --iso-8601)" '{print $0","curdate}' > $target_dir/patches/patchlist.txt
+        cd $save_cwd
     fi
 fi
 
@@ -57,5 +67,16 @@ if [ -z "$objs_exists" ]; then
             done
             unset IFS
         fi
+
+        # Tables did not exist. We just created it.
+        # Since we initialized from scratch, we are going to assume that all patches so far as been applied as a part of the above init. 
+        # Mark all the patches as applied
+        save_cwd=$(pwd)
+        cd $src_dir/patches
+        for patch in "$(ls -1 patch_*.sql 2> /dev/null)"; do
+             mysql -h $ACEOPERATOR_SQL_HOST -P $ACEOPERATOR_SQL_PORT -u $ACEOPERATOR_SQL_USER -p$ACEOPERATOR_SQL_PASSWORD $ACEOPERATOR_SQL_DB \
+                        -e "set @file='$patch'; source $sql_dir/apply_patch.sql;" 
+        done
+        cd $save_cwd
     fi
 fi
