@@ -55,7 +55,6 @@ sudo iptables -t nat -L -n -v
 # ************************************************************
 # Minikube operations
 # ************************************************************
-
 # start minikube
 minikube start --vm-driver kvm2
 
@@ -64,20 +63,17 @@ minikube ssh
 
 # add local images to minikube
 eval $(minikube docker-env)
-# build the image using mvn command
+cd ~/git/ace/ace-docker
+mvn -P docker clean install
 
 # remove unused docker imaages from minikube
-minikube ssh
-    docker container rm $(docker ps -a -q)
-    # docker rmi to remove the image
-    exit
+eval $(minikube docker-env)
+docker container rm $(docker ps -a -q)
+docker rmi `docker images | grep -v REPOSITORY | awk '{print $1":"$2'} | grep quik`
 
 # delete deployments
 kubectl get deployments --all-namespaces
 kubectl delete -n NAMESPACE deployment DEPLOYMENT
-
-# enable ingress controller
-minikube addons enable ingress
 
 # bring up dashboard
 minikube dashboard
@@ -88,6 +84,10 @@ minikube stop
 # ************************************************************
 # Setup aceoperator service and an instance
 # ************************************************************
+. ~/git/ace/ace-docker/properties.sh
+# to override properties that you don't want others to see
+. ~/git/ace/ace-docker/properties-secret.sh
+
 # Add to .bashrc/.bash_profile
 export ACE3_HOME=~/git/ace/ace-kube/src/main/kube
 export ACE3_BIN=$ACE3_HOME/bin
@@ -95,6 +95,9 @@ export PATH=$PATH:$ACE3_BIN
 # -------------------------------------------------------------------------------------------
 # 1. Preparation
 # -------------------------------------------------------------------------------------------
+# enable ingress controller
+minikube addons enable ingress
+
 # create NFS mount 
 kubectl apply -f $(aceoperator-pv.sh)
 kubectl get pv
@@ -156,7 +159,11 @@ openssl s_client -host ${INSTANCE}.aceoperator.net -port 443
 curl -I -k -v --resolve ${INSTANCE}.aceoperator.net https://${INSTANCE}.aceoperator.net/ace-contactcenter
 
 # view logs for a container
+kubectl logs -n kube-system $(kubectl -n kube-system get pod | grep nginx-ingress-controller | awk '{print $1}') -f
+
+# view logs on ingress
 kubectl logs $(kubectl get pod | grep ${INSTANCE} | awk '{print $1}') -c ace-app
+
 
 # execute command on a container
 kubectl exec -it $(kubectl get pod | grep ${INSTANCE} | awk '{print $1}') -c ace-app -- /bin/bash
@@ -172,7 +179,7 @@ kubectl get pod --selector=app=aceoperator -o wide
     kubectl get events --sort-by=.metadata.creationTimestamp
     # change password using mysqladmin password
 
-# To test the nfs mount
+# test the nfs mount
 minikube ssh
     sudo mkdir -p /mnt/aceoperator
     sudo mount -v -t nfs $(ip -4 addr show dev eth1 | grep inet | awk '{print $2}' | awk -F '/' '{print $1}' | awk -F '.' '{print $1"."$2"."$3".1"}'):/var/vol/aceoperator /mnt/aceoperator

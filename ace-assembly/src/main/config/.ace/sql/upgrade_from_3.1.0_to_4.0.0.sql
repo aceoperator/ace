@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS `patchlist` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `file_name` varchar(120) NOT NULL,
+  `applied_on` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `file_name_key` (`file_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;

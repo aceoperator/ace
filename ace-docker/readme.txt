@@ -11,6 +11,18 @@ cd ~/git/ace/ace-docker/ace-docker-compose ; mvn clean install
 
 docker-compose -p aceoperator -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/db-compose.yml \
         -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/data-compose.yml up
+
+
+# ------------------------------------------------------------
+# Create a self-signed certificate for us
+# ------------------------------------------------------------
+openssl req -x509 -days 365 -newkey rsa:2048 -keyout ~/certs/aceoperator.key -out ~/certs/aceoperator.crt
+cat << EOF > ~/certs/passphrase.sh
+#!/bin/sh
+echo "a1b2c3d4"
+EOF
+chmod +x ~/certs/passphrase.sh
+cp /etc/pki/tls/certs/ca-bundle.crt ~/certs/ca.crt
 # ------------------------------------------------------------
 # Cleanup all 
 # ------------------------------------------------------------
@@ -25,6 +37,7 @@ docker volume rm $(docker volume ls -qf dangling=true | grep -v VOLUME)
 
 # Remove .ace
 sudo rm -rf $ACEOPERATOR_HOME/.ace
+sudo rm -rf $ACEOPERATOR_HOME/*
 
 # ------------------------------------------------------------
 # Start Ace Operator
