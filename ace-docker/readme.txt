@@ -37,6 +37,7 @@ docker volume rm $(docker volume ls -qf dangling=true | grep -v VOLUME)
 
 # Remove .ace
 sudo rm -rf $ACEOPERATOR_HOME/.ace
+sudo rm -rf $ACEOPERATOR_HOME/*
 
 # ------------------------------------------------------------
 # Start Ace Operator

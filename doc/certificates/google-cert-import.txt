@@ -3,6 +3,8 @@
 keytool -importkeystore -srckeystore ~/.keystore -destkeystore ~/.keystore -deststoretype pkcs12
 
 # As per Google Certificate Authority's recommendation, import the following CACERTS into the root
+rm -f roots.pem
+wget --no-check-certificate https://pki.goog/roots.pem
 keytool -import -trustcacerts -alias root -file roots.pem -keystore ~/.keystore
 
 # Add Google recaptcha server certificate
@@ -22,3 +24,6 @@ cat recaptcha.pem | keytool -printcert
  
  # delete an older entry from the keystore (for example - when a certificate expires or is revoked)
  keytool -delete -alias google-api --keystore ~/.keystore
+
+ # Register with java apps
+ -Djavax.net.ssl.trustStore=/home/tomcat/.keystore -Djavax.net.ssl.trustStorePassword=xyz

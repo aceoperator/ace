@@ -27,6 +27,13 @@ if [ ! -d "$target_dir/.ace" ]; then
                 $target_dir/.ace/profiles/default-operator.properties
         fi
 
+        # use recaptcha if recaptcha secret/site key is provided
+        if [ -n "$ACEOPERATOR_RECAPTCHA_KEY" ]; then
+            echo "Enabling use of Recaptcha"
+            echo -e "\nrecaptcha2SiteKey=$ACEOPERATOR_RECAPTCHA_KEY" >> $target_dir/.ace/profiles/default-operator.properties
+            echo -e "\nrecaptcha2SiteKey=$ACEOPERATOR_RECAPTCHA_KEY" >> $target_dir/.ace/profiles/default-visitor.properties
+        fi
+
         # Since we initialized from scratch, we are going to assume that all patches so far as been applied as a part of the above init. 
         # Mark all the patches as applied
         if [ -d "$src_dir/.ace/patches" ]; then
