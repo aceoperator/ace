@@ -23,6 +23,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ~/certs/kube.key -ou
 sudo yum install -y jq
 
 # port forward http to minikube (work in progress)
+sudo yum -y install haproxy
+
+
 KUBEIF='virbr1'
 LANIF='ens33'
 
