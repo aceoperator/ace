@@ -29,9 +29,11 @@ if [ "$ACE3_CNTSYNC" = "true" ]; then
     cnt_waitfor $ACE3_APP_DATA_HOST $data_ping_port STARTED
 fi
 
-export JAVA_OPTS="-Xms256m -Xmx512m -Djava.awt.headless=true -Dfile.encoding=UTF8 -Duser.timezone=US/Eastern -Dace.root.dir=$target_dir"
+JAVA_OPTS="-Xms256m -Xmx512m -Djava.awt.headless=true -Dfile.encoding=UTF8 -Duser.timezone=US/Eastern -Dace.root.dir=$target_dir"
 
-# TODO add option to add trust store
+# hardcode the password since this is a public key store and does not have any confidential information
+# and I could not find a way of creating a java keystore with no password
+export JAVA_OPTS="$JAVA_OPTS -Djavax.net.ssl.trustStore=/etc/ssl/certs/truststore -Djavax.net.ssl.trustStorePassword=a1b2c3d4"
 
 # add all the ACEOPERATOR environment variables as system properties with a "env." prefix
 for e in $(env | grep '^ACEOPERATOR' | awk -F "=" '{ print " -Denv."$1"="$2}'); do export JAVA_OPTS="$JAVA_OPTS $e"; done

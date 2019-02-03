@@ -14,15 +14,35 @@ docker-compose -p aceoperator -f ~/git/ace/ace-docker/ace-docker-compose/target/
 
 
 # ------------------------------------------------------------
-# Create a self-signed certificate for us
+# Create a self-signed certificate for aceoperator
 # ------------------------------------------------------------
+# create public/private key pair and a self-signed x509 certificate for aceoperator
 openssl req -x509 -days 365 -newkey rsa:2048 -keyout ~/certs/aceoperator.key -out ~/certs/aceoperator.crt
 cat << EOF > ~/certs/passphrase.sh
 #!/bin/sh
 echo "a1b2c3d4"
 EOF
 chmod +x ~/certs/passphrase.sh
+
+# copy a CA certificate for the apache frontend. In real life this will be
+# replaced with a CA certificate that signs the the aceoperator certificate (see above) 
 cp /etc/pki/tls/certs/ca-bundle.crt ~/certs/ca.crt
+
+# create a trust store
+cd ~/certs
+rm -f roots.pem truststore
+wget https://pki.goog/roots.pem
+# wget --no-check-certificate https://pki.goog/roots.pem
+keytool -import -trustcacerts -alias root -file roots.pem -keystore truststore
+# enter password a1b2c3d4
+# Add Google recaptcha server certificate
+keytool -printcert -rfc -sslserver www.google.com/recaptcha/api/siteverify > recaptcha.pem
+# view the certificate to see when it expires and other information
+cat recaptcha.pem | keytool -printcert
+keytool -importcert --alias google-api -file recaptcha.pem -–keystore truststore
+keytool -list --keystore truststore 
+# Import other certificates for client sites if needed
+
 # ------------------------------------------------------------
 # Cleanup all 
 # ------------------------------------------------------------

@@ -27,6 +27,7 @@ services:
           - "ACE3_CNTSYNC=true"
         volumes:
           - "${ACEOPERATOR_HOME}:/var/aceoperator"
+          - "${ACE3_FE_CERTS_DIR}:/etc/ssl/certs"
     frontend:
         container_name: ace-frontend
         image: "quik/aceoperator-frontend:${project.version}"

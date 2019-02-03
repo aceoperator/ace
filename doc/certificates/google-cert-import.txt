@@ -3,6 +3,7 @@
 keytool -importkeystore -srckeystore ~/.keystore -destkeystore ~/.keystore -deststoretype pkcs12
 
 # As per Google Certificate Authority's recommendation, import the following CACERTS into the root
+cd ~/certs
 rm -f roots.pem
 wget --no-check-certificate https://pki.goog/roots.pem
 keytool -import -trustcacerts -alias root -file roots.pem -keystore ~/.keystore
