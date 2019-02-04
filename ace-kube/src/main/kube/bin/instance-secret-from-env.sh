@@ -19,5 +19,7 @@ data:
    mysql_ace_password: $(convert "$ACEOPERATOR_SQL_PASSWORD")
    admin_password: $(convert "$ACEOPERATOR_ADMIN_PASSWORD")
    data_operators: $(convert "$ACE3_DATA_USERS")
+   recaptcha_secret: $(convert "$ACEOPERATOR_RECAPTCHA_SECRET")
+   recaptcha_key: $(convert "$ACEOPERATOR_RECAPTCHA_KEY")
 EOF
 

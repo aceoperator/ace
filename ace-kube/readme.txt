@@ -22,10 +22,22 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ~/certs/kube.key -ou
 # 3. install json parser for bash
 sudo yum install -y jq
 
+# 4. create a trust store (needed for recaptcha)
+cd ~/certs
+rm -f roots.pem truststore
+wget https://pki.goog/roots.pem
+# wget --no-check-certificate https://pki.goog/roots.pem
+keytool -import -trustcacerts -alias root -file roots.pem -keystore truststore
+# enter password a1b2c3d4
+# Add Google recaptcha server certificate
+keytool -printcert -rfc -sslserver www.google.com/recaptcha/api/siteverify > recaptcha.pem
+# view the certificate to see when it expires and other information
+cat recaptcha.pem | keytool -printcert
+keytool -importcert --alias google-api -file recaptcha.pem -–keystore truststore
+keytool -list --keystore truststore 
+# Import other certificates for client sites if needed
+
 # port forward http to minikube (work in progress)
-sudo yum -y install haproxy
-
-
 KUBEIF='virbr1'
 LANIF='ens33'
 
@@ -110,9 +122,10 @@ kubectl config view | grep namespace:
 # -------------------------------------------------------------------------------------------
 # 2. Deploy aceoperator framework and database service
 # -------------------------------------------------------------------------------------------
-export ACEOPERATOR_SQL_ROOT_PASSWORD=a1b2c3d4
-export ACEOPERATOR_SMTP_PASSWORD=
-export ACEOPERATOR_RECAPTCHA_SECRET=
+. ~/git/ace/ace-docker/properties.sh
+# to override properties that you don't want others to see
+. ~/git/ace/ace-docker/properties-secret.sh
+
 deploy_framework.sh $ACE3_HOME
 
 # -------------------------------------------------------------------------------------------
@@ -120,9 +133,7 @@ deploy_framework.sh $ACE3_HOME
 # -------------------------------------------------------------------------------------------
 export INSTANCE=<instance_name>
 
-export ACEOPERATOR_SQL_PASSWORD=a1b2c3d4
-export ACEOPERATOR_ADMIN_PASSWORD=a1b2c3d4
-export ACE3_DATA_USERS=TODO
+# If the instance needs its own keystore, create it in file $ACE3_FE_CERTS_DIR/$INSTANCE-truststore
 
 deploy_instance.sh $ACE3_HOME $INSTANCE
 # ----------------------------------------------------------------------------------------------

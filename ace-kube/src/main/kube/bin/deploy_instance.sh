@@ -87,6 +87,16 @@ if [ "$part" = "all" ] || [ "$part" = "ingress" ]; then
     fi
 fi
 
+if [ "$part" = "all" ] || [ "$part" = "truststore" ]; then
+    truststore_file="$certs_dir/truststore"
+    if [ -f "$certs_dir/$instace-truststore" ]; then
+        truststore_file="$certs_dir/$instace-truststore"
+    else
+        echo "Using default truststore file"
+    fi
+    kubectl create secret generic $instance-trust --from-file=$truststore_file
+fi
+
 if [ "$part" = "all" ] || [ "$part" = "backup" ]; then
     sed "s/webtalk/$instance/g" $template_dir/instance-backup-job.yml | kubectl apply -f -
 fi

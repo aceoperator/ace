@@ -75,6 +75,11 @@ spec:
               configMapKeyRef:
                 name: webtalk
                 key: data.sendTranscript
+          - name: ACEOPERATOR_RECAPTCHA_KEY
+            valueFrom:
+              secretKeyRef:
+                name: webtalk
+                key: recaptcha_key
       containers:
       - name: ace-app
         image: "quik/aceoperator-app:3.1.0-SNAPSHOT"
@@ -156,15 +161,21 @@ spec:
           - name: ACEOPERATOR_RECAPTCHA_SECRET
             valueFrom:
               secretKeyRef:
-                name: aceoperator
+                name: webtalk
                 key: recaptcha_secret
         volumeMounts:
           - mountPath: /var/aceoperator
             name: aceoperator
             subPath: instance/webtalk
+          - mountPath: /etc/ssl/certs
+            name: webtalk-trust
+            readOnly: true
       securityContext:
         fsGroup: 1000
       volumes:
       - name: aceoperator
         persistentVolumeClaim:
           claimName: aceoperator
+      - name: webtalk-trust
+        secret:
+          secretName: webtalk-trust

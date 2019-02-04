@@ -68,14 +68,13 @@ kubectl apply -f $template_dir/aceoperator-pvc.yml
 # create aceoperatordb deployment
 kubectl apply -f $template_dir/aceoperatordb-deployment.yml
 
-
 # create aceoperatordb service
 kubectl apply -f $template_dir/aceoperatordb-service.yml
 
 # service to access mysql externally - DON'T DOIT in production environment
 kubectl apply -f $template_dir/aceoperatordb-service-ext.yml 
 
-# import certificate
+# import site keys and certificates
 kubectl create secret tls aceoperator-certs --save-config --key $certs_dir/kube.key --cert $certs_dir/kube.crt 
 
 echo "Here is how the deployment looks so far:"
