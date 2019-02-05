@@ -16,7 +16,7 @@ function prompt_password {
 }
 
 if [ "$#" -lt 1 ]; then
-    echo "Usage: $0 <KUBE_HOME_DIR> [INSTANCE_NAME, webtalk, by default] [PART, all, by default]"
+    echo "Usage: $0 <KUBE_HOME_DIR> [INSTANCE_NAME, webtalk, by default] [CERTS_DIR] [PART, all, by default]"
     exit 1
 fi
 
@@ -32,8 +32,13 @@ if [ -n "$2" ]; then
     instance="$2"
 fi
 
-if [ -n "$3" ]; then
-    part="$3"
+certs_dir=$HOME/certs
+if [ -d "$3" ]; then
+    certs_dir="$3"
+fi
+
+if [ -n "$4" ]; then
+    part="$4"
 fi
 
  echo "Going to deploy instance - $instance : $part"

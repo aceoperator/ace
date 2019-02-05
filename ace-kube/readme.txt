@@ -135,7 +135,7 @@ export INSTANCE=<instance_name>
 
 # If the instance needs its own keystore, create it in file $ACE3_FE_CERTS_DIR/$INSTANCE-truststore
 
-deploy_instance.sh $ACE3_HOME $INSTANCE
+deploy_instance.sh $ACE3_HOME $INSTANCE $ACE3_FE_CERTS_DIR
 # ----------------------------------------------------------------------------------------------
 # 4. Control resources
 # ----------------------------------------------------------------------------------------------
@@ -154,7 +154,7 @@ kubectl set resources deployment ${INSTANCE} -c=ace-app --limits=cpu=200m,memory
 kubectl edit configmap $INSTANCE
 
 # for the change to take effect on an instance
-deploy_instance.sh $ACE3_HOME $INSTANCE deployment
+deploy_instance.sh $ACE3_HOME $INSTANCE $ACE3_FE_CERTS_DIR deployment
 
 # ************************************************************---------------------------------------
 # Debugging tools
@@ -169,10 +169,10 @@ mysql -h $(minikube ip) -u root -p \
 openssl s_client -host ${INSTANCE}.aceoperator.net -port 443
 curl -I -k -v --resolve ${INSTANCE}.aceoperator.net https://${INSTANCE}.aceoperator.net/ace-contactcenter
 
-# view logs for a container
+# view logs for a ingress
 kubectl logs -n kube-system $(kubectl -n kube-system get pod | grep nginx-ingress-controller | awk '{print $1}') -f
 
-# view logs on ingress
+# view logs on container
 kubectl logs $(kubectl get pod | grep ${INSTANCE} | awk '{print $1}') -c ace-app
 
 
