@@ -50,7 +50,7 @@ docker-compose -p aceoperator -f ~/git/ace/ace-docker/ace-docker-compose/target/
     -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/data-compose.yml \
     -f ~/git/ace/ace-docker/ace-docker-compose/target/docker-compose/app-compose.yml down
 
-docker rmi `docker images | grep -v REPOSITORY | awk '{print $1":"$2'} | grep quik`
+docker rmi $(docker images | awk '{print $1":"$2'} | grep '^quik')
 
 # Remove the database tablespace
 docker volume rm $(docker volume ls -qf dangling=true | grep -v VOLUME)

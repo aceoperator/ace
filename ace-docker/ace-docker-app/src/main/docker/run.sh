@@ -1,17 +1,17 @@
 #!/bin/bash
 
 function cleanup {
-  echo "Shutting down ace-app..."
+  echo "Gracefully shutting down ace-app..."
   catalina.sh stop
   while [ -n "$(ps ax | grep tomcat | grep -v grep)" ]; do
     sleep 1
   done
   echo "ace-app shutdown complete"
-  exit 143 # 128 + 15 -- SIGTERM
+  kill -9 $entrypoint_pid
 }
 
-# Kill the "tail" and then, shutdown gracefully
-trap 'kill ${!}; cleanup' SIGTERM
+# shutdown gracefully
+trap 'cleanup' SIGTERM
 
 src_dir="/usr/share/aceoperator"
 target_dir="/var/aceoperator"
@@ -47,10 +47,9 @@ if [ "$ACE3_CNTSYNC" = "true" ]; then
     cnt_chstate $ping_port STARTED
 fi
 
-# wait forever
-while true
-do
-  tail -f /dev/null & wait ${!}
-done
+tail -f /dev/null&
+entrypoint_pid=${!}
+wait $entrypoint_pid
 
 echo "Exiting ace-app entrypoint"
+exit 143 # 128 + 15 -- SIGTERM

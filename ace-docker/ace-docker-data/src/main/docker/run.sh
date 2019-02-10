@@ -7,16 +7,16 @@ app_ping_port="6970"
 . $bin_dir/cntping.sh
 
 function cleanup {
-    echo "Shutting down ace-data ..."
+    echo "Gracefully shutting down ace-data ..."
     # TODO figure out what kind of cleanup is needed
     echo "ace-data shutdown complete"
-    exit 143 # 128 + 15 -- SIGTERM
+    kill -9 $entrypoint_pid
 }
 
-# Kill the "tail" and then, shutdown gracefully
-trap 'kill ${!}; cleanup' SIGTERM
-
 if [ "$ACE3_CNTSYNC" = "true" ]; then
+    # Kill the "tail" and then, shutdown gracefully
+    trap 'cleanup' SIGTERM
+
     # signal to other containers that the data container is initializing
     cnt_init $ping_port
 fi
@@ -44,11 +44,10 @@ if [ "$ACE3_CNTSYNC" = "true" ]; then
     # signal to the app container that the data initilization is done
     cnt_chstate $ping_port STARTED
 
-    # wait forever
-    while true
-    do
-    tail -f /dev/null & wait ${!}
-    done
+    tail -f /dev/null&
+    entrypoint_pid=${!}
+    wait $entrypoint_pid
 fi
 
 echo "Exiting ace-data entrypoint"
+exit 143 # 128 + 15 -- SIGTERM
