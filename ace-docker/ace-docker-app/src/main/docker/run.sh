@@ -1,12 +1,7 @@
 #!/bin/bash
 
 function cleanup {
-  echo "Gracefully shutting down ace-app..."
-  catalina.sh stop
-  while [ -n "$(ps ax | grep tomcat | grep -v grep)" ]; do
-    sleep 1
-  done
-  echo "ace-app shutdown complete"
+  echo "Received shutdown signal"
   kill -9 $entrypoint_pid
 }
 
@@ -51,5 +46,11 @@ tail -f /dev/null&
 entrypoint_pid=${!}
 wait $entrypoint_pid
 
-echo "Exiting ace-app entrypoint"
+# Shutdown logic. The trap function above kills tail process above causing the exit of the wait block
+echo "Gracefully shutting down ace-app..."
+catalina.sh stop
+while [ -n "$(ps ax | grep tomcat | grep -v grep)" ]; do
+  sleep 1
+done
+echo "ace-app shutdown complete"
 exit 143 # 128 + 15 -- SIGTERM

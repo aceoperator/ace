@@ -7,9 +7,7 @@ app_ping_port="6970"
 . $bin_dir/cntping.sh
 
 function cleanup {
-    echo "Gracefully shutting down ace-data ..."
-    # TODO figure out what kind of cleanup is needed
-    echo "ace-data shutdown complete"
+    echo "Received shutdown signal"
     kill -9 $entrypoint_pid
 }
 
@@ -49,5 +47,7 @@ if [ "$ACE3_CNTSYNC" = "true" ]; then
     wait $entrypoint_pid
 fi
 
-echo "Exiting ace-data entrypoint"
+echo "Gracefully shutting down ace-data ..."
+# TODO figure out what kind of cleanup is needed
+echo "ace-data shutdown complete"
 exit 143 # 128 + 15 -- SIGTERM
